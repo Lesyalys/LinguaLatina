@@ -1,20 +1,40 @@
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 
-const ProfileCard = () => {
+const ProfileCard = ({ onEdit }) => {
+  const { profile } = useAuth();
+  if (!profile) return null;
+
+  const initials = (profile.display_name || profile.username || "?")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+  const streak = profile.progress?.streak || 0;
+  const wordsLearned = profile.progress?.wordsLearned || 0;
+
   return (
     <div className="card profile-card">
-      <div className="profile-avatar">👤</div>
+      <div className="profile-avatar">
+        {profile.avatar_url ? (
+          <img src={profile.avatar_url} alt="avatar" />
+        ) : (
+          <span>{initials}</span>
+        )}
+      </div>
       <div className="profile-info">
-        <h2>Иван Иванов</h2>
-        <p>Студент-медик • Уровень 1</p>
+        <h2>{profile.display_name || profile.username}</h2>
+        <p>@{profile.username}</p>
         <div className="profile-stats">
           <div>
-            <strong>0</strong>
-            <span>дней подряд</span>
+            <strong>{streak}</strong>
+            <span>🔥 Дней подряд</span>
           </div>
           <div>
-            <strong>0</strong>
-            <span>слов выучено</span>
+            <strong>{wordsLearned}</strong>
+            <span>📚 Слов выучено</span>
           </div>
         </div>
       </div>

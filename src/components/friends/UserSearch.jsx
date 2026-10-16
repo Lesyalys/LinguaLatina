@@ -1,0 +1,216 @@
+import React, { useState, useEffect } from "react";
+import { searchUsers } from "../../lib/friends";
+import { useOnlineUsers } from "../../context/PresenceContext";
+
+const UserSearch = ({
+  currentUserId,
+  relatedMap, // Map<userId, { id, status, type, isSender }>
+  onSendRequest,
+  onAcceptRequest,
+  onRemoveFriendship,
+  onOpenProfile,
+}) => {
+  const onlineUsers = useOnlineUsers();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  // Локальный оверрайд статуса — после действий пользователя
+  // { [userId]: { type, friendshipId } }
+  const [localStatus, setLocalStatus] = useState({});
+
+  // Дебаунс поиска
+  useEffect(() => {
+    if (query.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      const data = await searchUsers(query, currentUserId);
+      setResults(data);
+      setSearching(false);
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [query, currentUserId]);
+
+  // ============================================================
+  // Определяем статус пользователя
+  // ============================================================
+  const getStatus = (userId) => {
+    // Приоритет — локальный оверрайд (свежее действие)
+    if (localStatus[userId]) return localStatus[userId];
+
+    // Затем — из relatedMap
+    if (relatedMap?.has(userId)) {
+      const item = relatedMap.get(userId);
+      return {
+        type: item.type, // 'friends' | 'incoming' | 'outgoing'
+        friendshipId: item.id,
+        isSender: item.isSender,
+      };
+    }
+
+    return { type: "none" };
+  };
+
+  // ============================================================
+  // Обработчики
+  // ============================================================
+  const handleSend = async (userId) => {
+    await onSendRequest(userId);
+    setLocalStatus((prev) => ({
+      ...prev,
+      [userId]: { type: "outgoing" },
+    }));
+  };
+
+  const handleAccept = async (userId, friendshipId) => {
+    await onAcceptRequest(friendshipId);
+    setLocalStatus((prev) => ({
+      ...prev,
+      [userId]: { type: "friends", friendshipId },
+    }));
+  };
+
+  const handleRemove = async (userId, friendshipId, type) => {
+    const confirmText =
+      type === "outgoing"
+        ? "Отменить заявку?"
+        : type === "friends"
+          ? "Удалить из друзей?"
+          : "Отклонить заявку?";
+
+    if (!window.confirm(confirmText)) return;
+
+    await onRemoveFriendship(friendshipId);
+    setLocalStatus((prev) => ({
+      ...prev,
+      [userId]: { type: "none" },
+    }));
+  };
+
+  // ============================================================
+  // Рендер кнопки действия
+  // ============================================================
+  const renderActionButton = (userId) => {
+    const status = getStatus(userId);
+
+    if (status.type === "friends") {
+      return (
+        <button className="friend-btn" disabled title="Уже в друзьях">
+          👥 В друзьях
+        </button>
+      );
+    }
+
+    if (status.type === "outgoing") {
+      return (
+        <button
+          className="friend-btn"
+          onClick={() => handleRemove(userId, status.friendshipId, "outgoing")}
+        >
+          ⏳ Отменить
+        </button>
+      );
+    }
+
+    if (status.type === "incoming") {
+      return (
+        <button
+          className="friend-btn primary"
+          onClick={() => handleAccept(userId, status.friendshipId)}
+        >
+          ✓ Принять
+        </button>
+      );
+    }
+
+    return (
+      <button className="friend-btn primary" onClick={() => handleSend(userId)}>
+        ➕ Добавить
+      </button>
+    );
+  };
+
+  // ============================================================
+  // Инициалы
+  // ============================================================
+  const initials = (name) =>
+    (name || "?")
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+
+  // ============================================================
+  // Рендер
+  // ============================================================
+  return (
+    <div className="user-search">
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Поиск по логину или имени (мин. 2 символа)..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+      </div>
+
+      {searching && <p className="search-status">Поиск...</p>}
+
+      {!searching && query.length >= 2 && results.length === 0 && (
+        <p className="search-status">Ничего не найдено</p>
+      )}
+
+      {results.length > 0 && (
+        <div className="friends-grid">
+          {results.map((u) => {
+            const status = getStatus(u.id);
+            const isOnline = onlineUsers.has(u.id);
+            const isRelated =
+              status.type === "friends" ||
+              status.type === "incoming" ||
+              status.type === "outgoing";
+
+            return (
+              <div key={u.id} className="friend-card">
+                <div
+                  className="friend-clickable"
+                  onClick={() => onOpenProfile(u.id)}
+                >
+                  <div className="friend-avatar">
+                    {u.avatar_url ? (
+                      <img src={u.avatar_url} alt={u.username} />
+                    ) : (
+                      <span>{initials(u.display_name || u.username)}</span>
+                    )}
+                  </div>
+                  <div className="friend-info">
+                    <h3>{u.display_name || u.username}</h3>
+                    <p>@{u.username}</p>
+                    {isOnline && <span className="online-dot" title="Онлайн" />}
+                    {status.type === "incoming" && (
+                      <p className="friend-meta">хочет добавить вас</p>
+                    )}
+                    {status.type === "outgoing" && (
+                      <p className="friend-meta">заявка отправлена</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="friend-actions">{renderActionButton(u.id)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserSearch;

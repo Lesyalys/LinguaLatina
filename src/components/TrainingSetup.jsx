@@ -19,7 +19,6 @@ const TrainingSetup = ({ onStart, onBack }) => {
   const handleStart = () => {
     if (selectedGroups.length === 0) return;
 
-    // Собираем слова из выбранных групп
     const words = [];
     lexicon.data.forEach((group) => {
       if (selectedGroups.includes(group.name)) {
@@ -29,7 +28,7 @@ const TrainingSetup = ({ onStart, onBack }) => {
       }
     });
 
-    onStart(words);
+    onStart(words, selectedGroups); // ← передаём ещё и группы
   };
 
   return (

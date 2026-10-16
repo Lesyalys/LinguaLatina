@@ -1,22 +1,37 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useIncomingRequestsCount } from "../hooks/useIncomingRequestsCount";
 
 const Sidebar = ({ currentScreen, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const incomingCount = useIncomingRequestsCount(user?.id);
 
   const menuItems = [
     { id: "home", label: "🏠 Главная" },
     { id: "wordList", label: "📖 Словарь" },
     { id: "trainingSetup", label: "🧠 Тренировка" },
+    {
+      id: "friends",
+      label: "👥 Друзья",
+      protected: true,
+      badge: incomingCount,
+    },
   ];
-
   const handleNavigate = (screen) => {
     onNavigate(screen);
-    setIsOpen(false); // закрываем меню на мобильном после клика
+    setIsOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    if (window.confirm("Выйти из аккаунта?")) {
+      await signOut();
+      onNavigate("home");
+    }
   };
 
   return (
     <>
-      {/* Кнопка-бургер для мобильных */}
       <button
         className="burger-btn"
         onClick={() => setIsOpen(!isOpen)}
@@ -25,12 +40,10 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         {isOpen ? "✕" : "☰"}
       </button>
 
-      {/* Затемнение фона при открытом меню на мобильном */}
       {isOpen && (
-        <div className="sidebar-overlay" onClick={() => setIsOpen(false)}></div>
+        <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
       )}
 
-      {/* Само боковое меню */}
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <h2>Lingua Latina</h2>
@@ -43,18 +56,58 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
               className={`sidebar-item ${currentScreen === item.id ? "active" : ""}`}
               onClick={() => handleNavigate(item.id)}
             >
-              {item.label}
+              <span>{item.label}</span>
+              <span className="sidebar-item-right">
+                {item.protected && !user && (
+                  <span className="lock-icon">🔒</span>
+                )}
+                {item.badge > 0 && (
+                  <span className="sidebar-badge">{item.badge}</span>
+                )}
+              </span>
             </button>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <button
-            className="sidebar-item profile-link"
-            onClick={() => handleNavigate("profile")}
-          >
-            👤 Профиль
-          </button>
+          {user ? (
+            <>
+              <button
+                className={`sidebar-item profile-link ${
+                  currentScreen === "profile" ? "active" : ""
+                }`}
+                onClick={() => handleNavigate("profile")}
+              >
+                <span className="sidebar-avatar">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="avatar" />
+                  ) : (
+                    "👤"
+                  )}
+                </span>
+                <span className="sidebar-username">
+                  {profile?.display_name || profile?.username || "Профиль"}
+                </span>
+              </button>
+
+              <button
+                className="sidebar-item signout-btn"
+                onClick={handleSignOut}
+              >
+                🚪 Выйти
+              </button>
+            </>
+          ) : (
+            <button
+              className={`sidebar-item profile-link ${
+                currentScreen === "profile" ? "active" : ""
+              }`}
+              onClick={() => handleNavigate("profile")}
+            >
+              <span className="sidebar-avatar">👤</span>
+              <span className="sidebar-username">Войти</span>
+            </button>
+          )}
         </div>
       </aside>
     </>

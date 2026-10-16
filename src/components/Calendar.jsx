@@ -1,11 +1,17 @@
 import React, { useState, useMemo } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const Calendar = () => {
+  const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
-
   const today = new Date();
 
-  // Определяем номер недели в году (ISO 8601)
+  // Множество дат с активностью (YYYY-MM-DD)
+  const activeDates = useMemo(() => {
+    const history = profile?.progress?.history || [];
+    return new Set(history.map((h) => h.date));
+  }, [profile]);
+
   const getWeekNumber = (date) => {
     const d = new Date(
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
@@ -16,28 +22,23 @@ const Calendar = () => {
     return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
   };
 
-  // Определяем чётность недели
   const weekNumber = getWeekNumber(currentDate);
   const isEvenWeek = weekNumber % 2 === 0;
 
   const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-
-    let startDay = firstDayOfMonth.getDay() - 1;
+    let startDay = firstDay.getDay() - 1;
     if (startDay < 0) startDay = 6;
-
-    const daysInMonth = lastDayOfMonth.getDate();
 
     const days = [];
     for (let i = 0; i < startDay; i++) days.push(null);
-    for (let d = 1; d <= daysInMonth; d++) {
+    for (let d = 1; d <= lastDay.getDate(); d++) {
       days.push(new Date(year, month, d));
     }
-
     return days;
   }, [currentDate]);
 
@@ -45,6 +46,7 @@ const Calendar = () => {
     month: "long",
     year: "numeric",
   });
+
   const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
   const isToday = (date) => {
@@ -56,6 +58,12 @@ const Calendar = () => {
     );
   };
 
+  const isActive = (date) => {
+    if (!date) return false;
+    const str = date.toISOString().split("T")[0];
+    return activeDates.has(str);
+  };
+
   const changeMonth = (delta) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + delta);
@@ -64,24 +72,16 @@ const Calendar = () => {
 
   return (
     <div className="card calendar-card">
-      {/* Бар числитель/знаменатель */}
       <div className="week-type-bar">
-        <div
-          className={`week-type-item ${!isEvenWeek ? "active" : ""}`}
-          title="Нечётная неделя"
-        >
+        <div className={`week-type-item ${!isEvenWeek ? "active" : ""}`}>
           Числитель
         </div>
         <div className="week-type-divider">/</div>
-        <div
-          className={`week-type-item ${isEvenWeek ? "active" : ""}`}
-          title="Чётная неделя"
-        >
+        <div className={`week-type-item ${isEvenWeek ? "active" : ""}`}>
           Знаменатель
         </div>
       </div>
 
-      {/* Заголовок месяца */}
       <div className="calendar-header">
         <button onClick={() => changeMonth(-1)} className="calendar-nav-btn">
           ←
@@ -92,7 +92,6 @@ const Calendar = () => {
         </button>
       </div>
 
-      {/* Сетка календаря */}
       <div className="calendar-grid">
         {weekDays.map((day) => (
           <div key={day} className="calendar-weekday">
@@ -102,14 +101,15 @@ const Calendar = () => {
         {calendarData.map((date, idx) => (
           <div
             key={idx}
-            className={`calendar-day ${!date ? "empty" : ""} ${isToday(date) ? "today" : ""}`}
+            className={`calendar-day ${!date ? "empty" : ""} ${
+              isToday(date) ? "today" : ""
+            } ${isActive(date) ? "active-day" : ""}`}
           >
             {date ? date.getDate() : ""}
           </div>
         ))}
       </div>
 
-      {/* Подпись с номером недели */}
       <div className="calendar-footer">
         Неделя №{weekNumber} • {isEvenWeek ? "Знаменатель" : "Числитель"}
       </div>
