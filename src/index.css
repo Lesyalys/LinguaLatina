@@ -883,6 +883,7 @@ body {
     font-size: 0.9rem;
   }
 }
+
 /* ============================================================
    APP LOADING
    ============================================================ */
@@ -1067,6 +1068,7 @@ body {
   background: rgba(231, 76, 60, 0.2);
   color: #ff6b6b;
 }
+
 /* ============================================================
    WELCOME HERO (для неавторизованных)
    ============================================================ */
@@ -1198,12 +1200,12 @@ body {
 }
 
 /* ============================================================
-   PROFILE PAGE
+   PROFILE PAGE — карточка как в новом дизайне
    ============================================================ */
 .profile-page {
-  max-width: 900px;
   margin: 0 auto;
   animation: fadeIn 0.3s ease-in;
+  background: #f0f0f0;
 }
 
 /* Форма авторизации внутри layout */
@@ -1218,52 +1220,90 @@ body {
 
 /* Карточка просмотра профиля */
 .profile-view-card {
-  background: white;
-  border-radius: 16px;
+  background: #ffffff;
+  border-radius: 28px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  position: relative;
 }
 
+/* ============ Обложка ============ */
 .profile-cover {
-  height: 180px;
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  height: 170px;
+  background: linear-gradient(135deg, #b8d4e8 0%, #d4e4f0 100%);
   background-size: cover;
   background-position: center;
   position: relative;
+  border-radius: 28px 28px 0 0;
+  margin: 8px 8px 0;
 }
 
 .profile-cover-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.05) 100%);
+  border-radius: 28px 28px 0 0;
+  pointer-events: none;
 }
 
-.profile-view-body {
-  padding: 0 30px 30px;
+.profile-follow-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #1a1a1a;
+  cursor: pointer;
   display: flex;
-  align-items: flex-end;
-  gap: 25px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+}
+
+.profile-follow-btn:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.profile-follow-btn .plus {
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+/* ============ Аватар + прогресс ============ */
+.profile-view-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  margin-top: -55px;
   position: relative;
+  z-index: 2;
 }
 
 .profile-avatar-large {
-  width: 130px;
-  height: 130px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3498db, #2980b9);
+  background: linear-gradient(135deg, #e8e8e8, #d0d0d0);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  color: white;
+  font-size: 2.2rem;
+  color: #fff;
   font-weight: bold;
-  border: 5px solid white;
+  border: 6px solid #ffffff;
   overflow: hidden;
-  margin-top: -65px;
   flex-shrink: 0;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .profile-avatar-large img {
@@ -1272,41 +1312,158 @@ body {
   object-fit: cover;
 }
 
-.profile-view-info {
+/* ============ Полоса опыта ============ */
+.profile-progress-bar {
   flex: 1;
-  min-width: 200px;
-  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 30px;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: #8a8a8a;
+  font-weight: 400;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: #ececec;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #e74c3c 0%,
+    #f39c12 25%,
+    #f1c40f 50%,
+    #27ae60 75%,
+    #3498db 100%
+  );
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+/* ============ Информация ============ */
+.profile-view-info {
+  padding: 20px 24px 16px;
 }
 
 .profile-view-info h2 {
-  font-size: 1.6rem;
-  color: #2c3e50;
-  margin-bottom: 4px;
+  font-size: 1.75rem;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .profile-username {
-  color: #7f8c8d;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+  color: #8a8a8a;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
 }
 
 .profile-bio {
-  color: #555;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+  color: #4a4a4a;
+  font-size: 1rem;
   line-height: 1.5;
+  margin-bottom: 12px;
 }
 
 .profile-meta {
   font-size: 0.85rem;
-  color: #95a5a6;
+  color: #b0b0b0;
 }
 
+/* ============ Статистика ============ */
+.profile-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #f0f0f0;
+  padding: 20px 0;
+  margin-top: 8px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.profile-stat:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: #f0f0f0;
+}
+
+.profile-stat strong {
+  font-size: 1.4rem;
+  color: #1a1a1a;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+}
+
+.profile-stat span {
+  font-size: 0.85rem;
+  color: #8a8a8a;
+  font-weight: 400;
+}
+
+/* ============ Нижняя панель ============ */
+.profile-bottom-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.bottom-bar-btn {
+  padding: 18px 0;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.bottom-bar-btn:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 1px;
+  background: #ececec;
+}
+
+.bottom-bar-btn:hover {
+  background: #f0f0f0;
+}
+
+/* Дополнительные стили для старой разметки профиля (совместимость) */
 .profile-view-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  padding-top: 15px;
+  padding: 0 24px 20px;
 }
 
 .profile-action-btn {
@@ -1338,12 +1495,18 @@ body {
   color: white;
 }
 
-/* Прогресс */
+.profile-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Прогресс-карточка (старая разметка) */
 .profile-progress-card {
   background: white;
   border-radius: 16px;
   padding: 25px 30px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
 }
 
 .profile-progress-card h3 {
@@ -1378,22 +1541,8 @@ body {
   color: #7f8c8d;
 }
 
-/* Заглушка редактирования */
-.profile-edit-card {
-  background: white;
-  border-radius: 16px;
-  padding: 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  color: #7f8c8d;
-}
-
-.profile-edit-actions {
-  margin-top: 25px;
-}
-
 /* ============================================================
-   Мобильная адаптация
+   Мобильная адаптация профиля
    ============================================================ */
 @media (max-width: 768px) {
   .welcome-content h1 {
@@ -1405,15 +1554,14 @@ body {
   }
 
   .profile-view-body {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 0 20px 25px;
+    flex-direction: row;
+    padding: 0 18px;
+    margin-top: -45px;
   }
 
   .profile-view-info {
-    text-align: center;
-    padding-top: 10px;
+    text-align: left;
+    padding: 16px 18px 12px;
   }
 
   .profile-view-actions {
@@ -1429,6 +1577,42 @@ body {
     padding: 25px;
   }
 }
+
+@media (max-width: 600px) {
+  .profile-page {
+    padding: 20px 12px;
+  }
+
+  .profile-view-card {
+    border-radius: 22px;
+  }
+
+  .profile-cover {
+    height: 140px;
+    border-radius: 22px 22px 0 0;
+  }
+
+  .profile-view-body {
+    padding: 0 18px;
+    margin-top: -45px;
+  }
+
+  .profile-avatar-large {
+    width: 90px;
+    height: 90px;
+    font-size: 1.8rem;
+    border-width: 5px;
+  }
+
+  .profile-view-info h2 {
+    font-size: 1.45rem;
+  }
+
+  .profile-stat strong {
+    font-size: 1.2rem;
+  }
+}
+
 /* ============================================================
    PROFILE EDIT
    ============================================================ */
@@ -1599,10 +1783,6 @@ body {
   padding: 12px 24px;
 }
 
-.profile-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 /* ============================================================
    TRAINING FINISHED SCREEN
    ============================================================ */
@@ -1730,6 +1910,7 @@ body {
 .calendar-day.today.active-day::after {
   background: white;
 }
+
 /* ============================================================
    GREETING
    ============================================================ */
@@ -1799,7 +1980,6 @@ body {
   color: #7f8c8d;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 600px) {
   .greeting {
     flex-direction: column;
@@ -1811,6 +1991,7 @@ body {
     font-size: 1.25rem;
   }
 }
+
 /* ============================================================
    FRIENDS PAGE
    ============================================================ */
@@ -2052,6 +2233,7 @@ body {
     justify-content: center;
   }
 }
+
 /* ============================================================
    FRIEND CARD: кликабельная часть
    ============================================================ */
@@ -2090,6 +2272,7 @@ body {
   gap: 10px;
   flex-wrap: wrap;
 }
+
 /* Кнопка "В друзьях" — просто визуально отличается */
 .friend-btn:disabled {
   background: #e8f8ef;
@@ -2097,6 +2280,7 @@ body {
   opacity: 1;
   cursor: default;
 }
+
 /* ============================================================
    FRIENDS SECTIONS
    ============================================================ */
@@ -2181,6 +2365,7 @@ body {
     opacity: 0.7;
   }
 }
+
 /* ============================================================
    ONLINE STATUS
    ============================================================ */

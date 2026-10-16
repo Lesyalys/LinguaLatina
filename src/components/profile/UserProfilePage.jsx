@@ -125,26 +125,27 @@ const UserProfilePage = ({ userId, onBack }) => {
     (g) => g.completed,
   ).length;
 
+  // Прогресс опыта
+  const expTarget = 1000;
+  const expPercent = Math.min(
+    100,
+    Math.round((wordsLearned / expTarget) * 100),
+  );
+
   // ============================================================
-  // Кнопка действия в зависимости от статуса дружбы
+  // Верхняя кнопка в углу обложки (зависит от статуса дружбы)
   // ============================================================
-  const renderFriendButton = () => {
-    if (isSelf) {
-      return (
-        <button className="profile-action-btn primary" onClick={onBack}>
-          ✏️ К своему профилю
-        </button>
-      );
-    }
+  const renderTopButton = () => {
+    if (isSelf) return null;
 
     if (!friendship) {
       return (
         <button
-          className="profile-action-btn primary"
+          className="profile-follow-btn"
           onClick={handleSendRequest}
           disabled={actionLoading}
         >
-          ➕ Добавить в друзья
+          Подписаться <span className="plus">+</span>
         </button>
       );
     }
@@ -152,61 +153,137 @@ const UserProfilePage = ({ userId, onBack }) => {
     if (friendship.status === "accepted") {
       return (
         <button
-          className="profile-action-btn danger"
+          className="profile-follow-btn"
           onClick={() => handleRemove(`Удалить ${profile.username} из друзей?`)}
           disabled={actionLoading}
         >
-          🗑 Удалить из друзей
+          ✓ В друзьях
         </button>
       );
     }
 
     if (friendship.status === "pending") {
       if (friendship.user_id === user.id) {
-        // Я отправил заявку
         return (
           <button
-            className="profile-action-btn"
+            className="profile-follow-btn"
             onClick={() => handleRemove("Отменить заявку?")}
             disabled={actionLoading}
           >
-            ⏳ Отменить заявку
+            ⏳ Заявка отправлена
           </button>
         );
-      } else {
-        // Мне отправили заявку
-        return (
-          <div className="profile-actions-row">
-            <button
-              className="profile-action-btn primary"
-              onClick={handleAccept}
-              disabled={actionLoading}
-            >
-              ✓ Принять заявку
-            </button>
-            <button
-              className="profile-action-btn"
-              onClick={() => handleRemove("Отклонить заявку?")}
-              disabled={actionLoading}
-            >
-              ✕ Отклонить
-            </button>
-          </div>
-        );
       }
+      return (
+        <button
+          className="profile-follow-btn"
+          onClick={handleAccept}
+          disabled={actionLoading}
+        >
+          ✓ Принять заявку
+        </button>
+      );
     }
 
     return null;
   };
 
+  // ============================================================
+  // Нижняя панель — действия (только для исходящих заявок / входящих)
+  // ============================================================
+  const renderBottomActions = () => {
+    const actions = [];
+
+    // Основная кнопка в панели
+    if (!isSelf && friendship) {
+      if (friendship.status === "accepted") {
+        actions.push(
+          <button
+            key="remove"
+            className="bottom-bar-btn"
+            onClick={() =>
+              handleRemove(`Удалить ${profile.username} из друзей?`)
+            }
+            disabled={actionLoading}
+            title="Удалить из друзей"
+          >
+            🗑
+          </button>,
+        );
+      }
+
+      if (friendship.status === "pending" && friendship.user_id === user.id) {
+        actions.push(
+          <button
+            key="cancel"
+            className="bottom-bar-btn"
+            onClick={() => handleRemove("Отменить заявку?")}
+            disabled={actionLoading}
+            title="Отменить заявку"
+          >
+            ⏳
+          </button>,
+        );
+      }
+
+      if (friendship.status === "pending" && friendship.user_id !== user.id) {
+        actions.push(
+          <button
+            key="accept"
+            className="bottom-bar-btn"
+            onClick={handleAccept}
+            disabled={actionLoading}
+            title="Принять заявку"
+          >
+            ✓
+          </button>,
+        );
+        actions.push(
+          <button
+            key="decline"
+            className="bottom-bar-btn"
+            onClick={() => handleRemove("Отклонить заявку?")}
+            disabled={actionLoading}
+            title="Отклонить"
+          >
+            ✕
+          </button>,
+        );
+      }
+    }
+
+    if (isSelf) {
+      actions.push(
+        <button
+          key="back"
+          className="bottom-bar-btn"
+          onClick={onBack}
+          title="К своему профилю"
+        >
+          👤
+        </button>,
+      );
+    }
+
+    // Всегда кнопка «Назад»
+    actions.push(
+      <button
+        key="back-btn"
+        className="bottom-bar-btn"
+        onClick={onBack}
+        title="Назад"
+      >
+        ←
+      </button>,
+    );
+
+    return actions;
+  };
+
   return (
     <div className="user-profile-page">
-      <button className="back-btn back-btn-top" onClick={onBack}>
-        ← Назад
-      </button>
-
-      {/* Карточка профиля */}
       <div className="profile-view-card">
+        {/* Обложка */}
         <div
           className="profile-cover"
           style={
@@ -215,9 +292,11 @@ const UserProfilePage = ({ userId, onBack }) => {
               : undefined
           }
         >
+          {renderTopButton()}
           <div className="profile-cover-overlay" />
         </div>
 
+        {/* Аватар + прогресс */}
         <div className="profile-view-body">
           <div className="profile-avatar-large">
             {profile.avatar_url ? (
@@ -227,37 +306,46 @@ const UserProfilePage = ({ userId, onBack }) => {
             )}
           </div>
 
-          <div className="profile-view-info">
-            <h2>{profile.display_name || profile.username}</h2>
-            <p className="profile-username">
-              @{profile.username}
-              {isOnline && <span className="online-indicator">● онлайн</span>}
-            </p>
-            {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-            <p className="profile-meta">На платформе с {memberSince}</p>
+          <div className="profile-progress-bar">
+            <span className="progress-label">exp.</span>
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{ width: `${expPercent}%` }}
+              />
+            </div>
           </div>
-
-          <div className="profile-view-actions">{renderFriendButton()}</div>
         </div>
-      </div>
 
-      {/* Прогресс */}
-      <div className="profile-progress-card">
-        <h3>Прогресс</h3>
-        <div className="profile-progress-grid">
-          <div className="profile-progress-item">
-            <strong>{streak}</strong>
-            <span>🔥 Дней подряд</span>
-          </div>
-          <div className="profile-progress-item">
+        {/* Имя, био, мета */}
+        <div className="profile-view-info">
+          <h2>{profile.display_name || profile.username}</h2>
+          <p className="profile-username">
+            @{profile.username}
+            {isOnline && <span className="online-indicator">● онлайн</span>}
+          </p>
+          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <p className="profile-meta">На платформе с {memberSince}</p>
+        </div>
+
+        {/* Статистика */}
+        <div className="profile-stats-row">
+          <div className="profile-stat">
             <strong>{wordsLearned}</strong>
-            <span>📚 Слов выучено</span>
+            <span>Слов</span>
           </div>
-          <div className="profile-progress-item">
+          <div className="profile-stat">
+            <strong>{streak}</strong>
+            <span>Дней подряд</span>
+          </div>
+          <div className="profile-stat">
             <strong>{completedGroups}/3</strong>
-            <span>✅ Минимумов пройдено</span>
+            <span>Минимумов</span>
           </div>
         </div>
+
+        {/* Нижняя панель с действиями */}
+        <div className="profile-bottom-bar">{renderBottomActions()}</div>
       </div>
     </div>
   );

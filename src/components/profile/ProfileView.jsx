@@ -2,14 +2,14 @@ import React from "react";
 import { useAuth } from "../../context/AuthContext";
 
 const ProfileView = ({ profile, onEdit }) => {
-  console.log("🔍 ProfileView render, avatar_url:", profile?.avatar_url);
-  console.log("🔍 ProfileView render, cover_url:", profile?.cover_url);
   const { signOut } = useAuth();
+
   const handleSignOut = async () => {
     if (window.confirm("Выйти из аккаунта?")) {
       await signOut();
     }
   };
+
   if (!profile) return null;
 
   const initials = (profile.display_name || profile.username || "?")
@@ -24,12 +24,18 @@ const ProfileView = ({ profile, onEdit }) => {
     month: "long",
   });
 
+  // Прогресс опыта: считаем от цели (например, 1000 слов = 100%)
+  const wordsLearned = profile.progress?.wordsLearned || 0;
+  const expTarget = 1000;
+  const expPercent = Math.min(
+    100,
+    Math.round((wordsLearned / expTarget) * 100),
+  );
+
   return (
     <div className="profile-page">
-      <h1 className="page-title">Профиль</h1>
-
       <div className="profile-view-card">
-        {/* Шапка профиля (cover) */}
+        {/* Обложка */}
         <div
           className="profile-cover"
           style={
@@ -38,10 +44,13 @@ const ProfileView = ({ profile, onEdit }) => {
               : undefined
           }
         >
+          <button className="profile-follow-btn" onClick={onEdit}>
+            Редактировать <span className="plus">✏️</span>
+          </button>
           <div className="profile-cover-overlay" />
         </div>
 
-        {/* Аватар и основная информация */}
+        {/* Аватар + прогресс */}
         <div className="profile-view-body">
           <div className="profile-avatar-large">
             {profile.avatar_url ? (
@@ -51,40 +60,36 @@ const ProfileView = ({ profile, onEdit }) => {
             )}
           </div>
 
-          <div className="profile-view-info">
-            <h2>{profile.display_name || profile.username}</h2>
-            <p className="profile-username">@{profile.username}</p>
-            {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-            <p className="profile-meta">На платформе с {memberSince}</p>
-          </div>
-
-          <div className="profile-view-actions">
-            <button className="profile-action-btn primary" onClick={onEdit}>
-              ✏️ Редактировать
-            </button>
-            <button
-              className="profile-action-btn danger"
-              onClick={handleSignOut}
-            >
-              🚪 Выйти
-            </button>
+          <div className="profile-progress-bar">
+            <span className="progress-label">exp.</span>
+            <div className="progress-track">
+              <div
+                className="progress-fill"
+                style={{ width: `${expPercent}%` }}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Прогресс */}
-      <div className="profile-progress-card">
-        <h3>Прогресс</h3>
-        <div className="profile-progress-grid">
-          <div className="profile-progress-item">
-            <strong>{profile.progress?.streak || 0}</strong>
-            <span>🔥 Дней подряд</span>
-          </div>
-          <div className="profile-progress-item">
+        {/* Имя, био, мета */}
+        <div className="profile-view-info">
+          <h2>{profile.display_name || profile.username}</h2>
+          <p className="profile-username">@{profile.username}</p>
+          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          <p className="profile-meta">На платформе с {memberSince}</p>
+        </div>
+
+        {/* Статистика */}
+        <div className="profile-stats-row">
+          <div className="profile-stat">
             <strong>{profile.progress?.wordsLearned || 0}</strong>
-            <span>📚 Слов выучено</span>
+            <span>Слов</span>
           </div>
-          <div className="profile-progress-item">
+          <div className="profile-stat">
+            <strong>{profile.progress?.streak || 0}</strong>
+            <span>Дней подряд</span>
+          </div>
+          <div className="profile-stat">
             <strong>
               {
                 Object.values(profile.progress?.groups || {}).filter(
@@ -93,7 +98,7 @@ const ProfileView = ({ profile, onEdit }) => {
               }
               /3
             </strong>
-            <span>✅ Минимумов пройдено</span>
+            <span>Минимумов</span>
           </div>
         </div>
       </div>

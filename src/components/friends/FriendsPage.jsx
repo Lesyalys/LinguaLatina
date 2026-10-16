@@ -181,12 +181,9 @@ const FriendsPage = ({ onOpenProfile }) => {
         {/* Друзья */}
         {friendships.friends.length > 0 && (
           <section className="friends-section">
-            <h2 className="friends-section-title">
-              👥 Друзья
-              <span className="friends-section-count">
-                {friendships.friends.length}
-              </span>
-            </h2>
+            <span className="friends-section-count">
+              {friendships.friends.length}
+            </span>
             <div className="friends-grid">
               {friendships.friends.map((f) => (
                 <FriendCard
@@ -210,8 +207,6 @@ const FriendsPage = ({ onOpenProfile }) => {
   // ============================================================
   return (
     <div className="friends-page">
-      <h1 className="page-title">Друзья</h1>
-
       <div className="friends-tabs">
         {tabs.map((t) => (
           <button
