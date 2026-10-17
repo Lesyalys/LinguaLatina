@@ -1,13 +1,15 @@
 import { useState } from "react";
-import Sidebar from "./components/Sidebar";
-import Home from "./components/Home";
-import WordList from "./components/WordList";
-import TrainingSetup from "./components/TrainingSetup";
-import TrainingCards from "./components/TrainingCards";
-import ProfilePage from "./components/profile/ProfilePage";
-import { useAuth } from "./context/AuthContext";
-import FriendsPage from "./components/friends/FriendsPage";
-import UserProfilePage from "./components/profile/UserProfilePage";
+import Sidebar from "../components/layout/Sidebar";
+import Home from "../features/home/Home";
+import WordList from "../features/dictionary/WordList";
+import TrainingSetup from "../features/training/TrainingSetup";
+import TrainingCards from "../features/training/TrainingCards";
+import ProfilePage from "../features/profile/ProfilePage";
+import { useAuth } from "../context/AuthContext";
+import FriendsPage from "../features/friends/FriendsPage";
+import UserProfilePage from "../features/profile/UserProfilePage";
+import ExamSubjects from "../features/exam/ExamSubjects";
+import AnatomyTickets from "../features/exam/AnatomyTickets";
 
 function App() {
   const { user, loading } = useAuth();
@@ -91,6 +93,24 @@ function App() {
             }}
           />
         );
+      case "examSubjects":
+        return (
+          <ExamSubjects
+            onOpenSubject={(subjectId) => {
+              if (subjectId === "anatomy") {
+                setCurrentScreen("anatomyTickets");
+              }
+            }}
+          />
+        );
+
+      case "anatomyTickets":
+        return (
+          <AnatomyTickets onBack={() => setCurrentScreen("examSubjects")} />
+        );
+
+      default:
+        return <Home onNavigate={setCurrentScreen} />;
     }
   };
 

@@ -1,9 +1,7 @@
-import React from "react";
-import ProfileCard from "./ProfileCard";
 import Calendar from "./Calendar";
-import CourseProgress from "./CourseProgress";
-import WelcomeHero from "./WelcomeHero";
-import { useAuth } from "../context/AuthContext";
+import ScheduleCard from "./ScheduleCard";
+import WelcomeHero from "../auth/WelcomeHero";
+import { useAuth } from "../../context/AuthContext";
 import Greeting from "./Greeting";
 
 const Home = ({ onNavigate }) => {
@@ -29,7 +27,7 @@ const Home = ({ onNavigate }) => {
           <Calendar />
         </div>
         <div className="home-column">
-          <CourseProgress />
+          <ScheduleCard />
         </div>
       </div>
     </div>

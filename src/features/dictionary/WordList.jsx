@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import lexicon from "../data/lexicon.json";
+import lexicon from "../../data/lesson/simestr_1/latinus/lexicon.json";
 
 const WordList = ({ onBack }) => {
   const [searchTerm, setSearchTerm] = useState("");

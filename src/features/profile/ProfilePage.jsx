@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import AuthForm from "./AuthForm";
+import AuthForm from "../auth/AuthForm";
 import ProfileView from "./ProfileView";
 import ProfileEdit from "./ProfileEdit";
 

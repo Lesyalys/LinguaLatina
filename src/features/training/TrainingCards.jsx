@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const TrainingCards = ({ words, selectedGroups, onBack }) => {
   const { profile, updateProfile } = useAuth();
