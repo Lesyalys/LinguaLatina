@@ -1,25 +1,48 @@
-import React, { useState, useMemo } from "react";
-import anatomyData from "../../data/examus/simestr_1/anatomy/tikets.json";
+import React, { useState, useMemo, useEffect } from "react";
+import { loadMaterialData } from "../../lib/materials";
 
-const AnatomyTickets = ({ onBack }) => {
+const AnatomyTickets = ({ dataFile, onBack }) => {
   const [expandedTicket, setExpandedTicket] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const tickets = anatomyData.data;
+  // ✅ Хук #1
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    loadMaterialData(dataFile).then((result) => {
+      if (!cancelled) {
+        setData(result);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataFile]);
 
-  // Фильтрация по поиску
+  // ✅ Хук #2
+  const tickets = useMemo(() => data?.data || [], [data]);
+
+  // ✅ Хук #3
   const filteredTickets = useMemo(() => {
     if (!searchQuery.trim()) return tickets;
     const q = searchQuery.toLowerCase().trim();
 
     return tickets.filter((ticket) =>
       ticket.questions.some(
-        (q_) =>
-          q_.title.toLowerCase().includes(q) ||
-          q_.text.toLowerCase().includes(q),
+        (question) =>
+          question.title.toLowerCase().includes(q) ||
+          question.text.toLowerCase().includes(q),
       ),
     );
   }, [tickets, searchQuery]);
+
+  // ✅ Все хуки — выше. Можно return.
+  if (loading) return <div className="app-loading">Загрузка...</div>;
+  if (!data)
+    return <div className="page-placeholder">Не удалось загрузить данные</div>;
 
   const toggleTicket = (ticketNumber) => {
     setExpandedTicket((prev) => (prev === ticketNumber ? null : ticketNumber));
@@ -87,11 +110,8 @@ const AnatomyTickets = ({ onBack }) => {
   );
 };
 
-// Компонент отдельного вопроса с раскрывающимся ответом
 const QuestionBlock = ({ question }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Разбиваем текст на параграфы
   const paragraphs = question.text.split("\n").filter((p) => p.trim());
 
   return (

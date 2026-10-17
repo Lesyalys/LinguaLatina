@@ -1,0 +1,75 @@
+{
+  "name": "materials-manifest",
+  "version": 1,
+  "updated_at": "2026-10-17T00:00:00Z",
+  "courses": [
+    {
+      "id": "course-1",
+      "title": "1 курс",
+      "semesters": [
+        {
+          "id": "semester-1",
+          "title": "1 семестр",
+          "subjects": [
+            {
+              "id": "latin",
+              "title": "Латинский язык",
+              "icon": "🏛️",
+              "color": "#e67e22",
+              "type": "subject",
+              "description": "Словарь и тренажёр для изучения латинской терминологии",
+              "actions": [
+                {
+                  "id": "wordList",
+                  "title": "Словарь",
+                  "description": "Просмотр всех слов с поиском",
+                  "icon": "📖",
+                  "dataFile": "courses/course-1/semester-1/latin/lexicon.json"
+                },
+                {
+                  "id": "training",
+                  "title": "Тренировка",
+                  "description": "Карточки для запоминания",
+                  "icon": "🧠",
+                  "requiresAuth": true,
+                  "dataFile": "courses/course-1/semester-1/latin/lexicon.json"
+                }
+              ]
+            },
+            {
+              "id": "anatomy",
+              "title": "Анатомия",
+              "icon": "💀",
+              "type": "exam",
+              "description": "Билеты для подготовки и самопроверки",
+              "actions": [
+                {
+                  "id": "tickets",
+                  "title": "Билеты",
+                  "icon": "📝",
+                  "dataFile": "courses/course-1/semester-1/anatomy/tickets.json"
+                },
+                {
+                  "id": "examQuiz",
+                  "title": "Тест",
+                  "icon": "🎯",
+                  "dataFile": "courses/course-1/semester-1/anatomy/tickets.json"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "semester-2",
+          "title": "2 семестр",
+          "subjects": []
+        }
+      ]
+    },
+    {
+      "id": "course-2",
+      "title": "2 курс",
+      "semesters": []
+    }
+  ]
+}

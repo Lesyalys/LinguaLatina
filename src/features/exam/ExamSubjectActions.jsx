@@ -1,27 +1,6 @@
 import React from "react";
 
-const EXAM_SUBJECTS = {
-  anatomy: {
-    title: "Анатомия",
-    description: "Подготовка к экзамену по анатомии",
-    icon: "🦴",
-    color: "#3498db",
-    actions: [
-      {
-        id: "tickets",
-        title: "Билеты",
-        description: "Полный список билетов с вопросами и ответами",
-        icon: "📝",
-      },
-      // Позже: 'tests', 'flashcards' и т.д.
-    ],
-  },
-  // Сюда можно добавить гистологию, химию...
-};
-
-const ExamSubjectActions = ({ subjectId, onOpenAction, onBack }) => {
-  const subject = EXAM_SUBJECTS[subjectId];
-
+const ExamSubjectActions = ({ subject, onOpenAction, onBack }) => {
   if (!subject) {
     return (
       <div className="page-placeholder">
@@ -55,7 +34,7 @@ const ExamSubjectActions = ({ subjectId, onOpenAction, onBack }) => {
           <div
             key={action.id}
             className="action-card"
-            onClick={() => onOpenAction(action.id)}
+            onClick={() => onOpenAction(action)}
           >
             <div className="action-icon">{action.icon}</div>
             <h2>{action.title}</h2>

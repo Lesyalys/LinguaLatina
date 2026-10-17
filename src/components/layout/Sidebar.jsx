@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useIncomingRequestsCount } from "../../hooks/useIncomingRequestsCount";
 import InstallPWAButton from "../ui/InstallPWAButton";
+import CourseFilter from "../ui/CourseFilter";
 
 const Sidebar = ({ currentScreen, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const incomingCount = useIncomingRequestsCount(user?.id);
 
-  // Пункты меню — плоский список
   const menuItems = [
     {
       id: "home",
@@ -16,26 +16,26 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
       activeFor: ["home"],
     },
     {
-      id: "subjects",
-      label: "📚 Предметы",
+      id: "materials",
+      label: "📚 Материалы",
       activeFor: [
+        "materials",
         "subjects",
+        "examSubjects",
         "subjectActions",
+        "examSubjectActions",
         "wordList",
         "trainingSetup",
         "trainingCards",
+        "anatomyTickets",
       ],
-    },
-    {
-      id: "examSubjects",
-      label: "🎓 Экзамен / Зачёт",
-      activeFor: ["examSubjects", "examSubjectActions", "anatomyTickets"],
     },
     {
       id: "friends",
       label: "👥 Друзья",
       activeFor: ["friends"],
       badge: incomingCount,
+      showLock: !user,
     },
   ];
 
@@ -81,15 +81,17 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
             >
               <span>{item.label}</span>
               <span className="sidebar-item-right">
-                {item.id === "friends" && !user && (
-                  <span className="lock-icon">🔒</span>
-                )}
+                {item.showLock && <span className="lock-icon">🔒</span>}
                 {item.badge > 0 && (
                   <span className="sidebar-badge">{item.badge}</span>
                 )}
               </span>
             </button>
           ))}
+
+          <div className="sidebar-filter-wrapper">
+            <CourseFilter />
+          </div>
         </nav>
 
         <div className="sidebar-footer">

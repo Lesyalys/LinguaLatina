@@ -1,34 +1,7 @@
-import React from "react";
 import { useAuth } from "../../context/AuthContext";
 
-const SUBJECTS = {
-  latin: {
-    title: "Латинский язык",
-    description: "Изучение латинской терминологии",
-    icon: "🏛️",
-    color: "#e67e22",
-    actions: [
-      {
-        id: "wordList",
-        title: "Словарь",
-        description: "Просмотр всех слов с поиском",
-        icon: "📖",
-      },
-      {
-        id: "training",
-        title: "Тренировка",
-        description: "Карточки для запоминания",
-        icon: "🧠",
-        requiresAuth: true,
-      },
-    ],
-  },
-  // Сюда можно добавить другие предметы с их действиями
-};
-
-const SubjectActions = ({ subjectId, onOpenAction, onBack }) => {
+export const SubjectActions = ({ subject, onOpenAction, onBack }) => {
   const { user } = useAuth();
-  const subject = SUBJECTS[subjectId];
 
   if (!subject) {
     return (
@@ -66,7 +39,7 @@ const SubjectActions = ({ subjectId, onOpenAction, onBack }) => {
             <div
               key={action.id}
               className={`action-card ${locked ? "locked" : ""}`}
-              onClick={() => onOpenAction(action.id)}
+              onClick={() => onOpenAction(action)}
             >
               <div className="action-icon">{action.icon}</div>
               <h2>{action.title}</h2>
@@ -80,5 +53,3 @@ const SubjectActions = ({ subjectId, onOpenAction, onBack }) => {
     </div>
   );
 };
-
-export default SubjectActions;

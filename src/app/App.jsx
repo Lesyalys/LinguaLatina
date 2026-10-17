@@ -8,12 +8,13 @@ import ProfilePage from "../features/profile/ProfilePage";
 import { useAuth } from "../context/AuthContext";
 import FriendsPage from "../features/friends/FriendsPage";
 import UserProfilePage from "../features/profile/UserProfilePage";
-import SubjectsPage from "../features/subjects/SubjectsPage";
-import ExamSubjectsPage from "../features/exam/ExamSubjectsPage";
+// import SubjectsPage from "../features/subjects/SubjectsPage";
+// import ExamSubjectsPage from "../features/exam/ExamSubjectsPage";
 import AnatomyTickets from "../features/exam/AnatomyTickets";
-
-import SubjectActions from "../features/subjects/SubjectActions";
+import { SubjectActions } from "../features/subjects/SubjectActions";
 import ExamSubjectActions from "../features/exam/ExamSubjectActions";
+
+import MaterialsPage from "../features/materials/MaterialsPage";
 
 function App() {
   const { user, loading } = useAuth();
@@ -22,9 +23,8 @@ function App() {
   const [trainingGroups, setTrainingGroups] = useState([]);
   const [viewingUserId, setViewingUserId] = useState(null);
 
-  // Выбранный предмет (для плитки действий)
-  const [selectedSubject, setSelectedSubject] = useState(null); // id: 'latin', ...
-  const [selectedExamSubject, setSelectedExamSubject] = useState(null); // id: 'anatomy', ...
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedExamSubject, setSelectedExamSubject] = useState(null);
 
   if (loading) return <div className="app-loading">Загрузка...</div>;
 
@@ -45,38 +45,49 @@ function App() {
         return <Home onNavigate={setCurrentScreen} />;
 
       // ============================================================
-      // ПРЕДМЕТЫ (материалы)
+      // МАТЕРИАЛЫ (объединённый раздел)
       // ============================================================
-      case "subjects":
+      case "materials":
         return (
-          <SubjectsPage
-            onOpenSubject={(subjectId) => {
-              setSelectedSubject(subjectId);
-              setCurrentScreen("subjectActions");
+          <MaterialsPage
+            onOpenSubject={(material) => {
+              if (material.type === "subject") {
+                setSelectedSubject(material);
+                setCurrentScreen("subjectActions");
+              } else if (material.type === "exam") {
+                setSelectedExamSubject(material);
+                setCurrentScreen("examSubjectActions");
+              }
             }}
           />
         );
 
+      // Дальше всё как было:
       case "subjectActions":
         return (
           <SubjectActions
-            subjectId={selectedSubject}
-            onOpenAction={(actionId) => {
-              if (actionId === "wordList") setCurrentScreen("wordList");
-              if (actionId === "training") {
-                if (!user) {
-                  setCurrentScreen("profile");
-                } else {
-                  setCurrentScreen("trainingSetup");
-                }
+            subject={selectedSubject}
+            onOpenAction={(action) => {
+              if (action.id === "wordList") setCurrentScreen("wordList");
+              if (action.id === "training") {
+                if (!user) setCurrentScreen("profile");
+                else setCurrentScreen("trainingSetup");
               }
             }}
-            onBack={() => setCurrentScreen("subjects")}
+            onBack={() => setCurrentScreen("materials")}
           />
         );
 
       case "wordList":
-        return <WordList onBack={() => setCurrentScreen("subjectActions")} />;
+        return (
+          <WordList
+            dataFile={
+              selectedSubject?.actions.find((a) => a.id === "wordList")
+                ?.dataFile
+            }
+            onBack={() => setCurrentScreen("subjectActions")}
+          />
+        );
 
       case "trainingSetup":
         if (!user)
@@ -85,6 +96,10 @@ function App() {
           );
         return (
           <TrainingSetup
+            dataFile={
+              selectedSubject?.actions.find((a) => a.id === "training")
+                ?.dataFile
+            }
             onStart={startTraining}
             onBack={() => setCurrentScreen("subjectActions")}
           />
@@ -103,40 +118,30 @@ function App() {
           />
         );
 
-      // ============================================================
-      // ЭКЗАМЕН / ЗАЧЁТ
-      // ============================================================
-      case "examSubjects":
-        return (
-          <ExamSubjectsPage
-            onOpenSubject={(subjectId) => {
-              setSelectedExamSubject(subjectId);
-              setCurrentScreen("examSubjectActions");
-            }}
-          />
-        );
-
       case "examSubjectActions":
         return (
           <ExamSubjectActions
-            subjectId={selectedExamSubject}
-            onOpenAction={(actionId) => {
-              if (actionId === "tickets") setCurrentScreen("anatomyTickets");
+            subject={selectedExamSubject}
+            onOpenAction={(action) => {
+              if (action.id === "tickets") setCurrentScreen("anatomyTickets");
+              if (action.id === "examQuiz") setCurrentScreen("examQuiz");
             }}
-            onBack={() => setCurrentScreen("examSubjects")}
+            onBack={() => setCurrentScreen("materials")}
           />
         );
 
       case "anatomyTickets":
         return (
           <AnatomyTickets
+            dataFile={
+              selectedExamSubject?.actions.find((a) => a.id === "tickets")
+                ?.dataFile
+            }
             onBack={() => setCurrentScreen("examSubjectActions")}
           />
         );
 
-      // ============================================================
-      // ОСТАЛЬНОЕ
-      // ============================================================
+      // Друзья, профиль и т.д. — без изменений
       case "friends":
         if (!user)
           return <ProfilePage onBack={() => setCurrentScreen("home")} />;

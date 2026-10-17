@@ -3,12 +3,15 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import { AuthProvider } from "../context/AuthContext.jsx";
 import { PresenceProvider } from "../context/PresenceContext.jsx";
+import { FilterProvider } from "../context/FilterContext.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <PresenceProvider>
-      <App />
+      <FilterProvider>
+        <App />
+      </FilterProvider>
     </PresenceProvider>
   </AuthProvider>,
 );

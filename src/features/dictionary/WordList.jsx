@@ -1,25 +1,40 @@
-import { useState, useMemo } from "react";
-import lexicon from "../../data/lesson/simestr_1/latinus/lexicon.json";
+import { useState, useMemo, useEffect } from "react";
+import { loadMaterialData } from "../../lib/materials";
 
-const WordList = ({ onBack }) => {
+const WordList = ({ dataFile, onBack }) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [lexicon, setLexicon] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Функция для фильтрации слов внутри одной группы
-  const filterWords = (words, term) => {
-    if (!term) return words;
-    const lowerCaseSearch = term.toLowerCase().trim();
-
-    return words.filter((word) => {
-      const matchesLatin = word.text.toLowerCase().includes(lowerCaseSearch);
-      const matchesRussian =
-        word.translation &&
-        word.translation.toLowerCase().includes(lowerCaseSearch);
-      return matchesLatin || matchesRussian;
+  // ✅ Хук #1
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    loadMaterialData(dataFile).then((data) => {
+      if (!cancelled) {
+        setLexicon(data);
+        setLoading(false);
+      }
     });
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [dataFile]);
 
-  // Подготавливаем данные: для каждой группы фильтруем слова
+  // ✅ Хук #2 — useMemo до любых return
   const groupedData = useMemo(() => {
+    if (!lexicon?.data) return [];
+
+    const filterWords = (words, term) => {
+      if (!term) return words;
+      const q = term.toLowerCase().trim();
+      return words.filter(
+        (word) =>
+          word.text.toLowerCase().includes(q) ||
+          (word.translation && word.translation.toLowerCase().includes(q)),
+      );
+    };
+
     return lexicon.data
       .map((group) => {
         const filtered = filterWords(group.worlds, searchTerm);
@@ -30,13 +45,19 @@ const WordList = ({ onBack }) => {
           filteredCount: filtered.length,
         };
       })
-      .filter((group) => group.filteredCount > 0); // Скрываем пустые группы
-  }, [searchTerm]);
+      .filter((group) => group.filteredCount > 0);
+  }, [lexicon, searchTerm]);
 
-  // Общее количество найденных слов (для заголовка)
-  const totalFound = useMemo(() => {
-    return groupedData.reduce((acc, group) => acc + group.filteredCount, 0);
-  }, [groupedData]);
+  // ✅ Хук #3
+  const totalFound = useMemo(
+    () => groupedData.reduce((acc, group) => acc + group.filteredCount, 0),
+    [groupedData],
+  );
+
+  // ✅ Все хуки закончились. Теперь можно return.
+  if (loading) return <div className="app-loading">Загрузка...</div>;
+  if (!lexicon)
+    return <div className="page-placeholder">Не удалось загрузить данные</div>;
 
   return (
     <div className="wordlist-container">

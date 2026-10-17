@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { loadMaterialData } from "../../lib/materials";
 import {
   getWeekType,
   getDayIndex,
@@ -6,34 +7,48 @@ import {
   WEEK_DAYS_SHORT,
   WEEK_DAYS,
 } from "../../lib/schedule";
+const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule.json";
 
 const ScheduleCard = () => {
+  const [scheduleData, setScheduleData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
   const currentWeekType = useMemo(() => getWeekType(today), [today]);
 
-  // Состояние: выбранный день, тип недели, группа
   const [selectedDay, setSelectedDay] = useState(
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
-  const [weekType, setWeekType] = useState(currentWeekType); // ← теперь можно менять
+  const [weekType, setWeekType] = useState(currentWeekType);
   const [group, setGroup] = useState("A");
 
-  // Является ли выбранная неделя текущей (автоматически определённой)
+  useEffect(() => {
+    loadMaterialData(SCHEDULE_FILE).then((data) => {
+      setScheduleData(data);
+      setLoading(false);
+    });
+  }, []);
+
   const isCurrentWeek = weekType === currentWeekType;
   const isCurrentDay =
     isCurrentWeek && selectedDay === todayIndex && todayIndex < 6;
 
-  // Данные для отображения
   const { bells, lessons } = useMemo(
-    () => getScheduleForDay(weekType, selectedDay, group),
-    [weekType, selectedDay, group],
+    () => getScheduleForDay(scheduleData, weekType, selectedDay, group),
+    [scheduleData, weekType, selectedDay, group],
   );
 
-  // Переключение недели
-  const toggleWeekType = () => {
-    setWeekType((prev) => (prev === "Числитель" ? "Знаменатель" : "Числитель"));
-  };
+  if (loading) {
+    return (
+      <div className="card schedule-card">
+        <div className="schedule-header">
+          <h3>Расписание</h3>
+        </div>
+        <div className="schedule-empty">Загрузка...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="card schedule-card">

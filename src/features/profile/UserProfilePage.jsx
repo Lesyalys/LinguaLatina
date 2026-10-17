@@ -1,3 +1,4 @@
+// src/components/profile/UserProfilePage.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnlineUsers } from "../../context/PresenceContext";
@@ -8,6 +9,7 @@ import {
   acceptFriendRequest,
   removeFriendship,
 } from "../../lib/friends";
+import ProfileCard from "./ProfileCard";
 
 const UserProfilePage = ({ userId, onBack }) => {
   const onlineUsers = useOnlineUsers();
@@ -90,7 +92,7 @@ const UserProfilePage = ({ userId, onBack }) => {
   };
 
   // ============================================================
-  // Рендер
+  // Рендер: состояния загрузки / ошибки
   // ============================================================
   if (loading) {
     return <div className="page-placeholder">Загрузка профиля...</div>;
@@ -107,33 +109,8 @@ const UserProfilePage = ({ userId, onBack }) => {
     );
   }
 
-  const initials = (profile.display_name || profile.username || "?")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
-  const memberSince = new Date(profile.created_at).toLocaleDateString("ru-RU", {
-    year: "numeric",
-    month: "long",
-  });
-
-  const streak = profile.progress?.streak || 0;
-  const wordsLearned = profile.progress?.wordsLearned || 0;
-  const completedGroups = Object.values(profile.progress?.groups || {}).filter(
-    (g) => g.completed,
-  ).length;
-
-  // Прогресс опыта
-  const expTarget = 1000;
-  const expPercent = Math.min(
-    100,
-    Math.round((wordsLearned / expTarget) * 100),
-  );
-
   // ============================================================
-  // Верхняя кнопка в углу обложки (зависит от статуса дружбы)
+  // Верхняя кнопка (зависит от статуса дружбы)
   // ============================================================
   const renderTopButton = () => {
     if (isSelf) return null;
@@ -189,12 +166,11 @@ const UserProfilePage = ({ userId, onBack }) => {
   };
 
   // ============================================================
-  // Нижняя панель — действия (только для исходящих заявок / входящих)
+  // Нижняя панель действий
   // ============================================================
   const renderBottomActions = () => {
     const actions = [];
 
-    // Основная кнопка в панели
     if (!isSelf && friendship) {
       if (friendship.status === "accepted") {
         actions.push(
@@ -237,8 +213,6 @@ const UserProfilePage = ({ userId, onBack }) => {
           >
             ✓
           </button>,
-        );
-        actions.push(
           <button
             key="decline"
             className="bottom-bar-btn"
@@ -255,7 +229,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     if (isSelf) {
       actions.push(
         <button
-          key="back"
+          key="self"
           className="bottom-bar-btn"
           onClick={onBack}
           title="К своему профилю"
@@ -265,7 +239,6 @@ const UserProfilePage = ({ userId, onBack }) => {
       );
     }
 
-    // Всегда кнопка «Назад»
     actions.push(
       <button
         key="back-btn"
@@ -282,71 +255,12 @@ const UserProfilePage = ({ userId, onBack }) => {
 
   return (
     <div className="user-profile-page">
-      <div className="profile-view-card">
-        {/* Обложка */}
-        <div
-          className="profile-cover"
-          style={
-            profile.cover_url
-              ? { backgroundImage: `url(${profile.cover_url})` }
-              : undefined
-          }
-        >
-          {renderTopButton()}
-          <div className="profile-cover-overlay" />
-        </div>
-
-        {/* Аватар + прогресс */}
-        <div className="profile-view-body">
-          <div className="profile-avatar-large">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt={profile.username} />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </div>
-
-          <div className="profile-progress-bar">
-            <span className="progress-label">exp.</span>
-            <div className="progress-track">
-              <div
-                className="progress-fill"
-                style={{ width: `${expPercent}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Имя, био, мета */}
-        <div className="profile-view-info">
-          <h2>{profile.display_name || profile.username}</h2>
-          <p className="profile-username">
-            @{profile.username}
-            {isOnline && <span className="online-indicator">● онлайн</span>}
-          </p>
-          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-          <p className="profile-meta">На платформе с {memberSince}</p>
-        </div>
-
-        {/* Статистика */}
-        <div className="profile-stats-row">
-          <div className="profile-stat">
-            <strong>{wordsLearned}</strong>
-            <span>Слов</span>
-          </div>
-          <div className="profile-stat">
-            <strong>{streak}</strong>
-            <span>Дней подряд</span>
-          </div>
-          <div className="profile-stat">
-            <strong>{completedGroups}/3</strong>
-            <span>Минимумов</span>
-          </div>
-        </div>
-
-        {/* Нижняя панель с действиями */}
-        <div className="profile-bottom-bar">{renderBottomActions()}</div>
-      </div>
+      <ProfileCard
+        profile={profile}
+        topButton={renderTopButton()}
+        online={isOnline}
+        bottomBar={renderBottomActions()}
+      />
     </div>
   );
 };

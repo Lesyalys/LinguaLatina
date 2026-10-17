@@ -563,7 +563,6 @@ body {
    TRAINING SETUP
    ============================================================ */
 .training-setup {
-  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -634,7 +633,6 @@ body {
   background-color: #bdc3c7;
   cursor: not-allowed;
 }
-
 /* ============================================================
    TRAINING CARDS
    ============================================================ */
@@ -664,32 +662,37 @@ body {
   transition: width 0.3s ease;
 }
 
+/* Контейнер — просто держит размеры, без perspective */
 .card-container {
-  perspective: 1000px;
   width: 100%;
   height: 400px;
   margin-bottom: 30px;
   cursor: pointer;
 }
 
+/* Одна карточка, переворачивается */
 .card {
   position: relative;
   width: 100%;
   height: 100%;
   transition: transform 0.6s;
   transform-style: preserve-3d;
+  /* перспектива на самой карточке — переворот объёмный, но без «карточки сзади» */
+  perspective: 1000px;
 }
 
-/* Внутри тренировки .card переопределяется — не путать с общим .card */
 .card.flipped {
   transform: rotateY(180deg);
 }
 
 .card-face {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 15px;
   display: flex;
   flex-direction: column;
@@ -703,13 +706,14 @@ body {
 .card-front {
   background: linear-gradient(135deg, #ffffff 0%, #f4f4f9 100%);
   border: 3px solid #3498db;
+  transform: rotateY(0deg);
 }
 
 .card-back {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
-  transform: rotateY(180deg);
   border: 3px solid #2980b9;
+  transform: rotateY(180deg);
 }
 
 .card-hint {
@@ -818,7 +822,6 @@ body {
 .restart-btn:hover {
   background-color: #d35400;
 }
-
 /* ============================================================
    МОБИЛЬНАЯ АДАПТАЦИЯ
    ============================================================ */
@@ -3299,4 +3302,202 @@ body {
   .actions-grid {
     grid-template-columns: 1fr;
   }
+}
+.sidebar-filter-wrapper {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 8px 0;
+}
+
+.course-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-select {
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-select:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.filter-select option {
+  background: #2c3e50;
+  color: white;
+}
+/* ============================================================
+   MATERIALS PAGE
+   ============================================================ */
+.materials-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.materials-section {
+  margin-bottom: 40px;
+}
+
+.materials-section:last-child {
+  margin-bottom: 0;
+}
+
+.materials-section-title {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.materials-section-count {
+  background: #ecf0f1;
+  color: #7f8c8d;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+.subject-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.subject-tag {
+  font-size: 0.75rem;
+  padding: 3px 10px;
+  background: color-mix(
+    in srgb,
+    var(--subject-color, #3498db) 12%,
+    transparent
+  );
+  color: var(--subject-color, #3498db);
+  border-radius: 12px;
+  font-weight: 600;
+}
+/* src/styles/profile.css (или где лежат стили профиля) */
+
+.profile-achievements {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.profile-achievements-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.profile-achievements-count {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Пустое состояние */
+.profile-achievements-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.profile-achievements-empty-icon {
+  font-size: 1.6rem;
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.profile-achievements-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.profile-achievements-empty small {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* Сетка бейджей (на будущее) */
+.profile-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 10px;
+}
+
+.profile-achievement-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: default;
+  transition: background 0.15s ease;
+}
+
+.profile-achievement-badge:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.profile-achievement-badge.locked {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.achievement-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.achievement-title {
+  font-size: 0.7rem;
+  text-align: center;
+  line-height: 1.2;
 }

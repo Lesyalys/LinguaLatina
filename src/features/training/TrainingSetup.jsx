@@ -1,12 +1,33 @@
-import { useState } from "react";
-import lexicon from "../../data/lesson/simestr_1/latinus/lexicon.json";
+import { useState, useEffect } from "react";
+import { loadMaterialData } from "../../lib/materials";
 
-const TrainingSetup = ({ onStart, onBack }) => {
+const TrainingSetup = ({ dataFile, onStart, onBack }) => {
   const [selectedGroups, setSelectedGroups] = useState([
     "lexs_min_1",
     "lexs_min_2",
     "lexs_min_3",
   ]);
+  const [lexicon, setLexicon] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    loadMaterialData(dataFile).then((data) => {
+      if (!cancelled) {
+        setLexicon(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataFile]);
+
+  // ✅ хуки закончились — теперь можно return
+  if (loading) return <div className="app-loading">Загрузка...</div>;
+  if (!lexicon)
+    return <div className="page-placeholder">Не удалось загрузить данные</div>;
 
   const toggleGroup = (groupName) => {
     setSelectedGroups((prev) =>
@@ -28,7 +49,7 @@ const TrainingSetup = ({ onStart, onBack }) => {
       }
     });
 
-    onStart(words, selectedGroups); // ← передаём ещё и группы
+    onStart(words, selectedGroups);
   };
 
   return (
