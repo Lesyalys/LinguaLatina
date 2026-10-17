@@ -2,6 +2,8 @@ import Calendar from "./Calendar";
 import ScheduleCard from "./ScheduleCard";
 import WelcomeHero from "../auth/WelcomeHero";
 import { useAuth } from "../../context/AuthContext";
+import RoomLegend from "./RoomLegend";
+import { parseRoomCode } from "../../lib/rooms";
 import Greeting from "./Greeting";
 
 const Home = ({ onNavigate }) => {
@@ -28,6 +30,9 @@ const Home = ({ onNavigate }) => {
         </div>
         <div className="home-column">
           <ScheduleCard />
+        </div>
+        <div className="home-column">
+          <RoomLegend collapsible onlyUsed={false} />
         </div>
       </div>
     </div>

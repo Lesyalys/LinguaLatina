@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+
 import {
   getWeekType,
   getDayIndex,
@@ -92,28 +93,6 @@ const ScheduleCard = () => {
           </button>
         </div>
       </div>
-
-      {/* Подсказка: смотрим не текущую неделю */}
-      {/* {!isCurrentWeek && (
-        <div className="schedule-note">
-          <span>
-            👀 Вы смотрите{" "}
-            {weekType === "Числитель" ? "числитель" : "знаменатель"} — не
-            текущую неделю
-          </span>
-          <button
-            className="return-to-current"
-            onClick={() => {
-              setWeekType(currentWeekType);
-              setSelectedDay(
-                todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
-              );
-            }}
-          >
-            ← К текущей
-          </button>
-        </div>
-      )} */}
 
       {/* Переключатель групп */}
       <div className="schedule-group-switch">
