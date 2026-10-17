@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useIncomingRequestsCount } from "../../hooks/useIncomingRequestsCount";
 import InstallPWAButton from "../ui/InstallPWAButton";
@@ -8,34 +8,36 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
   const { user, profile, signOut } = useAuth();
   const incomingCount = useIncomingRequestsCount(user?.id);
 
-  // Состояние раскрытия вложенных меню
-  const [expanded, setExpanded] = useState(() => {
-    try {
-      const saved = localStorage.getItem("sidebar-expanded");
-      return saved ? JSON.parse(saved) : { latin: true }; // «Латинский» раскрыт по умолчанию
-    } catch {
-      return { latin: true };
-    }
-  });
-
-  // Автоматически раскрываем «Латинский»,
-  // если активный экран относится к словарю/тренировке
-  useEffect(() => {
-    if (
-      ["wordList", "trainingSetup", "trainingCards"].includes(currentScreen)
-    ) {
-      setExpanded((prev) => ({ ...prev, latin: true }));
-    }
-  }, [currentScreen]);
-
-  // Сохраняем состояние в localStorage
-  useEffect(() => {
-    localStorage.setItem("sidebar-expanded", JSON.stringify(expanded));
-  }, [expanded]);
-
-  const toggleSection = (key) => {
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  // Пункты меню — плоский список
+  const menuItems = [
+    {
+      id: "home",
+      label: "🏠 Главная",
+      activeFor: ["home"],
+    },
+    {
+      id: "subjects",
+      label: "📚 Предметы",
+      activeFor: [
+        "subjects",
+        "subjectActions",
+        "wordList",
+        "trainingSetup",
+        "trainingCards",
+      ],
+    },
+    {
+      id: "examSubjects",
+      label: "🎓 Экзамен / Зачёт",
+      activeFor: ["examSubjects", "examSubjectActions", "anatomyTickets"],
+    },
+    {
+      id: "friends",
+      label: "👥 Друзья",
+      activeFor: ["friends"],
+      badge: incomingCount,
+    },
+  ];
 
   const handleNavigate = (screen) => {
     onNavigate(screen);
@@ -49,12 +51,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
     }
   };
 
-  // ============================================================
-  // Пункты меню
-  // ============================================================
-  const isLatinActive = ["wordList", "trainingSetup", "trainingCards"].includes(
-    currentScreen,
-  );
+  const isActive = (item) => item.activeFor.includes(currentScreen);
 
   return (
     <>
@@ -72,104 +69,27 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
 
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
-          <h2>Medic SurGu</h2>
+          <h2>Lingua Latina</h2>
         </div>
 
         <nav className="sidebar-nav">
-          {/* Главная */}
-          <button
-            className={`sidebar-item ${
-              currentScreen === "home" ? "active" : ""
-            }`}
-            onClick={() => handleNavigate("home")}
-          >
-            🏠 Главная
-          </button>
-
-          {/* Латинский (аккордеон) */}
-          <div className="sidebar-group">
+          {menuItems.map((item) => (
             <button
-              className={`sidebar-item sidebar-group-header ${
-                isLatinActive ? "active-parent" : ""
-              }`}
-              onClick={() => toggleSection("latin")}
+              key={item.id}
+              className={`sidebar-item ${isActive(item) ? "active" : ""}`}
+              onClick={() => handleNavigate(item.id)}
             >
-              <span>📚 Латинский</span>
-              <span
-                className={`sidebar-chevron ${expanded.latin ? "open" : ""}`}
-              >
-                ▸
+              <span>{item.label}</span>
+              <span className="sidebar-item-right">
+                {item.id === "friends" && !user && (
+                  <span className="lock-icon">🔒</span>
+                )}
+                {item.badge > 0 && (
+                  <span className="sidebar-badge">{item.badge}</span>
+                )}
               </span>
             </button>
-
-            <div className={`sidebar-submenu ${expanded.latin ? "open" : ""}`}>
-              <button
-                className={`sidebar-item sidebar-subitem ${
-                  currentScreen === "wordList" ? "active" : ""
-                }`}
-                onClick={() => handleNavigate("wordList")}
-              >
-                📖 Словарь
-              </button>
-
-              <button
-                className={`sidebar-item sidebar-subitem ${
-                  ["trainingSetup", "trainingCards"].includes(currentScreen)
-                    ? "active"
-                    : ""
-                } ${!user ? "locked" : ""}`}
-                onClick={() => handleNavigate("trainingSetup")}
-              >
-                🧠 Тренировка
-                {!user && <span className="lock-icon">🔒</span>}
-              </button>
-            </div>
-          </div>
-
-          {/* Экзамен (аккордеон) */}
-          <div className="sidebar-group">
-            <button
-              className={`sidebar-item sidebar-group-header ${
-                ["examSubjects", "anatomyTickets"].includes(currentScreen)
-                  ? "active-parent"
-                  : ""
-              }`}
-              onClick={() => toggleSection("exam")}
-            >
-              <span>🎓 Экзамен</span>
-              <span
-                className={`sidebar-chevron ${expanded.exam ? "open" : ""}`}
-              >
-                ▸
-              </span>
-            </button>
-
-            <div className={`sidebar-submenu ${expanded.exam ? "open" : ""}`}>
-              <button
-                className={`sidebar-item sidebar-subitem ${
-                  ["examSubjects", "anatomyTickets"].includes(currentScreen)
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() => handleNavigate("examSubjects")}
-              >
-                📚 Предметы
-              </button>
-            </div>
-          </div>
-
-          {/* Друзья */}
-          <button
-            className={`sidebar-item ${
-              currentScreen === "friends" ? "active" : ""
-            }`}
-            onClick={() => handleNavigate("friends")}
-          >
-            👥 Друзья
-            {incomingCount > 0 && (
-              <span className="sidebar-badge">{incomingCount}</span>
-            )}
-          </button>
+          ))}
         </nav>
 
         <div className="sidebar-footer">

@@ -8,37 +8,35 @@ import ProfilePage from "../features/profile/ProfilePage";
 import { useAuth } from "../context/AuthContext";
 import FriendsPage from "../features/friends/FriendsPage";
 import UserProfilePage from "../features/profile/UserProfilePage";
-import ExamSubjects from "../features/exam/ExamSubjects";
+import SubjectsPage from "../features/subjects/SubjectsPage";
+import ExamSubjectsPage from "../features/exam/ExamSubjectsPage";
 import AnatomyTickets from "../features/exam/AnatomyTickets";
+
+import SubjectActions from "../features/subjects/SubjectActions";
+import ExamSubjectActions from "../features/exam/ExamSubjectActions";
 
 function App() {
   const { user, loading } = useAuth();
   const [currentScreen, setCurrentScreen] = useState("home");
   const [trainingWords, setTrainingWords] = useState([]);
   const [trainingGroups, setTrainingGroups] = useState([]);
-  const [viewingUserId, setViewingUserId] = useState(null); // ← новое
+  const [viewingUserId, setViewingUserId] = useState(null);
 
-  if (loading) {
-    return <div className="app-loading">Загрузка...</div>;
-  }
-  const openUserProfile = (userId) => {
-    setViewingUserId(userId);
-    setCurrentScreen("userProfile");
-  };
+  // Выбранный предмет (для плитки действий)
+  const [selectedSubject, setSelectedSubject] = useState(null); // id: 'latin', ...
+  const [selectedExamSubject, setSelectedExamSubject] = useState(null); // id: 'anatomy', ...
+
+  if (loading) return <div className="app-loading">Загрузка...</div>;
 
   const startTraining = (words, groups) => {
     setTrainingWords(words);
-    setTrainingGroups(groups); // ← сохраняем
+    setTrainingGroups(groups);
     setCurrentScreen("trainingCards");
   };
 
-  // Проверка доступа к защищённым экранам
-  const requireAuth = (screen) => {
-    if (!user) {
-      // Показываем AuthPage на месте экрана
-      return <ProfilePage onBack={() => setCurrentScreen("home")} />;
-    }
-    return screen;
+  const openUserProfile = (userId) => {
+    setViewingUserId(userId);
+    setCurrentScreen("userProfile");
   };
 
   const renderScreen = () => {
@@ -46,26 +44,57 @@ function App() {
       case "home":
         return <Home onNavigate={setCurrentScreen} />;
 
+      // ============================================================
+      // ПРЕДМЕТЫ (материалы)
+      // ============================================================
+      case "subjects":
+        return (
+          <SubjectsPage
+            onOpenSubject={(subjectId) => {
+              setSelectedSubject(subjectId);
+              setCurrentScreen("subjectActions");
+            }}
+          />
+        );
+
+      case "subjectActions":
+        return (
+          <SubjectActions
+            subjectId={selectedSubject}
+            onOpenAction={(actionId) => {
+              if (actionId === "wordList") setCurrentScreen("wordList");
+              if (actionId === "training") {
+                if (!user) {
+                  setCurrentScreen("profile");
+                } else {
+                  setCurrentScreen("trainingSetup");
+                }
+              }
+            }}
+            onBack={() => setCurrentScreen("subjects")}
+          />
+        );
+
       case "wordList":
-        // Словарь доступен всем
-        return <WordList onBack={() => setCurrentScreen("home")} />;
+        return <WordList onBack={() => setCurrentScreen("subjectActions")} />;
 
       case "trainingSetup":
-        // Тренировка только для авторизованных
-        if (!user) {
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
-        }
+        if (!user)
+          return (
+            <ProfilePage onBack={() => setCurrentScreen("subjectActions")} />
+          );
         return (
           <TrainingSetup
             onStart={startTraining}
-            onBack={() => setCurrentScreen("home")}
+            onBack={() => setCurrentScreen("subjectActions")}
           />
         );
 
       case "trainingCards":
-        if (!user) {
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
-        }
+        if (!user)
+          return (
+            <ProfilePage onBack={() => setCurrentScreen("trainingSetup")} />
+          );
         return (
           <TrainingCards
             words={trainingWords}
@@ -74,10 +103,40 @@ function App() {
           />
         );
 
-      case "profile":
-        // ProfilePage сам решает: показать данные или форму входа
-        return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+      // ============================================================
+      // ЭКЗАМЕН / ЗАЧЁТ
+      // ============================================================
+      case "examSubjects":
+        return (
+          <ExamSubjectsPage
+            onOpenSubject={(subjectId) => {
+              setSelectedExamSubject(subjectId);
+              setCurrentScreen("examSubjectActions");
+            }}
+          />
+        );
 
+      case "examSubjectActions":
+        return (
+          <ExamSubjectActions
+            subjectId={selectedExamSubject}
+            onOpenAction={(actionId) => {
+              if (actionId === "tickets") setCurrentScreen("anatomyTickets");
+            }}
+            onBack={() => setCurrentScreen("examSubjects")}
+          />
+        );
+
+      case "anatomyTickets":
+        return (
+          <AnatomyTickets
+            onBack={() => setCurrentScreen("examSubjectActions")}
+          />
+        );
+
+      // ============================================================
+      // ОСТАЛЬНОЕ
+      // ============================================================
       case "friends":
         if (!user)
           return <ProfilePage onBack={() => setCurrentScreen("home")} />;
@@ -93,21 +152,9 @@ function App() {
             }}
           />
         );
-      case "examSubjects":
-        return (
-          <ExamSubjects
-            onOpenSubject={(subjectId) => {
-              if (subjectId === "anatomy") {
-                setCurrentScreen("anatomyTickets");
-              }
-            }}
-          />
-        );
 
-      case "anatomyTickets":
-        return (
-          <AnatomyTickets onBack={() => setCurrentScreen("examSubjects")} />
-        );
+      case "profile":
+        return <ProfilePage onBack={() => setCurrentScreen("home")} />;
 
       default:
         return <Home onNavigate={setCurrentScreen} />;
