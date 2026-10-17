@@ -53,7 +53,7 @@
                   "id": "examQuiz",
                   "title": "Тест",
                   "icon": "🎯",
-                  "dataFile": "courses/course-1/semester-1/anatomy/tickets.json"
+                  "dataFile": "courses/course-1/semester-1/anatomy/quiz.json"
                 }
               ]
             }

@@ -13,6 +13,7 @@ import UserProfilePage from "../features/profile/UserProfilePage";
 import AnatomyTickets from "../features/exam/AnatomyTickets";
 import { SubjectActions } from "../features/subjects/SubjectActions";
 import ExamSubjectActions from "../features/exam/ExamSubjectActions";
+import ExamQuiz from "../features/exam/ExamQuiz";
 
 import MaterialsPage from "../features/materials/MaterialsPage";
 
@@ -160,6 +161,17 @@ function App() {
 
       case "profile":
         return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+
+      case "examQuiz":
+        return (
+          <ExamQuiz
+            dataFile={
+              selectedExamSubject?.actions.find((a) => a.id === "examQuiz")
+                ?.dataFile
+            }
+            onBack={() => setCurrentScreen("examSubjectActions")}
+          />
+        );
 
       default:
         return <Home onNavigate={setCurrentScreen} />;

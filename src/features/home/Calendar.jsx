@@ -1,16 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { useAuth } from "../../context/AuthContext";
 
 const Calendar = () => {
-  const { profile } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
-
-  // Множество дат с активностью (YYYY-MM-DD)
-  const activeDates = useMemo(() => {
-    const history = profile?.progress?.history || [];
-    return new Set(history.map((h) => h.date));
-  }, [profile]);
 
   const getWeekNumber = (date) => {
     const d = new Date(
@@ -58,12 +50,6 @@ const Calendar = () => {
     );
   };
 
-  const isActive = (date) => {
-    if (!date) return false;
-    const str = date.toISOString().split("T")[0];
-    return activeDates.has(str);
-  };
-
   const changeMonth = (delta) => {
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + delta);
@@ -103,7 +89,7 @@ const Calendar = () => {
             key={idx}
             className={`calendar-day ${!date ? "empty" : ""} ${
               isToday(date) ? "today" : ""
-            } ${isActive(date) ? "active-day" : ""}`}
+            }`}
           >
             {date ? date.getDate() : ""}
           </div>
