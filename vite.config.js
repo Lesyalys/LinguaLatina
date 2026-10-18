@@ -17,7 +17,7 @@ export default defineConfig({
         theme_color: "#2c3e50",
         background_color: "#f4f4f9",
         display: "standalone",
-        start_url: "/",
+        start_url: "/LinguaLatina/",
         icons: [
           {
             src: "pwa-192x192.png",
