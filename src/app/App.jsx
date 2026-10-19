@@ -8,14 +8,11 @@ import ProfilePage from "../features/profile/ProfilePage";
 import { useAuth } from "../context/AuthContext";
 import FriendsPage from "../features/friends/FriendsPage";
 import UserProfilePage from "../features/profile/UserProfilePage";
-// import SubjectsPage from "../features/subjects/SubjectsPage";
-// import ExamSubjectsPage from "../features/exam/ExamSubjectsPage";
+import MaterialsPage from "../features/materials/MaterialsPage";
 import AnatomyTickets from "../features/exam/AnatomyTickets";
+import ExamQuiz from "../features/exam/ExamQuiz";
 import { SubjectActions } from "../features/subjects/SubjectActions";
 import ExamSubjectActions from "../features/exam/ExamSubjectActions";
-import ExamQuiz from "../features/exam/ExamQuiz";
-
-import MaterialsPage from "../features/materials/MaterialsPage";
 
 function App() {
   const { user, loading } = useAuth();
@@ -40,13 +37,23 @@ function App() {
     setCurrentScreen("userProfile");
   };
 
+  // 🔒 Хелпер: если экран требует авторизации — редирект на профиль
+  const requireAuth = (screen) => {
+    if (!user) {
+      setCurrentScreen("profile");
+      return false;
+    }
+    setCurrentScreen(screen);
+    return true;
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case "home":
         return <Home onNavigate={setCurrentScreen} />;
 
       // ============================================================
-      // МАТЕРИАЛЫ (объединённый раздел)
+      // МАТЕРИАЛЫ
       // ============================================================
       case "materials":
         return (
@@ -63,16 +70,19 @@ function App() {
           />
         );
 
-      // Дальше всё как было:
+      // ------------------------------------------------------------
+      // ЛАТИНСКИЙ
+      // ------------------------------------------------------------
       case "subjectActions":
         return (
           <SubjectActions
             subject={selectedSubject}
             onOpenAction={(action) => {
-              if (action.id === "wordList") setCurrentScreen("wordList");
+              if (action.id === "wordList") {
+                setCurrentScreen("wordList");
+              }
               if (action.id === "training") {
-                if (!user) setCurrentScreen("profile");
-                else setCurrentScreen("trainingSetup");
+                requireAuth("trainingSetup");
               }
             }}
             onBack={() => setCurrentScreen("materials")}
@@ -86,15 +96,15 @@ function App() {
               selectedSubject?.actions.find((a) => a.id === "wordList")
                 ?.dataFile
             }
-            onBack={() => setCurrentScreen("subjectActions")}
+            onBack={() =>
+              setCurrentScreen(user ? "subjectActions" : "materials")
+            }
           />
         );
 
       case "trainingSetup":
         if (!user)
-          return (
-            <ProfilePage onBack={() => setCurrentScreen("subjectActions")} />
-          );
+          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
         return (
           <TrainingSetup
             dataFile={
@@ -108,9 +118,7 @@ function App() {
 
       case "trainingCards":
         if (!user)
-          return (
-            <ProfilePage onBack={() => setCurrentScreen("trainingSetup")} />
-          );
+          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
         return (
           <TrainingCards
             words={trainingWords}
@@ -119,13 +127,20 @@ function App() {
           />
         );
 
+      // ------------------------------------------------------------
+      // АНАТОМИЯ
+      // ------------------------------------------------------------
       case "examSubjectActions":
         return (
           <ExamSubjectActions
             subject={selectedExamSubject}
             onOpenAction={(action) => {
-              if (action.id === "tickets") setCurrentScreen("anatomyTickets");
-              if (action.id === "examQuiz") setCurrentScreen("examQuiz");
+              if (action.id === "tickets") {
+                setCurrentScreen("anatomyTickets");
+              }
+              if (action.id === "examQuiz") {
+                requireAuth("examQuiz");
+              }
             }}
             onBack={() => setCurrentScreen("materials")}
           />
@@ -138,11 +153,28 @@ function App() {
               selectedExamSubject?.actions.find((a) => a.id === "tickets")
                 ?.dataFile
             }
+            onBack={() =>
+              setCurrentScreen(user ? "examSubjectActions" : "materials")
+            }
+          />
+        );
+
+      case "examQuiz":
+        if (!user)
+          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        return (
+          <ExamQuiz
+            dataFile={
+              selectedExamSubject?.actions.find((a) => a.id === "examQuiz")
+                ?.dataFile
+            }
             onBack={() => setCurrentScreen("examSubjectActions")}
           />
         );
 
-      // Друзья, профиль и т.д. — без изменений
+      // ============================================================
+      // ДРУЗЬЯ, ПРОФИЛЬ
+      // ============================================================
       case "friends":
         if (!user)
           return <ProfilePage onBack={() => setCurrentScreen("home")} />;
@@ -161,17 +193,6 @@ function App() {
 
       case "profile":
         return <ProfilePage onBack={() => setCurrentScreen("home")} />;
-
-      case "examQuiz":
-        return (
-          <ExamQuiz
-            dataFile={
-              selectedExamSubject?.actions.find((a) => a.id === "examQuiz")
-                ?.dataFile
-            }
-            onBack={() => setCurrentScreen("examSubjectActions")}
-          />
-        );
 
       default:
         return <Home onNavigate={setCurrentScreen} />;

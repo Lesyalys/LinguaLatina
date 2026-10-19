@@ -30,13 +30,16 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         "anatomyTickets",
       ],
     },
-    {
-      id: "friends",
-      label: "👥 Друзья",
-      activeFor: ["friends"],
-      badge: incomingCount,
-      showLock: !user,
-    },
+    ...(user
+      ? [
+          {
+            id: "friends",
+            label: "👥 Друзья",
+            activeFor: ["friends"],
+            badge: incomingCount,
+          },
+        ]
+      : []),
   ];
 
   const handleNavigate = (screen) => {
