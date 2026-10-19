@@ -7,7 +7,9 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Хук #1
+  // Лайтбокс
+  const [lightboxImage, setLightboxImage] = useState(null);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -22,10 +24,8 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
     };
   }, [dataFile]);
 
-  // ✅ Хук #2
   const tickets = useMemo(() => data?.data || [], [data]);
 
-  // ✅ Хук #3
   const filteredTickets = useMemo(() => {
     if (!searchQuery.trim()) return tickets;
     const q = searchQuery.toLowerCase().trim();
@@ -39,7 +39,6 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
     );
   }, [tickets, searchQuery]);
 
-  // ✅ Все хуки — выше. Можно return.
   if (loading) return <div className="app-loading">Загрузка...</div>;
   if (!data)
     return <div className="page-placeholder">Не удалось загрузить данные</div>;
@@ -92,7 +91,11 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
               {isExpanded && (
                 <div className="ticket-questions">
                   {ticket.questions.map((question) => (
-                    <QuestionBlock key={question.number} question={question} />
+                    <QuestionBlock
+                      key={question.number}
+                      question={question}
+                      onImageClick={setLightboxImage}
+                    />
                   ))}
                 </div>
               )}
@@ -106,19 +109,52 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
           </div>
         )}
       </div>
+
+      {/* 🔍 Лайтбокс */}
+      {lightboxImage && (
+        <div className="image-lightbox" onClick={() => setLightboxImage(null)}>
+          <button
+            className="lightbox-close"
+            onClick={() => setLightboxImage(null)}
+          >
+            ✕
+          </button>
+          <img
+            src={lightboxImage}
+            alt="Просмотр"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
-const QuestionBlock = ({ question }) => {
+// ============================================================
+// Блок вопроса с картинками-аккордеоном
+// ============================================================
+const QuestionBlock = ({ question, onImageClick }) => {
   const [isOpen, setIsOpen] = useState(false);
+  // Индекс открытой картинки (null — все закрыты)
+  const [openImageIndex, setOpenImageIndex] = useState(null);
+
   const paragraphs = question.text.split("\n").filter((p) => p.trim());
+  const images = question.images || [];
+
+  const toggleImage = (idx) => {
+    setOpenImageIndex((prev) => (prev === idx ? null : idx));
+  };
 
   return (
     <div className="question-block">
       <button className="question-header" onClick={() => setIsOpen(!isOpen)}>
         <span className="question-number">{question.number}.</span>
         <span className="question-title">{question.title}</span>
+        {images.length > 0 && (
+          <span className="question-image-badge" title="Есть изображения">
+            🖼 {images.length}
+          </span>
+        )}
         <span className={`question-chevron ${isOpen ? "open" : ""}`}>▸</span>
       </button>
 
@@ -127,6 +163,66 @@ const QuestionBlock = ({ question }) => {
           {paragraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
+
+          {/* 🖼 Список картинок (аккордеон) */}
+          {images.length > 0 && (
+            <div className="question-images">
+              <div className="question-images-title">
+                Изображения ({images.length})
+              </div>
+
+              {images.map((img, i) => {
+                const isOpenImg = openImageIndex === i;
+
+                return (
+                  <div
+                    key={i}
+                    className={`question-image-item ${
+                      isOpenImg ? "expanded" : ""
+                    }`}
+                  >
+                    <button
+                      className="question-image-header"
+                      onClick={() => toggleImage(i)}
+                      type="button"
+                    >
+                      <span className="question-image-icon">🖼</span>
+                      <span className="question-image-titles">
+                        <span className="question-image-title-ru">
+                          {img.title_ru}
+                        </span>
+                        {img.title_en && (
+                          <span className="question-image-title-en">
+                            {img.title_en}
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        className={`question-image-chevron ${
+                          isOpenImg ? "open" : ""
+                        }`}
+                      >
+                        ▸
+                      </span>
+                    </button>
+
+                    {isOpenImg && (
+                      <div className="question-image-body">
+                        <button
+                          className="question-image-thumb"
+                          onClick={() => onImageClick(img.img)}
+                          type="button"
+                          title="Открыть на весь экран"
+                        >
+                          <img src={img.img} alt={img.title_ru} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -35,7 +35,39 @@
         {
           "number": 2,
           "title": "Особенности позвонков шейного отдела",
-          "text": "Общая особенность: в процессе эмбриогенеза зачаток ребра в шейном отделе отходит к поперечному отростку, сливается с ним и образуется рёберно-поперечный отросток (processus transversus), на котором имеется поперечное отверстие (foramen processus transversi).\n\nЧерез эти отверстия, начиная с 6 шейного позвонка, проходит позвоночная артерия (arteria vertebralis).\n\nНа конце этого поперечного отростка имеется 2 бугорка: передний и задний (tuberculum anterior et posterior).\n\nПередний бугорок ШП называется сонным бугорком (tuberculum caroticum), так как через него проходит общая сонная артерия.\n\nОстистые отростки ШП имеют раздвоенную вершину (processus spinosus).\n\nОстистый отросток 7 ШП значительно выражен по сравнению с 6, поэтому называется выступающим (vertebrae prominens), благодаря чему мы можем определить выше- и нижележащие позвонки."
+          "text": "Общая особенность: в процессе эмбриогенеза зачаток ребра в шейном отделе отходит к поперечному отростку, сливается с ним и образуется рёберно-поперечный отросток (processus transversus), на котором имеется поперечное отверстие (foramen processus transversi).\n\nЧерез эти отверстия, начиная с 6 шейного позвонка, проходит позвоночная артерия (arteria vertebralis).\n\nНа конце этого поперечного отростка имеется 2 бугорка: передний и задний (tuberculum anterior et posterior).\n\nПередний бугорок ШП называется сонным бугорком (tuberculum caroticum), так как через него проходит общая сонная артерия.\n\nОстистые отростки ШП имеют раздвоенную вершину (processus spinosus).\n\nОстистый отросток 7 ШП значительно выражен по сравнению с 6, поэтому называется выступающим (vertebrae prominens), благодаря чему мы можем определить выше- и нижележащие позвонки.\n\n1 шейный позвонок – атлант (atlas) – поддерживающий позвонок:\n- не имеет тела (его зачаток отошел ко 2 шейному позвонку);\n- имеет 2 дуги: переднюю и заднюю (arcus anterior et posterior) → они соединены боковыми массами;\n- на передней дуге имеет передний бугорок, на задней – задний;\n- на внутренней поверхности передней дуги имеется ямка зуба, на которой имеется суставная поверхность (facies articularis);\n- от боковых масс отходит реберно-поперечный отросток, на котором имеется поперечное отверстие, передние и задние бугорки;\n- на боковых массах имеется: верхняя суставная поверхность, которая соединяется с суставной поверхностью мыщелка затылочной кости → атланто-затылочный сустав (art. atlantooccipitalis); нижняя суставная поверхность, которая соединяется с суставной поверхностью верхних суставных отростков 2 шейного позвонка → образуется атланто-осевые боковые суставы (art. atlantoaxialis lateralis).\n\n2 шейный позвонок – аксис – осевой позвонок:\n- наличие зуба на теле позвонка (зуб – зачаток тела атланта);\n- на зубе имеется верхушка зуба, имеется передняя и задняя суставные поверхности;\n- передняя суставная поверхность зуба вместе с ямкой зуба дуги атланта образует атланто-осевой срединный сустав (art. atlantoaxialis mediana).",
+          "images": [
+            {
+              "title_ru": "Шейный отдел позвоночного столба",
+              "title_en": "Cervical region of the vertebral column",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/Cervical_region_of_the_vertebral_column.jpg"
+            },
+            {
+              "title_ru": "Первый шейный позвонок, атлант [CI] ",
+              "title_en": "First cervical vertebra (atlas)",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/First_cervical_vertebra.jpg"
+            },
+            {
+              "title_ru": "Второй шейный позвонок, осевой [CII]",
+              "title_en": "Second cervical vertebra",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/Second_cervical_vertebra.jpg"
+            },
+            {
+              "title_ru": "Четвертый шейный позвонок [CIV]",
+              "title_en": "Fourth cervical vertebra",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/Fourth_cervical_vertebra.jpg"
+            },
+            {
+              "title_ru": "Седьмой шейный позвонок [CVII]",
+              "title_en": "Seventh cervical vertebra",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/Seventh_cervical_vertebra.jpg"
+            },
+            {
+              "title_ru": "Шейное ребро",
+              "title_en": "Cervical rib",
+              "img": "https://tddgknmpvcitsixstmkx.supabase.co/storage/v1/object/public/materials/courses/course-1/semester-1/anatomy/bones/spine/Cervical_rib.jpg"
+            }
+          ]
         },
         {
           "number": 3,
