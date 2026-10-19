@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
-
 import {
   getWeekType,
   getDayIndex,
@@ -8,7 +7,8 @@ import {
   WEEK_DAYS_SHORT,
   WEEK_DAYS,
 } from "../../lib/schedule";
-const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule.json";
+
+const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule_v2.json";
 
 const ScheduleCard = () => {
   const [scheduleData, setScheduleData] = useState(null);
@@ -16,20 +16,32 @@ const ScheduleCard = () => {
 
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
-  const currentWeekType = useMemo(() => getWeekType(today), [today]);
 
   const [selectedDay, setSelectedDay] = useState(
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
-  const [weekType, setWeekType] = useState(currentWeekType);
+  const [weekType, setWeekType] = useState(null);
   const [group, setGroup] = useState("A");
 
+  // Загрузка + автоподстановка типа недели
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
     loadMaterialData(SCHEDULE_FILE).then((data) => {
+      if (cancelled) return;
       setScheduleData(data);
+      setWeekType(getWeekType(today, data));
       setLoading(false);
     });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [today]);
+
+  const currentWeekType = useMemo(
+    () => (scheduleData ? getWeekType(today, scheduleData) : null),
+    [today, scheduleData],
+  );
 
   const isCurrentWeek = weekType === currentWeekType;
   const isCurrentDay =
@@ -40,7 +52,7 @@ const ScheduleCard = () => {
     [scheduleData, weekType, selectedDay, group],
   );
 
-  if (loading) {
+  if (loading || !weekType) {
     return (
       <div className="card schedule-card">
         <div className="schedule-header">
@@ -51,9 +63,23 @@ const ScheduleCard = () => {
     );
   }
 
+  // Все пары (по bells), даже если lessons нет — оставляем пустыми
+  const rows = bells.map((bell) => {
+    const lesson = lessons.find((l) => l.bell?.id === bell.id);
+    const subject = lesson?.subject || "";
+    const room = lesson?.room || "";
+
+    return {
+      bellId: bell.id,
+      time: bell.time,
+      subject,
+      room,
+      isEmpty: !subject,
+    };
+  });
+
   return (
     <div className="card schedule-card">
-      {/* Заголовок с переключением */}
       <div className="schedule-header">
         <h3>Расписание</h3>
 
@@ -94,7 +120,6 @@ const ScheduleCard = () => {
         </div>
       </div>
 
-      {/* Переключатель групп */}
       <div className="schedule-group-switch">
         <button
           className={`group-btn ${group === "A" ? "active" : ""}`}
@@ -110,7 +135,6 @@ const ScheduleCard = () => {
         </button>
       </div>
 
-      {/* Дни */}
       <div className="schedule-days">
         {WEEK_DAYS_SHORT.map((short, idx) => (
           <button
@@ -126,42 +150,47 @@ const ScheduleCard = () => {
         ))}
       </div>
 
-      {/* Заголовок дня */}
       <div className="schedule-day-title">
         {WEEK_DAYS[selectedDay]}
         <span
-          className={`week-type-badge ${weekType === "Числитель" ? "chisl" : "znam"}`}
+          className={`week-type-badge ${
+            weekType === "Числитель" ? "chisl" : "znam"
+          }`}
         >
           {weekType}
         </span>
         {isCurrentDay && <span className="today-badge">Сегодня</span>}
       </div>
 
-      {/* Пары */}
-      <div className="schedule-lessons">
-        {lessons.length === 0 || lessons.every((l) => !l.subject) ? (
-          <div className="schedule-empty">Нет занятий</div>
-        ) : (
-          lessons.map((l) => {
-            if (!l.subject) return null;
-            const [subjectRaw, room] = l.subject
-              .split(",")
-              .map((s) => s.trim());
-            return (
-              <div key={l.bell.id} className="schedule-lesson">
-                <div className="lesson-time">
-                  <strong>{l.bell.id}.</strong>
-                  <span>{l.bell.time}</span>
-                </div>
-                <div className="lesson-info">
-                  <div className="lesson-subject">{subjectRaw}</div>
-                  {room && <div className="lesson-room">📍 {room}</div>}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+      {/* 📊 Таблица пар */}
+      <table className="schedule-table">
+        <thead>
+          <tr>
+            <th className="schedule-th-num">№</th>
+            <th className="schedule-th-subject">Пара</th>
+            <th className="schedule-th-room">Место</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.bellId}
+              className={row.isEmpty ? "schedule-row-empty" : ""}
+            >
+              <td className="schedule-td-num">
+                <div className="schedule-bell-num">{row.bellId}</div>
+                <div className="schedule-bell-time">{row.time}</div>
+              </td>
+              <td className="schedule-td-subject">
+                {row.subject || <span className="schedule-dash">—</span>}
+              </td>
+              <td className="schedule-td-room">
+                {row.room || <span className="schedule-dash">—</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

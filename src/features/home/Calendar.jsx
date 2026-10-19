@@ -1,21 +1,13 @@
 import React, { useState, useMemo } from "react";
+import { getWeekType, WEEK_DAYS_SHORT } from "../../lib/schedule";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
 
-  const getWeekNumber = (date) => {
-    const d = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-    );
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  };
-
-  const weekNumber = getWeekNumber(currentDate);
-  const isEvenWeek = weekNumber % 2 === 0;
+  // ✅ getWeekType теперь возвращает "Числитель" | "Знаменатель"
+  const weekType = useMemo(() => getWeekType(currentDate), [currentDate]);
+  const isEvenWeek = weekType === "Знаменатель";
 
   const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -39,7 +31,7 @@ const Calendar = () => {
     year: "numeric",
   });
 
-  const weekDays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
+  const weekDays = WEEK_DAYS_SHORT.concat("Вс");
 
   const isToday = (date) => {
     if (!date) return false;
@@ -96,9 +88,7 @@ const Calendar = () => {
         ))}
       </div>
 
-      <div className="calendar-footer">
-        Неделя №{weekNumber} • {isEvenWeek ? "Знаменатель" : "Числитель"}
-      </div>
+      <div className="calendar-footer">Неделя • {weekType}</div>
     </div>
   );
 };

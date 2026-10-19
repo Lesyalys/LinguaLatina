@@ -2805,6 +2805,127 @@ body {
   }
 }
 /* ============================================================
+   SCHEDULE TABLE
+   ============================================================ */
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+
+.schedule-table thead th {
+  text-align: left;
+  font-size: 0.75rem;
+  color: #95a5a6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.schedule-th-num {
+  width: 80px;
+}
+
+.schedule-th-room {
+  /* width: 110px; */
+  text-align: right;
+}
+
+.schedule-table tbody tr {
+  border-bottom: 1px solid #f4f4f9;
+  transition: background 0.15s;
+}
+
+.schedule-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.schedule-table tbody tr:hover:not(.schedule-row-empty) {
+  background: #fafbfc;
+}
+
+.schedule-row-empty {
+  opacity: 0.45;
+}
+
+.schedule-table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+.schedule-td-num {
+  width: 90px;
+}
+
+.schedule-bell-num {
+  font-weight: 700;
+  color: #3498db;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.schedule-bell-time {
+  font-weight: 700;
+  font-size: 0.75rem;
+  /* color: #95a5a6; */
+  margin-top: 2px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.schedule-td-subject {
+  font-weight: 600;
+  color: #2c3e50;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.schedule-row-empty .schedule-td-subject {
+  font-weight: 400;
+}
+
+.schedule-td-room {
+  text-align: right;
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.schedule-dash {
+  color: #bdc3c7;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 600px) {
+  .schedule-table {
+    font-size: 0.85rem;
+  }
+
+  .schedule-table td,
+  .schedule-table thead th {
+    padding: 10px 6px;
+  }
+
+  .schedule-th-num {
+    width: 60px;
+  }
+
+  .schedule-th-room {
+    width: 80px;
+  }
+
+  .schedule-bell-num {
+    font-size: 0.9rem;
+  }
+
+  .schedule-bell-time {
+    font-size: 0.7rem;
+  }
+}
+/* ============================================================
    SIDEBAR: группировка (аккордеон)
    ============================================================ */
 .sidebar-group {

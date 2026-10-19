@@ -2,19 +2,31 @@
 // Утилиты для работы с неделями и днями
 // ============================================================
 
-// ISO-номер недели (1..53)
-export const getWeekNumber = (date = new Date()) => {
-  const d = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-  );
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+// Понедельник календарной недели, содержащей дату
+const getMonday = (date) => {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay() || 7; // 1..7, вс = 7
+  d.setDate(d.getDate() - (day - 1));
+  return d;
 };
 
 export const getWeekType = (date = new Date()) => {
-  return getWeekNumber(date) % 2 === 0 ? "Знаменатель" : "Числитель";
+  // учебный год начинается 1 сентября; в янв–авг — в прошлом году
+  const acYear =
+    date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+  const sep1 = new Date(acYear, 8, 1); // 1 сентября, локально
+
+  // понедельник недели, в которую попало 1 сентября
+  const firstMonday = getMonday(sep1);
+
+  // понедельник недели текущей даты
+  const curMonday = getMonday(date);
+
+  // номер учебной недели, начиная с 1 (неделя, содержащая 1 сентября)
+  const weekIndex = Math.round((curMonday - firstMonday) / (7 * 86400000));
+  const weekNumber = weekIndex + 1;
+
+  return weekNumber % 2 === 1 ? "Числитель" : "Знаменатель";
 };
 
 export const getDayIndex = (date = new Date()) => {
@@ -50,11 +62,14 @@ export const getScheduleForDay = (
   const day = week.days[dayIndex];
   if (!day) return { bells: scheduleData.bells || [], lessons: [] };
 
+  const groupKey = group === "A" ? "group_A" : "group_B";
+
   return {
     bells: scheduleData.bells || [],
     lessons: day.lessons.map((l) => ({
       bell: scheduleData.bells.find((b) => b.id === l.bell_id),
-      subject: group === "A" ? l.group_A : l.group_B,
+      subject: l[groupKey]?.subject || "",
+      room: l[groupKey]?.room || null,
     })),
   };
 };
