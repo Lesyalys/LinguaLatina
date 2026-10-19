@@ -211,6 +211,7 @@ body {
 .profile-stats {
   display: flex;
   gap: 25px;
+  margin: 0;
 }
 
 .profile-stats div {
@@ -218,12 +219,14 @@ body {
   flex-direction: column;
 }
 
-.profile-stats strong {
+.profile-stats dd {
   font-size: 1.3rem;
   color: #3498db;
+  font-weight: 700;
+  margin: 0;
 }
 
-.profile-stats span {
+.profile-stats dt {
   font-size: 0.8rem;
   color: #95a5a6;
 }

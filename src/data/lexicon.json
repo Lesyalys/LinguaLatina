@@ -7,7 +7,7 @@
     {
       "name": "lexs_min_1",
       "update_at": "2026-10-16T00:00:00Z",
-      "worlds": [
+      "words": [
         {
           "text": "aorta",
           "ends": "ae",
@@ -74,9 +74,24 @@
           "gender": "f",
           "translation": "лопатка"
         },
-        { "text": "spina", "ends": "ae", "gender": "f", "translation": "ость" },
-        { "text": "vena", "ends": "ae", "gender": "f", "translation": "вена" },
-        { "text": "bucca", "ends": "ae", "gender": "f", "translation": "щека" },
+        {
+          "text": "spina",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "ость"
+        },
+        {
+          "text": "vena",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "вена"
+        },
+        {
+          "text": "bucca",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "щека"
+        },
         {
           "text": "cellula",
           "ends": "ae",
@@ -203,14 +218,24 @@
           "gender": "m",
           "translation": "болезнь"
         },
-        { "text": "lobus", "ends": "i", "gender": "m", "translation": "доля" },
+        {
+          "text": "lobus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "доля"
+        },
         {
           "text": "ostium",
           "ends": "i",
           "gender": "n",
           "translation": "вход, устье, отверстие"
         },
-        { "text": "oculus", "ends": "i", "gender": "m", "translation": "глаз" },
+        {
+          "text": "oculus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "глаз"
+        },
         {
           "text": "rectum",
           "ends": "i",
@@ -223,7 +248,12 @@
           "gender": "n",
           "translation": "надкостница"
         },
-        { "text": "venenum", "ends": "i", "gender": "n", "translation": "яд" },
+        {
+          "text": "venenum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "яд"
+        },
         {
           "text": "serum",
           "ends": "i",
@@ -314,14 +344,24 @@
           "gender": "f",
           "translation": "одышка"
         },
-        { "text": "Aloe", "ends": "es", "gender": "f", "translation": "алоэ" },
+        {
+          "text": "Aloe",
+          "ends": "es",
+          "gender": "f",
+          "translation": "алоэ"
+        },
         {
           "text": "Amygdalus",
           "ends": "i",
           "gender": "f",
           "translation": "миндаль"
         },
-        { "text": "Pinus", "ends": "i", "gender": "f", "translation": "сосна" },
+        {
+          "text": "Pinus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "сосна"
+        },
         {
           "text": "Crataegus",
           "ends": "i",
@@ -375,7 +415,7 @@
     {
       "name": "lexs_min_2",
       "update_at": "2026-10-16T00:00:00Z",
-      "worlds": [
+      "words": [
         {
           "text": "aegrotus",
           "ends": "a, um",
@@ -795,7 +835,7 @@
     {
       "name": "lexs_min_3",
       "update_at": "2026-10-16T00:00:00Z",
-      "worlds": [
+      "words": [
         {
           "text": "apex",
           "ends": "icis",
@@ -922,8 +962,18 @@
           "gender": "m",
           "translation": "легкое"
         },
-        { "text": "auris", "ends": "is", "gender": "f", "translation": "ухо" },
-        { "text": "cutis", "ends": "is", "gender": "f", "translation": "кожа" },
+        {
+          "text": "auris",
+          "ends": "is",
+          "gender": "f",
+          "translation": "ухо"
+        },
+        {
+          "text": "cutis",
+          "ends": "is",
+          "gender": "f",
+          "translation": "кожа"
+        },
         {
           "text": "cavitas",
           "ends": "atis",
@@ -996,7 +1046,12 @@
           "gender": "f",
           "translation": "основание"
         },
-        { "text": "pelvis", "ends": "is", "gender": "f", "translation": "таз" },
+        {
+          "text": "pelvis",
+          "ends": "is",
+          "gender": "f",
+          "translation": "таз"
+        },
         {
           "text": "febris",
           "ends": "is",
@@ -1171,7 +1226,12 @@
           "gender": "n",
           "translation": "сера"
         },
-        { "text": "rete", "ends": "is", "gender": "n", "translation": "сеть" },
+        {
+          "text": "rete",
+          "ends": "is",
+          "gender": "n",
+          "translation": "сеть"
+        },
         {
           "text": "secale",
           "ends": "is",
@@ -1274,7 +1334,12 @@
           "gender": "m",
           "translation": "соль"
         },
-        { "text": "os", "ends": "oris", "gender": "n", "translation": "рот" },
+        {
+          "text": "os",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "рот"
+        },
         {
           "text": "os",
           "ends": "ossis",

@@ -1,48 +1,61 @@
-import { useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { formatGroupShortName } from "../constants/lexicon";
+import { useShuffledDeck } from "../hooks/useShuffledDeck";
+
+const FLIP_DELAY_MS = 150;
 
 const TrainingCards = ({ words, onBack }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // Перемешиваем слова один раз при монтировании
-  const shuffledWords = useMemo(() => {
-    return [...words].sort(() => Math.random() - 0.5);
-  }, [words]);
+  // Перемешанная колода: Fisher–Yates вне рендера, повторное перемешивание — без reload()
+  const { deck, reshuffle } = useShuffledDeck(words);
 
-  const currentWord = shuffledWords[currentIndex];
-  const total = shuffledWords.length;
+  // Единый таймер с корректной очисткой при размонтировании
+  const flipTimer = useRef(null);
+  useEffect(() => () => clearTimeout(flipTimer.current), []);
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
+  const goTo = useCallback((nextIndex) => {
+    setIsFlipped(false);
+    // Карточка успевает «закрыться» перед сменой слова
+    clearTimeout(flipTimer.current);
+    flipTimer.current = setTimeout(() => {
+      setCurrentIndex(nextIndex);
+    }, FLIP_DELAY_MS);
+  }, []);
+
+  const currentWord = deck[currentIndex];
+  const total = deck.length;
+
+  if (!currentWord) {
+    return (
+      <div className="page-placeholder">
+        <h1>Нет слов для тренировки</h1>
+        <button onClick={onBack} className="back-btn">
+          ← Вернуться к настройке
+        </button>
+      </div>
+    );
+  }
+
+  const handleFlip = () => setIsFlipped((prev) => !prev);
 
   const goNext = () => {
-    if (currentIndex < total - 1) {
-      setIsFlipped(false);
-      // Небольшая задержка, чтобы карточка успела "закрыться" перед сменой слова
-      setTimeout(() => {
-        setCurrentIndex(currentIndex + 1);
-      }, 150);
-    }
+    if (currentIndex < total - 1) goTo(currentIndex + 1);
   };
 
   const goPrev = () => {
-    if (currentIndex > 0) {
-      setIsFlipped(false);
-      setTimeout(() => {
-        setCurrentIndex(currentIndex - 1);
-      }, 150);
-    }
+    if (currentIndex > 0) goTo(currentIndex - 1);
   };
 
   const restart = () => {
     setCurrentIndex(0);
     setIsFlipped(false);
-    // Перемешиваем заново через хак (пересоздаст useMemo)
-    window.location.reload();
+    reshuffle();
   };
 
   const progress = ((currentIndex + 1) / total) * 100;
+  const groupLabel = formatGroupShortName(currentWord.groupId);
 
   return (
     <div className="training-cards">
@@ -56,20 +69,38 @@ const TrainingCards = ({ words, onBack }) => {
         </span>
       </div>
 
-      <div className="progress-bar">
+      <div
+        className="progress-bar"
+        role="progressbar"
+        aria-valuenow={currentIndex + 1}
+        aria-valuemin={1}
+        aria-valuemax={total}
+      >
         <div className="progress-fill" style={{ width: `${progress}%` }}></div>
       </div>
 
-      <div className="card-container" onClick={handleFlip}>
+      <div
+        className="card-container"
+        onClick={handleFlip}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleFlip();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={
+          isFlipped ? "Скрыть перевод" : "Показать латинский термин"
+        }
+      >
         <div className={`card ${isFlipped ? "flipped" : ""}`}>
           <div className="card-face card-front">
             <div className="card-hint">Нажмите, чтобы увидеть ответ</div>
             <div className="card-content">
               <div className="card-translation">{currentWord.translation}</div>
             </div>
-            <div className="card-group-label">
-              {currentWord.group.replace("lexs_min_", "Минимум ")}
-            </div>
+            <div className="card-group-label">{groupLabel}</div>
           </div>
           <div className="card-face card-back">
             <div className="card-hint">Нажмите, чтобы вернуться</div>
@@ -79,9 +110,7 @@ const TrainingCards = ({ words, onBack }) => {
                 {currentWord.gender}
               </div>
             </div>
-            <div className="card-group-label">
-              {currentWord.group.replace("lexs_min_", "Минимум ")}
-            </div>
+            <div className="card-group-label">{groupLabel}</div>
           </div>
         </div>
       </div>

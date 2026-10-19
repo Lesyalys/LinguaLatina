@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());

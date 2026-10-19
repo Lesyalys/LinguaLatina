@@ -1,32 +1,33 @@
-import { useState, useMemo } from "react";
-import lexicon from "../data/lexicon.json";
+import { useMemo, useState } from "react";
+import { lexminGroups, formatGroupName } from "../constants/lexicon";
+import { normalize } from "../lib/utils";
+
+// Чистая функция вне компонента: фильтр слов одной группы
+// по латыни и русскому переводу (с поддержкой ё/е).
+function filterWords(words, term) {
+  if (!term) return words;
+  const query = normalize(term);
+
+  return words.filter((word) => {
+    const matchesLatin = normalize(word.text).includes(query);
+    const matchesRussian =
+      word.translation && normalize(word.translation).includes(query);
+    return matchesLatin || matchesRussian;
+  });
+}
 
 const WordList = ({ onBack }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Функция для фильтрации слов внутри одной группы
-  const filterWords = (words, term) => {
-    if (!term) return words;
-    const lowerCaseSearch = term.toLowerCase().trim();
-
-    return words.filter((word) => {
-      const matchesLatin = word.text.toLowerCase().includes(lowerCaseSearch);
-      const matchesRussian =
-        word.translation &&
-        word.translation.toLowerCase().includes(lowerCaseSearch);
-      return matchesLatin || matchesRussian;
-    });
-  };
-
   // Подготавливаем данные: для каждой группы фильтруем слова
   const groupedData = useMemo(() => {
-    return lexicon.data
+    return lexminGroups
       .map((group) => {
-        const filtered = filterWords(group.worlds, searchTerm);
+        const filtered = filterWords(group.words, searchTerm);
         return {
           ...group,
-          worlds: filtered,
-          totalCount: group.worlds.length,
+          filtered,
+          totalCount: group.words.length,
           filteredCount: filtered.length,
         };
       })
@@ -34,9 +35,10 @@ const WordList = ({ onBack }) => {
   }, [searchTerm]);
 
   // Общее количество найденных слов (для заголовка)
-  const totalFound = useMemo(() => {
-    return groupedData.reduce((acc, group) => acc + group.filteredCount, 0);
-  }, [groupedData]);
+  const totalFound = useMemo(
+    () => groupedData.reduce((acc, group) => acc + group.filteredCount, 0),
+    [groupedData],
+  );
 
   return (
     <div className="wordlist-container">
@@ -53,29 +55,30 @@ const WordList = ({ onBack }) => {
           placeholder="Поиск по латинскому или русскому слову..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label="Поиск слов"
         />
       </div>
 
       {groupedData.map((group) => (
-        <div key={group.name} className="group-section">
+        <section key={group.id} className="group-section">
           <h3 className="group-title">
-            {group.name.replace("lexs_min_", "Лексический минимум ")}
+            {formatGroupName(group.id)}
             <span className="group-count">
               ({group.filteredCount} из {group.totalCount})
             </span>
           </h3>
 
           <div className="words-grid">
-            {group.worlds.map((word, index) => (
-              <div key={index} className="word-card">
+            {group.filtered.map((word) => (
+              <article key={`${group.id}-${word.text}`} className="word-card">
                 <div className="word-latin">
                   <strong>{word.text}</strong>, {word.ends} {word.gender}
                 </div>
                 <div className="word-russian">{word.translation}</div>
-              </div>
+              </article>
             ))}
           </div>
-        </div>
+        </section>
       ))}
 
       {totalFound === 0 && <p className="no-results">Ничего не найдено</p>}

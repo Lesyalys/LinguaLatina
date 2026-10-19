@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { SCREENS } from "../constants/screens";
+
+const MENU_ITEMS = [
+  { id: SCREENS.HOME, label: "🏠 Главная" },
+  { id: SCREENS.WORD_LIST, label: "📖 Словарь" },
+  { id: SCREENS.TRAINING_SETUP, label: "🧠 Тренировка" },
+];
 
 const Sidebar = ({ currentScreen, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const menuItems = [
-    { id: "home", label: "🏠 Главная" },
-    { id: "wordList", label: "📖 Словарь" },
-    { id: "trainingSetup", label: "🧠 Тренировка" },
-  ];
 
   const handleNavigate = (screen) => {
     onNavigate(screen);
@@ -21,13 +22,18 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         className="burger-btn"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Меню"
+        aria-expanded={isOpen}
       >
         {isOpen ? "✕" : "☰"}
       </button>
 
       {/* Затемнение фона при открытом меню на мобильном */}
       {isOpen && (
-        <div className="sidebar-overlay" onClick={() => setIsOpen(false)}></div>
+        <div
+          className="sidebar-overlay"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        ></div>
       )}
 
       {/* Само боковое меню */}
@@ -36,12 +42,13 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
           <h2>Lingua Latina</h2>
         </div>
 
-        <nav className="sidebar-nav">
-          {menuItems.map((item) => (
+        <nav className="sidebar-nav" aria-label="Основная навигация">
+          {MENU_ITEMS.map((item) => (
             <button
               key={item.id}
               className={`sidebar-item ${currentScreen === item.id ? "active" : ""}`}
               onClick={() => handleNavigate(item.id)}
+              aria-current={currentScreen === item.id ? "page" : undefined}
             >
               {item.label}
             </button>
@@ -51,7 +58,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         <div className="sidebar-footer">
           <button
             className="sidebar-item profile-link"
-            onClick={() => handleNavigate("profile")}
+            onClick={() => handleNavigate(SCREENS.PROFILE)}
           >
             👤 Профиль
           </button>

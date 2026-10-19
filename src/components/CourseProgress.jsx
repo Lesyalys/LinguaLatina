@@ -1,4 +1,3 @@
-import React from "react";
 
 const CourseProgress = () => {
   const progress = 15; // Заглушка - 15%

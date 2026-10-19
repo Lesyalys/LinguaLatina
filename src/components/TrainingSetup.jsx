@@ -1,33 +1,24 @@
-import { useState } from "react";
-import lexicon from "../data/lexicon.json";
+import { useCallback, useState } from "react";
+import { LEXMIN_IDS, lexminGroups, formatGroupName } from "../constants/lexicon";
 
 const TrainingSetup = ({ onStart, onBack }) => {
-  const [selectedGroups, setSelectedGroups] = useState([
-    "lexs_min_1",
-    "lexs_min_2",
-    "lexs_min_3",
-  ]);
+  const [selectedGroups, setSelectedGroups] = useState(LEXMIN_IDS);
 
-  const toggleGroup = (groupName) => {
+  const toggleGroup = useCallback((groupId) => {
     setSelectedGroups((prev) =>
-      prev.includes(groupName)
-        ? prev.filter((g) => g !== groupName)
-        : [...prev, groupName],
+      prev.includes(groupId)
+        ? prev.filter((g) => g !== groupId)
+        : [...prev, groupId],
     );
-  };
+  }, []);
 
   const handleStart = () => {
     if (selectedGroups.length === 0) return;
 
     // Собираем слова из выбранных групп
-    const words = [];
-    lexicon.data.forEach((group) => {
-      if (selectedGroups.includes(group.name)) {
-        group.worlds.forEach((word) => {
-          words.push({ ...word, group: group.name });
-        });
-      }
-    });
+    const words = lexminGroups
+      .filter((group) => selectedGroups.includes(group.id))
+      .flatMap((group) => group.words.map((word) => ({ ...word, groupId: group.id })));
 
     onStart(words);
   };
@@ -46,16 +37,16 @@ const TrainingSetup = ({ onStart, onBack }) => {
       </p>
 
       <div className="group-selection">
-        {lexicon.data.map((group) => (
-          <label key={group.name} className="group-checkbox">
+        {lexminGroups.map((group) => (
+          <label key={group.id} className="group-checkbox">
             <input
               type="checkbox"
-              checked={selectedGroups.includes(group.name)}
-              onChange={() => toggleGroup(group.name)}
+              checked={selectedGroups.includes(group.id)}
+              onChange={() => toggleGroup(group.id)}
             />
             <span className="checkbox-label">
-              {group.name.replace("lexs_min_", "Лексический минимум ")}
-              <span className="word-count">({group.worlds.length} слов)</span>
+              {formatGroupName(group.id)}
+              <span className="word-count">({group.words.length} слов)</span>
             </span>
           </label>
         ))}

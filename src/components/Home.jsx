@@ -1,4 +1,3 @@
-import React from "react";
 import ProfileCard from "./ProfileCard";
 import Calendar from "./Calendar";
 import CourseProgress from "./CourseProgress";
