@@ -3802,3 +3802,128 @@ select {
 .room-legend__map-link:hover {
   text-decoration: underline;
 }
+/* ПК: контент сдвигается, когда меню свёрнуто */
+html.sidebar-collapsed .app-content {
+  margin-left: 72px; /* ширина свёрнутого сайдбара */
+}
+
+html.sidebar-collapsed .sidebar {
+  width: 72px;
+}
+
+html.sidebar-collapsed .sidebar-header h2 {
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+html.sidebar-collapsed
+  .sidebar-item
+  span:not(.sidebar-avatar):not(.sidebar-item-right):not(.sidebar-badge) {
+  display: none;
+}
+
+html.sidebar-collapsed .sidebar-item {
+  justify-content: center;
+  padding: 10px;
+}
+
+html.sidebar-collapsed .sidebar-avatar {
+  margin: 0 auto;
+}
+
+html.sidebar-collapsed .profile-link,
+html.sidebar-collapsed .signout-btn,
+html.sidebar-collapsed .pwa-install-btn,
+html.sidebar-collapsed .theme-toggle {
+  justify-content: center;
+}
+
+html.sidebar-collapsed .pwa-install-btn,
+html.sidebar-collapsed .theme-toggle,
+html.sidebar-collapsed .sidebar-username {
+  display: none;
+}
+/* ============================================================
+   SIDEBAR: кнопка свернуть (ПК)
+   ============================================================ */
+.sidebar-collapse-btn {
+  display: none; /* скрыто по умолчанию, показываем только на ПК */
+}
+
+@media (min-width: 769px) {
+  .sidebar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 80px;
+    left: calc(var(--sidebar-w) - 14px);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    cursor: pointer;
+    z-index: 101;
+    transition:
+      left 0.3s,
+      background 0.15s;
+    box-shadow: var(--shadow);
+  }
+
+  .sidebar-collapse-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+  }
+
+  html.sidebar-collapsed .sidebar-collapse-btn {
+    left: 58px;
+  }
+}
+
+/* ПК: свёрнутое меню */
+@media (min-width: 769px) {
+  html.sidebar-collapsed .sidebar {
+    width: 72px;
+  }
+
+  html.sidebar-collapsed .app-content {
+    margin-left: 72px;
+  }
+
+  html.sidebar-collapsed .sidebar-header h2 {
+    font-size: 0.7rem;
+    text-align: center;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin: 0 auto;
+  }
+
+  html.sidebar-collapsed .sidebar-item {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  html.sidebar-collapsed
+    .sidebar-item
+    > span:not(.sidebar-item-right):not(.sidebar-avatar) {
+    display: none;
+  }
+
+  html.sidebar-collapsed .sidebar-avatar {
+    margin: 0 auto;
+  }
+
+  html.sidebar-collapsed .pwa-install-btn,
+  html.sidebar-collapsed .theme-toggle,
+  html.sidebar-collapsed .sidebar-username {
+    display: none;
+  }
+
+  html.sidebar-collapsed .profile-link,
+  html.sidebar-collapsed .signout-btn {
+    justify-content: center;
+  }
+}

@@ -18,8 +18,7 @@ const Greeting = ({ onLogin }) => {
         <div className="greeting-avatar guest-avatar">👋</div>
         <div className="greeting-text">
           <h1 className="greeting-title">
-            Добро пожаловать в{" "}
-            <span className="greeting-name">Lingua Latina</span>!
+            Добро пожаловать в <span className="greeting-name">Medic</span>!
           </h1>
           <p className="greeting-username">
             Платформа для изучения латыни и подготовки к экзаменам
