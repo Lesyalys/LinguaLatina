@@ -4,14 +4,19 @@ import App from "./App.jsx";
 import { AuthProvider } from "../context/AuthContext.jsx";
 import { PresenceProvider } from "../context/PresenceContext.jsx";
 import { FilterProvider } from "../context/FilterContext.jsx";
+import { ThemeProvider } from "../context/ThemeContext.jsx";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <PresenceProvider>
-      <FilterProvider>
-        <App />
-      </FilterProvider>
-    </PresenceProvider>
-  </AuthProvider>,
+  <React.StrictMode>
+    <ThemeProvider>
+      <AuthProvider>
+        <PresenceProvider>
+          <FilterProvider>
+            <App />
+          </FilterProvider>
+        </PresenceProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </React.StrictMode>,
 );

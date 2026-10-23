@@ -1,12 +1,9 @@
-// src/components/Greeting.jsx
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
 
-const Greeting = () => {
-  const { profile } = useAuth();
-  if (!profile) return null;
+const Greeting = ({ onLogin }) => {
+  const { profile, user } = useAuth();
 
-  // Приветствие по времени суток
   const hour = new Date().getHours();
   let greeting = "Добрый день";
   if (hour < 6) greeting = "Доброй ночи";
@@ -14,9 +11,32 @@ const Greeting = () => {
   else if (hour < 18) greeting = "Добрый день";
   else greeting = "Добрый вечер";
 
-  const name = profile.display_name || profile.username;
+  // 👤 Гость
+  if (!user || !profile) {
+    return (
+      <div className="greeting guest">
+        <div className="greeting-avatar guest-avatar">👋</div>
+        <div className="greeting-text">
+          <h1 className="greeting-title">
+            Добро пожаловать в{" "}
+            <span className="greeting-name">Lingua Latina</span>!
+          </h1>
+          <p className="greeting-username">
+            Платформа для изучения латыни и подготовки к экзаменам
+          </p>
+          <p className="greeting-subtitle">
+            Откройте материалы или войдите, чтобы начать тренировку.
+          </p>
+          <button className="greeting-login-btn" onClick={onLogin}>
+            👤 Войти / Зарегистрироваться
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  // Инициалы для аватара-заглушки
+  // 👤 Авторизован
+  const name = profile.display_name || profile.username;
   const initials = (profile.display_name || profile.username || "?")
     .split(" ")
     .map((n) => n[0])

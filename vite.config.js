@@ -11,13 +11,13 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       manifest: {
-        name: "Lingua Latina",
-        short_name: "Lingua",
-        description: "Приложение для изучения латинского языка",
+        name: "Medic",
+        short_name: "Medic",
+        description: "Приложение для студента медика",
         theme_color: "#2c3e50",
         background_color: "#f4f4f9",
         display: "standalone",
-        start_url: "/",
+        start_url: "/LinguaLatina/",
         icons: [
           {
             src: "pwa-192x192.png",
@@ -49,6 +49,9 @@ export default defineConfig({
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 дней
+              },
+              cacheableResponse: {
+                statuses: [0, 200], // Важно для кросс-доменных картинок
               },
             },
           },

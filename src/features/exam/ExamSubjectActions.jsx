@@ -1,6 +1,9 @@
 import React from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const ExamSubjectActions = ({ subject, onOpenAction, onBack }) => {
+  const { user } = useAuth();
+
   if (!subject) {
     return (
       <div className="page-placeholder">
@@ -15,7 +18,7 @@ const ExamSubjectActions = ({ subject, onOpenAction, onBack }) => {
   return (
     <div className="subject-actions-page">
       <button className="back-btn back-btn-top" onClick={onBack}>
-        ← К предметам
+        ← К материалам
       </button>
 
       <div
@@ -30,18 +33,23 @@ const ExamSubjectActions = ({ subject, onOpenAction, onBack }) => {
       </div>
 
       <div className="actions-grid">
-        {subject.actions.map((action) => (
-          <div
-            key={action.id}
-            className="action-card"
-            onClick={() => onOpenAction(action)}
-          >
-            <div className="action-icon">{action.icon}</div>
-            <h2>{action.title}</h2>
-            <p>{action.description}</p>
-            <span className="action-arrow">→</span>
-          </div>
-        ))}
+        {subject.actions.map((action) => {
+          const locked = action.requiresAuth && !user;
+
+          return (
+            <div
+              key={action.id}
+              className={`action-card ${locked ? "locked" : ""}`}
+              onClick={() => onOpenAction(action)}
+            >
+              <div className="action-icon">{action.icon}</div>
+              <h2>{action.title}</h2>
+              <p>{action.description}</p>
+              {locked && <div className="action-lock">🔒 Требуется вход</div>}
+              <span className="action-arrow">→</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

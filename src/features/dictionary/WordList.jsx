@@ -1,18 +1,20 @@
 import { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 
 const WordList = ({ dataFile, onBack }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [lexicon, setLexicon] = useState(null);
+  const [source, setSource] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Хук #1
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadMaterialData(dataFile).then((data) => {
+    loadMaterialData(dataFile).then(({ data, source }) => {
       if (!cancelled) {
         setLexicon(data);
+        setSource(source);
         setLoading(false);
       }
     });
@@ -21,20 +23,17 @@ const WordList = ({ dataFile, onBack }) => {
     };
   }, [dataFile]);
 
-  // ✅ Хук #2 — useMemo до любых return
   const groupedData = useMemo(() => {
     if (!lexicon?.data) return [];
-
     const filterWords = (words, term) => {
       if (!term) return words;
       const q = term.toLowerCase().trim();
       return words.filter(
-        (word) =>
-          word.text.toLowerCase().includes(q) ||
-          (word.translation && word.translation.toLowerCase().includes(q)),
+        (w) =>
+          w.text.toLowerCase().includes(q) ||
+          (w.translation && w.translation.toLowerCase().includes(q)),
       );
     };
-
     return lexicon.data
       .map((group) => {
         const filtered = filterWords(group.worlds, searchTerm);
@@ -45,16 +44,14 @@ const WordList = ({ dataFile, onBack }) => {
           filteredCount: filtered.length,
         };
       })
-      .filter((group) => group.filteredCount > 0);
+      .filter((g) => g.filteredCount > 0);
   }, [lexicon, searchTerm]);
 
-  // ✅ Хук #3
   const totalFound = useMemo(
-    () => groupedData.reduce((acc, group) => acc + group.filteredCount, 0),
+    () => groupedData.reduce((acc, g) => acc + g.filteredCount, 0),
     [groupedData],
   );
 
-  // ✅ Все хуки закончились. Теперь можно return.
   if (loading) return <div className="app-loading">Загрузка...</div>;
   if (!lexicon)
     return <div className="page-placeholder">Не удалось загрузить данные</div>;
@@ -67,6 +64,9 @@ const WordList = ({ dataFile, onBack }) => {
         </button>
         <h2>Список слов ({totalFound})</h2>
       </div>
+
+      {/* ⚠️ Предупреждение о локальных данных */}
+      <DataWarning source={source} />
 
       <div className="search-box">
         <input
