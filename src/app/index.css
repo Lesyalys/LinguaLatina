@@ -1,7 +1,8 @@
 /* ============================================================
-   ПЕРЕМЕННЫЕ ТЕМЫ
+   ТЕМЫ
    ============================================================ */
-:root {
+:root,
+[data-theme="dark"] {
   --bg: #0f1115;
   --bg-elev: #161a20;
   --bg-elev-2: #1c2129;
@@ -24,16 +25,52 @@
   --sidebar-w: 248px;
 }
 
+[data-theme="light"] {
+  --bg: #f5f6fa;
+  --bg-elev: #ffffff;
+  --bg-elev-2: #f1f3f8;
+  --bg-hover: #e8ebf2;
+  --border: rgba(15, 17, 21, 0.08);
+  --border-strong: rgba(15, 17, 21, 0.16);
+  --text: #1a1d24;
+  --text-dim: #4a5262;
+  --text-mute: #8b94a3;
+  --accent: #5b6cff;
+  --accent-soft: rgba(91, 108, 255, 0.1);
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow: 0 12px 32px rgba(15, 17, 21, 0.08);
+}
+
 /* ============================================================
    БАЗА
    ============================================================ */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+}
+
+html,
+body,
+.sidebar,
+.card,
+.sidebar-item,
+.subject-card,
+.action-card,
+button,
+input,
+select,
+textarea {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 body {
+  margin: 0;
   font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -41,15 +78,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-button {
-  font-family: inherit;
-  color: inherit;
-}
-
+button,
 input,
 textarea,
 select {
   font-family: inherit;
+  color: inherit;
 }
 
 @keyframes fadeIn {
@@ -82,6 +116,7 @@ select {
 
 .app-content {
   flex: 1;
+  min-width: 0;
   padding: 32px;
   margin-left: var(--sidebar-w);
   transition: margin-left 0.3s;
@@ -114,6 +149,7 @@ select {
   font-size: 1.05rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .sidebar-nav {
@@ -223,7 +259,6 @@ select {
   color: var(--danger);
 }
 
-/* Бургер и оверлей */
 .burger-btn {
   display: none;
   position: fixed;
@@ -246,120 +281,23 @@ select {
 }
 
 /* ============================================================
-   SIDEBAR: вложенные группы
+   COURSE FILTER (единый, через переменные)
    ============================================================ */
-.sidebar-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar-group-header.active-parent {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.sidebar-chevron {
-  font-size: 0.8rem;
-  transition: transform 0.25s ease;
-  opacity: 0.7;
-}
-
-.sidebar-chevron.open {
-  transform: rotate(90deg);
-}
-
-.sidebar-submenu {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
-  max-height: 0;
-  padding-left: 10px;
-  transition:
-    max-height 0.3s ease,
-    padding 0.2s ease;
-}
-
-.sidebar-submenu.open {
-  max-height: 200px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-.sidebar-subitem {
-  font-size: 0.88rem;
-  padding: 9px 14px 9px 20px;
-  color: var(--text-mute);
-  position: relative;
-}
-
-.sidebar-subitem::before {
-  content: "";
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--text-mute);
-  border-radius: 50%;
-}
-
-.sidebar-subitem.active::before,
-.sidebar-subitem.active-parent::before {
-  background: var(--accent);
-}
-
-.sidebar-subitem.active-parent {
-  color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.sidebar-subitem.locked {
-  opacity: 0.55;
-}
-
-.sidebar-group-nested {
-  margin-left: 8px;
-}
-
-.sidebar-submenu-nested {
-  padding-left: 8px;
-}
-
-.sidebar-subitem-deep {
-  font-size: 0.84rem;
-  padding: 8px 14px 8px 26px;
-}
-
-.sidebar-subitem-deep::before {
-  left: 14px;
-}
-
-/* Фильтр курса */
-.sidebar-filter-wrapper {
-  padding: 12px 10px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  margin: 8px 0;
-}
-
 .course-filter {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .filter-label {
@@ -367,26 +305,55 @@ select {
   color: var(--text-mute);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .filter-select {
   padding: 8px 10px;
-  background: var(--bg-elev-2);
+  background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 0.85rem;
   cursor: pointer;
   outline: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .filter-select:hover {
   border-color: var(--border-strong);
 }
 
+.filter-select:focus {
+  border-color: var(--accent);
+}
+
+.filter-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .filter-select option {
-  background: var(--bg-elev-2);
+  background: var(--bg-elev);
   color: var(--text);
+}
+
+/* ============================================================
+   MATERIALS HEADER
+   ============================================================ */
+.materials-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.materials-header .page-subtitle {
+  margin-bottom: 0;
 }
 
 /* ============================================================
@@ -570,31 +537,34 @@ select {
   font-weight: 700;
 }
 
-.calendar-day.active-day {
-  background: rgba(52, 211, 153, 0.14);
-  color: var(--success);
+.calendar-day.week-match {
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
 }
 
-.calendar-day.active-day::after {
-  content: "";
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--success);
+.calendar-day.week-match:hover {
+  background: rgba(139, 156, 255, 0.22);
 }
 
-.calendar-day.today.active-day {
+.calendar-day.today.week-match {
   background: var(--accent);
   color: #0f1115;
+  font-weight: 700;
 }
 
-.calendar-day.today.active-day::after {
-  background: #0f1115;
+.calendar-day.week-match:not(.empty)::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.calendar-day.today.week-match::before {
+  display: none;
 }
 
 .calendar-footer {
@@ -627,6 +597,16 @@ select {
   color: var(--text-mute);
   font-size: 0.9rem;
   transition: all 0.25s;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.week-type-item:hover {
+  color: var(--text);
+  background: var(--bg-hover);
 }
 
 .week-type-item.active {
@@ -979,30 +959,24 @@ select {
   height: 400px;
   margin-bottom: 28px;
   cursor: pointer;
+  perspective: 1000px;
 }
 
-.card-container .card {
+.flip-card {
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 0;
   transition: transform 0.6s;
   transform-style: preserve-3d;
-  perspective: 1000px;
-  background: transparent;
-  border: none;
 }
 
-.card-container .card.flipped {
+.flip-card.flipped {
   transform: rotateY(180deg);
 }
 
 .card-face {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border-radius: var(--radius-xl);
@@ -1242,7 +1216,6 @@ select {
 }
 
 .greeting.guest {
-  background: var(--bg-elev);
   border-color: var(--border-strong);
 }
 
@@ -1576,11 +1549,6 @@ select {
 /* ============================================================
    PROFILE PAGE (просмотр)
    ============================================================ */
-.profile-page {
-  margin: 0 auto;
-  animation: fadeIn 0.3s ease-in;
-}
-
 .profile-view-card {
   background: var(--bg-elev);
   border: 1px solid var(--border);
@@ -1603,7 +1571,6 @@ select {
   background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.25) 100%);
   pointer-events: none;
 }
-
 .profile-follow-btn {
   position: absolute;
   top: 16px;
@@ -1615,7 +1582,8 @@ select {
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text);
+  /* ⬇️ всегда белый текст — фон кнопки тёмный в обеих темах */
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1625,7 +1593,8 @@ select {
 }
 
 .profile-follow-btn:hover {
-  background: var(--bg-hover);
+  background: rgba(30, 35, 45, 0.85);
+  color: #ffffff;
 }
 
 .profile-follow-btn .plus {
@@ -2441,23 +2410,6 @@ select {
   font-size: 1.05rem;
 }
 
-.schedule-week-type {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: var(--text-mute);
-}
-
-.schedule-week-type .active {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.schedule-week-type .divider {
-  color: var(--text-mute);
-}
-
 .schedule-group-switch {
   display: flex;
   gap: 8px;
@@ -2483,7 +2435,6 @@ select {
 
 .group-btn.active {
   background: var(--accent-soft);
-  border-color: transparent;
   color: var(--accent);
 }
 
@@ -2683,37 +2634,6 @@ select {
   font-size: 0.85rem;
 }
 
-.schedule-note {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(251, 191, 36, 0.1);
-  border-radius: var(--radius-sm);
-  font-size: 0.78rem;
-  color: var(--warning);
-  border-left: 3px solid var(--warning);
-}
-
-.return-to-current {
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px solid var(--warning);
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--warning);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-}
-
-.return-to-current:hover {
-  background: var(--warning);
-  color: #0f1115;
-}
-
 .week-type-badge {
   display: inline-block;
   padding: 2px 8px;
@@ -2734,116 +2654,8 @@ select {
   color: #f472b6;
 }
 
-/* Легенда аудиторий */
-.room-legend {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-elev-2);
-}
-
-.room-legend__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.room-legend__title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.room-legend__icon {
-  font-size: 0.9rem;
-}
-
-.room-legend__toggle {
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--accent);
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-
-.room-legend__toggle:hover {
-  background: var(--accent-soft);
-}
-
-.room-legend__list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.room-legend__item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 0.82rem;
-  line-height: 1.35;
-  padding: 4px 6px;
-  border-radius: 6px;
-}
-
-.room-legend__code {
-  flex-shrink: 0;
-  min-width: 44px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 0.72rem;
-  padding: 3px 6px;
-  border-radius: 6px;
-  color: #0f1115;
-}
-
-.room-legend__code--building {
-  background: #6b8cff;
-}
-.room-legend__code--sport {
-  background: #34d399;
-}
-.room-legend__code--hospital {
-  background: #f87171;
-}
-.room-legend__code--remote {
-  background: #a78bfa;
-}
-
-.room-legend__info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.room-legend__name {
-  font-weight: 500;
-  word-break: break-word;
-}
-
-.room-legend__address {
-  font-size: 0.75rem;
-  color: var(--text-mute);
-}
-
-.room-legend__empty {
-  font-size: 0.82rem;
-  color: var(--text-mute);
-  padding: 4px 0;
-}
-
 /* ============================================================
-   EXAM SUBJECTS — minimal
+   EXAM SUBJECTS / ACTION CARDS
    ============================================================ */
 .subjects-grid {
   display: grid;
@@ -2856,7 +2668,7 @@ select {
   position: relative;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--radius-md);
   padding: 20px 18px;
   cursor: pointer;
   transition:
@@ -2933,7 +2745,7 @@ select {
   padding: 18px 20px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--radius-md);
 }
 
 .subject-header-icon {
@@ -2956,6 +2768,7 @@ select {
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 14px;
 }
+
 /* ============================================================
    ANATOMY TICKETS
    ============================================================ */
@@ -2981,6 +2794,14 @@ select {
 
 .ticket-card.expanded {
   border-color: var(--border-strong);
+}
+
+.ticket-card.locked {
+  opacity: 0.6;
+}
+
+.ticket-card.locked .ticket-header {
+  cursor: not-allowed;
 }
 
 .ticket-header {
@@ -3023,6 +2844,11 @@ select {
 .ticket-card.expanded .ticket-chevron {
   transform: rotate(90deg);
   color: var(--accent);
+}
+
+.ticket-lock-row {
+  padding: 0 20px 16px;
+  margin-top: -4px;
 }
 
 .ticket-questions {
@@ -3532,35 +3358,6 @@ select {
 /* ============================================================
    MATERIALS
    ============================================================ */
-.materials-section {
-  margin-bottom: 36px;
-}
-
-.materials-section:last-child {
-  margin-bottom: 0;
-}
-
-.materials-section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-.materials-section-count {
-  background: var(--bg-hover);
-  color: var(--text-mute);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 10px;
-  margin-left: auto;
-}
-
 .subject-tags {
   display: flex;
   flex-wrap: wrap;
@@ -3616,6 +3413,40 @@ select {
 }
 
 /* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+.theme-toggle {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.theme-toggle.compact {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+/* ============================================================
    АДАПТАЦИЯ
    ============================================================ */
 @media (max-width: 900px) {
@@ -3630,20 +3461,16 @@ select {
     align-items: center;
     justify-content: center;
   }
-
   .app-content {
     margin-left: 0;
     padding: 76px 16px 32px;
   }
-
   .sidebar {
     transform: translateX(-100%);
   }
-
   .sidebar.open {
     transform: translateX(0);
   }
-
   .sidebar-overlay {
     display: block;
     position: fixed;
@@ -3651,60 +3478,57 @@ select {
     background: rgba(0, 0, 0, 0.55);
     z-index: 50;
   }
-
   .profile-card {
     flex-direction: column;
     text-align: center;
   }
-
   .profile-stats {
     justify-content: center;
   }
-
   .card-container {
     height: 320px;
   }
-
   .card-translation,
   .card-latin {
     font-size: 1.5rem;
   }
-
   .nav-btn {
     padding: 10px 15px;
     font-size: 0.88rem;
   }
-
   .welcome-content h1 {
     font-size: 2.2rem;
   }
-
   .welcome-features {
     grid-template-columns: 1fr;
   }
-
   .profile-view-body {
     flex-direction: row;
     padding: 0 18px;
     margin-top: -44px;
   }
-
   .profile-view-info {
     padding: 16px 18px 12px;
   }
-
   .profile-view-actions {
     justify-content: center;
     width: 100%;
   }
-
   .profile-progress-grid {
     grid-template-columns: 1fr;
   }
-
   .auth-card,
   .auth-card-inline {
     padding: 26px;
+  }
+}
+
+@media (max-width: 700px) {
+  .materials-header {
+    flex-direction: column;
+  }
+  .course-filter {
+    width: 100%;
   }
 }
 
@@ -3714,128 +3538,267 @@ select {
     align-items: flex-start;
     gap: 10px;
   }
-
   .ticket-header {
     flex-wrap: wrap;
     gap: 8px;
   }
-
   .ticket-number {
     flex-basis: 100%;
   }
-
   .question-answer {
     padding-left: 20px;
   }
-
   .subjects-grid,
   .actions-grid {
     grid-template-columns: 1fr;
   }
-
   .friends-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
   }
-
   .friends-tab {
     padding: 10px 14px;
     font-size: 0.82rem;
     white-space: nowrap;
   }
-
   .friend-card {
     flex-direction: column;
     text-align: center;
   }
-
   .friend-info {
     text-align: center;
   }
-
   .friend-actions {
     width: 100%;
     justify-content: center;
   }
-
   .profile-page {
     padding: 0;
   }
-
   .profile-avatar-large {
     width: 88px;
     height: 88px;
     font-size: 1.6rem;
   }
-
   .profile-view-info h2 {
     font-size: 1.35rem;
   }
-
   .profile-stat strong {
     font-size: 1.15rem;
   }
-
   .schedule-header {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .schedule-week-switch {
     width: 100%;
   }
-
   .week-toggle-btn {
     flex: 1;
     justify-content: center;
   }
-
-  .schedule-note {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .schedule-table {
     font-size: 0.82rem;
   }
-
   .schedule-table td,
   .schedule-table thead th {
     padding: 10px 6px;
   }
-
   .schedule-th-num {
     width: 60px;
   }
-
   .schedule-th-room {
     width: 80px;
   }
-
   .schedule-bell-num {
     font-size: 0.88rem;
   }
-
   .schedule-bell-time {
     font-size: 0.68rem;
   }
-
   .question-image-thumb img {
     max-height: 250px;
   }
-
   .greeting {
     flex-direction: column;
     text-align: center;
     padding: 20px;
   }
-
   .greeting-title {
     font-size: 1.15rem;
   }
-
   .subject-header {
     flex-direction: column;
     text-align: center;
   }
+}
+/* ============================================================
+   DATA WARNING
+   ============================================================ */
+.data-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+  border-left: 3px solid;
+}
+
+.data-warning--local {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.data-warning--error {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.data-warning__icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.data-warning__body {
+  flex: 1;
+}
+
+.data-warning__body strong {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+}
+
+.data-warning__body p {
+  margin: 0;
+  font-size: 0.82rem;
+  opacity: 0.85;
+  color: var(--text-dim);
+}
+/* ============================================================
+   ROOM LEGEND
+   ============================================================ */
+.room-legend {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elev-2);
+}
+
+.room-legend__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.room-legend__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.room-legend__icon {
+  font-size: 0.9rem;
+}
+
+.room-legend__toggle {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.room-legend__toggle:hover {
+  background: var(--accent-soft);
+}
+
+.room-legend__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.room-legend__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.room-legend__code {
+  flex-shrink: 0;
+  min-width: 44px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: #0f1115;
+}
+
+.room-legend__code--building {
+  background: #6b8cff;
+}
+.room-legend__code--sport {
+  background: #34d399;
+}
+.room-legend__code--hospital {
+  background: #f87171;
+}
+.room-legend__code--remote {
+  background: #a78bfa;
+}
+
+.room-legend__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.room-legend__name {
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.room-legend__address {
+  font-size: 0.75rem;
+  color: var(--text-mute);
+}
+
+.room-legend__empty {
+  font-size: 0.82rem;
+  color: var(--text-mute);
+  padding: 4px 0;
+}
+.room-legend__map-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+.room-legend__map-link:hover {
+  text-decoration: underline;
 }

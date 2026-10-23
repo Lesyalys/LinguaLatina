@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { loadMaterialData } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 
 const ExamQuiz = ({ dataFile, onBack }) => {
+  const [source, setSource] = useState(null);
   const { profile, updateProfile } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,9 +23,10 @@ const ExamQuiz = ({ dataFile, onBack }) => {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadMaterialData(dataFile).then((result) => {
+    loadMaterialData(dataFile).then(({ data, source }) => {
       if (!cancelled) {
-        setData(result);
+        setData(data);
+        setSource(source);
         setLoading(false);
       }
     });
@@ -216,7 +219,7 @@ const ExamQuiz = ({ dataFile, onBack }) => {
           </button>
           <h2>Тест по билетам</h2>
         </div>
-
+        <DataWarning source={source} />
         <p className="setup-description">Выберите билеты для теста:</p>
 
         <div className="quiz-setup-actions">

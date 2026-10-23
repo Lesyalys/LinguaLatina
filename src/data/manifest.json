@@ -52,7 +52,9 @@
                 {
                   "id": "examQuiz",
                   "title": "Тест",
+                  "description": "Тест для проверки билетов",
                   "icon": "🎯",
+                  "requiresAuth": true,
                   "dataFile": "courses/course-1/semester-1/anatomy/quiz.json"
                 }
               ]

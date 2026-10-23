@@ -1,14 +1,22 @@
 import React, { useState, useMemo } from "react";
-import { getWeekType, WEEK_DAYS_SHORT } from "../../lib/schedule";
+import { getWeekType, getDayIndex, WEEK_DAYS_SHORT } from "../../lib/schedule";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const today = new Date();
 
-  // ✅ getWeekType теперь возвращает "Числитель" | "Знаменатель"
-  const weekType = useMemo(() => getWeekType(currentDate), [currentDate]);
-  const isEvenWeek = weekType === "Знаменатель";
+  // Тип недели для текущей даты — начальное значение
+  const initialWeekType = useMemo(
+    () => getWeekType(currentDate),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
+  const [selectedWeekType, setSelectedWeekType] = useState(initialWeekType);
+
+  const isEven = selectedWeekType === "Знаменатель";
+
+  // Все дни месяца + для каждого — флаг «относится к выбранному типу»
   const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -19,12 +27,24 @@ const Calendar = () => {
     if (startDay < 0) startDay = 6;
 
     const days = [];
-    for (let i = 0; i < startDay; i++) days.push(null);
-    for (let d = 1; d <= lastDay.getDate(); d++) {
-      days.push(new Date(year, month, d));
+
+    // Пустые ячейки до начала месяца
+    for (let i = 0; i < startDay; i++) {
+      days.push({ date: null, matches: false });
     }
+
+    // Дни месяца
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const date = new Date(year, month, d);
+      const dayType = getWeekType(date);
+      days.push({
+        date,
+        matches: dayType === selectedWeekType,
+      });
+    }
+
     return days;
-  }, [currentDate]);
+  }, [currentDate, selectedWeekType]);
 
   const monthName = currentDate.toLocaleString("ru-RU", {
     month: "long",
@@ -50,14 +70,23 @@ const Calendar = () => {
 
   return (
     <div className="card calendar-card">
+      {/* 🔀 Переключатель типа недели */}
       <div className="week-type-bar">
-        <div className={`week-type-item ${!isEvenWeek ? "active" : ""}`}>
+        <button
+          type="button"
+          className={`week-type-item ${!isEven ? "active" : ""}`}
+          onClick={() => setSelectedWeekType("Числитель")}
+        >
           Числитель
-        </div>
+        </button>
         <div className="week-type-divider">/</div>
-        <div className={`week-type-item ${isEvenWeek ? "active" : ""}`}>
+        <button
+          type="button"
+          className={`week-type-item ${isEven ? "active" : ""}`}
+          onClick={() => setSelectedWeekType("Знаменатель")}
+        >
           Знаменатель
-        </div>
+        </button>
       </div>
 
       <div className="calendar-header">
@@ -76,19 +105,24 @@ const Calendar = () => {
             {day}
           </div>
         ))}
-        {calendarData.map((date, idx) => (
+        {calendarData.map(({ date, matches }, idx) => (
           <div
             key={idx}
-            className={`calendar-day ${!date ? "empty" : ""} ${
-              isToday(date) ? "today" : ""
-            }`}
+            className={[
+              "calendar-day",
+              !date ? "empty" : "",
+              isToday(date) ? "today" : "",
+              matches ? "week-match" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
             {date ? date.getDate() : ""}
           </div>
         ))}
       </div>
 
-      <div className="calendar-footer">Неделя • {weekType}</div>
+      <div className="calendar-footer">Неделя • {selectedWeekType}</div>
     </div>
   );
 };

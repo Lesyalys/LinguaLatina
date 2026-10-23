@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useIncomingRequestsCount } from "../../hooks/useIncomingRequestsCount";
 import InstallPWAButton from "../ui/InstallPWAButton";
-import CourseFilter from "../ui/CourseFilter";
+import ThemeToggle from "../ui/ThemeToggle";
 
 const Sidebar = ({ currentScreen, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,24 +10,19 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
   const incomingCount = useIncomingRequestsCount(user?.id);
 
   const menuItems = [
-    {
-      id: "home",
-      label: "🏠 Главная",
-      activeFor: ["home"],
-    },
+    { id: "home", label: "🏠 Главная", activeFor: ["home"] },
     {
       id: "materials",
       label: "📚 Материалы",
       activeFor: [
         "materials",
-        "subjects",
-        "examSubjects",
         "subjectActions",
         "examSubjectActions",
         "wordList",
         "trainingSetup",
         "trainingCards",
         "anatomyTickets",
+        "examQuiz",
       ],
     },
     ...(user
@@ -84,22 +79,17 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
             >
               <span>{item.label}</span>
               <span className="sidebar-item-right">
-                {item.showLock && <span className="lock-icon">🔒</span>}
                 {item.badge > 0 && (
                   <span className="sidebar-badge">{item.badge}</span>
                 )}
               </span>
             </button>
           ))}
-
-          <div className="sidebar-filter-wrapper">
-            <CourseFilter />
-          </div>
         </nav>
 
         <div className="sidebar-footer">
           <InstallPWAButton />
-
+          <ThemeToggle />
           {user ? (
             <>
               <button

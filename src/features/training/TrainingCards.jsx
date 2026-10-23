@@ -246,7 +246,7 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
       </div>
 
       <div className="card-container" onClick={handleFlip}>
-        <div className={`card ${isFlipped ? "flipped" : ""}`}>
+        <div className={`flip-card ${isFlipped ? "flipped" : ""}`}>
           <div className="card-face card-front">
             <div className="card-hint">Нажмите, чтобы увидеть ответ</div>
             <div className="card-content">

@@ -5,20 +5,62 @@ const MATERIALS_BUCKET =
   import.meta.env.VITE_SUPABASE_MATERIALS_BUCKET || "materials";
 
 // ============================================================
-// Загрузка материала с S3 (Supabase Storage) с фоллбэком на локальный
+// Кеш (localStorage, 1 час)
+// ============================================================
+const CACHE_PREFIX = "materials-cache:";
+const CACHE_TTL = 60 * 60 * 1000; // 1 час
+
+const getCacheKey = (dataFile) => `${CACHE_PREFIX}${dataFile}`;
+
+const getCached = (dataFile) => {
+  try {
+    const raw = localStorage.getItem(getCacheKey(dataFile));
+    if (!raw) return null;
+
+    const { data, timestamp } = JSON.parse(raw);
+    if (Date.now() - timestamp > CACHE_TTL) {
+      localStorage.removeItem(getCacheKey(dataFile));
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (dataFile, data) => {
+  try {
+    localStorage.setItem(
+      getCacheKey(dataFile),
+      JSON.stringify({ data, timestamp: Date.now() }),
+    );
+  } catch (err) {
+    console.warn("[materials] Не удалось закешировать:", err.message);
+  }
+};
+
+// ============================================================
+// Загрузка с S3 + фоллбэк + кеш
+// Возвращает: { data, source: "s3" | "cache" | "local" }
 // ============================================================
 export const loadMaterialData = async (dataFile) => {
-  // 🔥 Пытаемся загрузить с S3
+  // 1. Проверяем кеш
+  const cached = getCached(dataFile);
+  if (cached) {
+    return { data: cached, source: "cache" };
+  }
+
+  // 2. Пытаемся загрузить с S3
   try {
     const url = `${SUPABASE_URL}/storage/v1/object/public/${MATERIALS_BUCKET}/${dataFile}`;
-    const res = await fetch(url, {
-      // Отключаем кэш браузера, чтобы при обновлении файлов на S3 не было старья
-      cache: "no-cache",
-    });
+    const res = await fetch(url, { cache: "no-cache" });
 
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      setCache(dataFile, data);
+      return { data, source: "s3" };
     }
+
     console.warn(
       `[materials] S3 ответил ${res.status} для ${dataFile}, пробуем локально`,
     );
@@ -26,18 +68,28 @@ export const loadMaterialData = async (dataFile) => {
     console.warn(`[materials] S3 недоступен для ${dataFile}:`, err.message);
   }
 
-  // 🏠 Фоллбэк на локальный JSON
+  // 3. Fallback — локальный JSON
   try {
     const module = await import(`../data/${dataFile}`);
-    return module.default;
+    return { data: module.default, source: "local" };
   } catch (err) {
     console.error(`[materials] Не удалось загрузить ${dataFile}:`, err);
-    return null;
+    return { data: null, source: "error" };
   }
 };
 
 // ============================================================
-// Манифест (пока локальный, но легко перевести на S3 аналогично)
+// Очистка кеша (можно вызвать вручную)
+// ============================================================
+export const clearMaterialsCache = () => {
+  const keys = Object.keys(localStorage).filter((k) =>
+    k.startsWith(CACHE_PREFIX),
+  );
+  keys.forEach((k) => localStorage.removeItem(k));
+};
+
+// ============================================================
+// Manifest / Subjects / Filters — без изменений
 // ============================================================
 export const getManifest = () => manifest;
 

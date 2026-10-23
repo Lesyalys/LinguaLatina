@@ -1,21 +1,22 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 
 const AnatomyTickets = ({ dataFile, onBack }) => {
   const [expandedTicket, setExpandedTicket] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState(null);
+  const [source, setSource] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Лайтбокс
   const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    loadMaterialData(dataFile).then((result) => {
+    loadMaterialData(dataFile).then(({ data, source }) => {
       if (!cancelled) {
-        setData(result);
+        setData(data); // ✅ data = массив билетов (весь JSON с полем data)
+        setSource(source); // ✅ "s3" | "cache" | "local" | "error"
         setLoading(false);
       }
     });
@@ -59,6 +60,9 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
         </span>
       </div>
 
+      {/* ⚠️ Плашка источника */}
+      <DataWarning source={source} />
+
       <div className="search-box">
         <input
           type="text"
@@ -80,6 +84,7 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
               <button
                 className="ticket-header"
                 onClick={() => toggleTicket(ticket.ticket)}
+                type="button"
               >
                 <span className="ticket-number">Билет №{ticket.ticket}</span>
                 <span className="ticket-questions-count">
@@ -110,7 +115,6 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
         )}
       </div>
 
-      {/* 🔍 Лайтбокс */}
       {lightboxImage && (
         <div className="image-lightbox" onClick={() => setLightboxImage(null)}>
           <button
@@ -130,12 +134,9 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
   );
 };
 
-// ============================================================
-// Блок вопроса с картинками-аккордеоном
-// ============================================================
+// QuestionBlock — без изменений
 const QuestionBlock = ({ question, onImageClick }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // Индекс открытой картинки (null — все закрыты)
   const [openImageIndex, setOpenImageIndex] = useState(null);
 
   const paragraphs = question.text.split("\n").filter((p) => p.trim());
@@ -164,7 +165,6 @@ const QuestionBlock = ({ question, onImageClick }) => {
             <p key={i}>{p}</p>
           ))}
 
-          {/* 🖼 Список картинок (аккордеон) */}
           {images.length > 0 && (
             <div className="question-images">
               <div className="question-images-title">

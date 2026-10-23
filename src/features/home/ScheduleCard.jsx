@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 import {
   getWeekType,
   getDayIndex,
@@ -11,6 +12,7 @@ import {
 const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule_v2.json";
 
 const ScheduleCard = () => {
+  const [source, setSource] = useState(null);
   const [scheduleData, setScheduleData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,17 +27,12 @@ const ScheduleCard = () => {
 
   // Загрузка + автоподстановка типа недели
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(SCHEDULE_FILE).then((data) => {
-      if (cancelled) return;
+    loadMaterialData(SCHEDULE_FILE).then(({ data, source }) => {
       setScheduleData(data);
+      setSource(source);
       setWeekType(getWeekType(today, data));
       setLoading(false);
     });
-    return () => {
-      cancelled = true;
-    };
   }, [today]);
 
   const currentWeekType = useMemo(
@@ -80,9 +77,9 @@ const ScheduleCard = () => {
 
   return (
     <div className="card schedule-card">
+      <DataWarning source={source} />
       <div className="schedule-header">
         <h3>Расписание</h3>
-
         <div className="schedule-week-switch">
           <button
             className={`week-toggle-btn ${
