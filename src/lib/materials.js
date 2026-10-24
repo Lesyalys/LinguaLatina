@@ -5,30 +5,44 @@ const MATERIALS_BUCKET =
   import.meta.env.VITE_SUPABASE_MATERIALS_BUCKET || "materials";
 
 // ============================================================
-// Кеш (localStorage, 1 час)
+// Кеш (localStorage)
 // ============================================================
 const CACHE_PREFIX = "materials-cache:";
-const CACHE_TTL = 60 * 60 * 1000; // 1 час
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 1 день
+const CACHE_STALE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 дней — максимальный срок жизни
 
 const getCacheKey = (dataFile) => `${CACHE_PREFIX}${dataFile}`;
 
-const getCached = (dataFile) => {
+/**
+ * Читает кеш и возвращает { data, timestamp, isFresh }.
+ * isFresh — true, если кеш моложе TTL (1 день).
+ */
+const readCache = (dataFile) => {
   try {
     const raw = localStorage.getItem(getCacheKey(dataFile));
     if (!raw) return null;
 
     const { data, timestamp } = JSON.parse(raw);
-    if (Date.now() - timestamp > CACHE_TTL) {
+    const age = Date.now() - timestamp;
+
+    // Совсем старый — считаем отсутствующим
+    if (age > CACHE_STALE_TTL) {
       localStorage.removeItem(getCacheKey(dataFile));
       return null;
     }
-    return data;
+
+    return {
+      data,
+      timestamp,
+      age,
+      isFresh: age < CACHE_TTL,
+    };
   } catch {
     return null;
   }
 };
 
-const setCache = (dataFile, data) => {
+const writeCache = (dataFile, data) => {
   try {
     localStorage.setItem(
       getCacheKey(dataFile),
@@ -40,53 +54,84 @@ const setCache = (dataFile, data) => {
 };
 
 // ============================================================
-// Загрузка с S3 + фоллбэк + кеш
-// Возвращает: { data, source: "s3" | "cache" | "local" }
+// Загрузка
+// Возвращает: { data, source: "s3" | "cache" | "cache-stale" | "local" | "error" }
 // ============================================================
 export const loadMaterialData = async (dataFile) => {
-  // 1. Проверяем кеш
-  const cached = getCached(dataFile);
-  if (cached) {
-    return { data: cached, source: "cache" };
+  const cached = readCache(dataFile);
+  const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+
+  // 1. Свежий кеш + онлайн — отдаём сразу, не дёргаем S3
+  if (cached?.isFresh && isOnline) {
+    return { data: cached.data, source: "cache" };
   }
 
-  // 2. Пытаемся загрузить с S3
+  // 2. Офлайн — отдаём кеш (даже устаревший) или локальный fallback
+  if (!isOnline) {
+    if (cached) {
+      return {
+        data: cached.data,
+        source: cached.isFresh ? "cache" : "cache-stale",
+      };
+    }
+    return loadLocal(dataFile, "offline");
+  }
+
+  // 3. Онлайн + кеш устарел (или его нет) — пробуем S3
   try {
     const url = `${SUPABASE_URL}/storage/v1/object/public/${MATERIALS_BUCKET}/${dataFile}`;
     const res = await fetch(url, { cache: "no-cache" });
 
     if (res.ok) {
       const data = await res.json();
-      setCache(dataFile, data);
+      writeCache(dataFile, data);
       return { data, source: "s3" };
     }
 
     console.warn(
-      `[materials] S3 ответил ${res.status} для ${dataFile}, пробуем локально`,
+      `[materials] S3 ответил ${res.status} для ${dataFile}, пробуем кеш/локально`,
     );
   } catch (err) {
     console.warn(`[materials] S3 недоступен для ${dataFile}:`, err.message);
   }
 
-  // 3. Fallback — локальный JSON
+  // 4. S3 упал — пробуем кеш (даже устаревший)
+  if (cached) {
+    return {
+      data: cached.data,
+      source: cached.isFresh ? "cache" : "cache-stale",
+    };
+  }
+
+  // 5. Кеша нет — локальный fallback
+  return loadLocal(dataFile, "offline");
+};
+
+/**
+ * Локальный fallback (если S3 и кеш недоступны).
+ */
+const loadLocal = async (dataFile, reason = "") => {
   try {
     const module = await import(`../data/${dataFile}`);
     return { data: module.default, source: "local" };
   } catch (err) {
-    console.error(`[materials] Не удалось загрузить ${dataFile}:`, err);
+    console.error(
+      `[materials] Не удалось загрузить ${dataFile} локально (${reason}):`,
+      err,
+    );
     return { data: null, source: "error" };
   }
 };
 
 // ============================================================
-// Очистка кеша (можно вызвать вручную)
+// Очистка кеша (по кнопке в профиле, например)
 // ============================================================
-export const clearMaterialsCache = () => {
-  const keys = Object.keys(localStorage).filter((k) =>
-    k.startsWith(CACHE_PREFIX),
-  );
-  keys.forEach((k) => localStorage.removeItem(k));
-};
+// export const clearMaterialsCache = () => {
+//   const keys = Object.keys(localStorage).filter((k) =>
+//     k.startsWith(CACHE_PREFIX),
+//   );
+//   keys.forEach((k) => localStorage.removeItem(k));
+// };
 
 // ============================================================
 // Manifest / Subjects / Filters — без изменений
