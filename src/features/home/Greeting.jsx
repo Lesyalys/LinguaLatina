@@ -1,7 +1,8 @@
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
+import NextLesson from "./NextLesson";
 
-const Greeting = ({ onLogin }) => {
+const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
   const { profile, user } = useAuth();
 
   const hour = new Date().getHours();
@@ -18,7 +19,8 @@ const Greeting = ({ onLogin }) => {
         <div className="greeting-avatar guest-avatar">👋</div>
         <div className="greeting-text">
           <h1 className="greeting-title">
-            Добро пожаловать в <span className="greeting-name">Medic</span>!
+            Добро пожаловать в{" "}
+            <span className="greeting-name">Lingua Latina</span>!
           </h1>
           <p className="greeting-username">
             Платформа для изучения латыни и подготовки к экзаменам
@@ -26,9 +28,6 @@ const Greeting = ({ onLogin }) => {
           <p className="greeting-subtitle">
             Откройте материалы или войдите, чтобы начать тренировку.
           </p>
-          <button className="greeting-login-btn" onClick={onLogin}>
-            👤 Войти / Зарегистрироваться
-          </button>
         </div>
       </div>
     );
@@ -42,6 +41,9 @@ const Greeting = ({ onLogin }) => {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const hasSchedule =
+    scheduleData && weekType && dayIndex !== null && dayIndex !== undefined;
 
   return (
     <div className="greeting">
@@ -62,6 +64,14 @@ const Greeting = ({ onLogin }) => {
           Продолжай учиться — каждый день приближает тебя к цели.
         </p>
       </div>
+
+      {hasSchedule && (
+        <NextLesson
+          scheduleData={scheduleData}
+          weekType={weekType}
+          dayIndex={dayIndex}
+        />
+      )}
     </div>
   );
 };

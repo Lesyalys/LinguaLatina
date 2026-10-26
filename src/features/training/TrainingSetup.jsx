@@ -7,6 +7,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
     "lexs_min_1",
     "lexs_min_2",
     "lexs_min_3",
+    "lexs_min_4",
   ]);
   const [lexicon, setLexicon] = useState(null);
   const [loading, setLoading] = useState(true);

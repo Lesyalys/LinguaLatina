@@ -15,8 +15,8 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
     setLoading(true);
     loadMaterialData(dataFile).then(({ data, source }) => {
       if (!cancelled) {
-        setData(data); // ✅ data = массив билетов (весь JSON с полем data)
-        setSource(source); // ✅ "s3" | "cache" | "local" | "error"
+        setData(data);
+        setSource(source);
         setLoading(false);
       }
     });
@@ -60,7 +60,6 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
         </span>
       </div>
 
-      {/* ⚠️ Плашка источника */}
       <DataWarning source={source} />
 
       <div className="search-box">
@@ -134,7 +133,9 @@ const AnatomyTickets = ({ dataFile, onBack }) => {
   );
 };
 
-// QuestionBlock — без изменений
+// ============================================================
+// Блок вопроса с картинками-аккордеоном
+// ============================================================
 const QuestionBlock = ({ question, onImageClick }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openImageIndex, setOpenImageIndex] = useState(null);

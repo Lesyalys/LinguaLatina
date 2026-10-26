@@ -52,6 +52,15 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
     ...(user
       ? [
           {
+            id: "games",
+            label: "🎮 Игра вдвоём",
+            activeFor: ["games"],
+          },
+        ]
+      : []),
+    ...(user
+      ? [
+          {
             id: "friends",
             label: "👥 Друзья",
             activeFor: ["friends"],

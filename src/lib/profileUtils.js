@@ -1,8 +1,7 @@
 // src/lib/profileUtils.js
-
 export const getInitials = (profile) => {
-  if (!profile) return "?";
-  return (profile.display_name || profile.username || "?")
+  const name = profile?.display_name || profile?.username || "?";
+  return name
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -18,7 +17,7 @@ export const formatMemberSince = (createdAt) => {
   });
 };
 
-export const EXP_TARGET = 1000;
-
-export const calcExpPercent = (wordsLearned = 0) =>
-  Math.min(100, Math.round((wordsLearned / EXP_TARGET) * 100));
+export const calcExpPercent = (wordsLearned = 0) => {
+  const target = 1000;
+  return Math.min(100, Math.round((wordsLearned / target) * 100));
+};

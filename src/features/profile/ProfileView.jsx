@@ -18,9 +18,28 @@ const ProfileView = ({ profile, onEdit }) => {
     </button>
   );
 
+  const bottomBar = (
+    <>
+      <button
+        className="bottom-bar-btn"
+        onClick={onEdit}
+        title="Редактировать профиль"
+      >
+        ✏️
+      </button>
+      <button className="bottom-bar-btn" onClick={handleSignOut} title="Выйти">
+        🚪
+      </button>
+    </>
+  );
+
   return (
     <div className="profile-page">
-      <ProfileCard profile={profile} topButton={topButton} />
+      <ProfileCard
+        profile={profile}
+        topButton={topButton}
+        bottomBar={bottomBar}
+      />
     </div>
   );
 };

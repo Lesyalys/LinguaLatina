@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useAuth } from "../../context/AuthContext";
 import DataWarning from "../../components/ui/DataWarning";
 import {
   getWeekType,
@@ -9,12 +9,8 @@ import {
   WEEK_DAYS,
 } from "../../lib/schedule";
 
-const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule_v2.json";
-
-const ScheduleCard = () => {
-  const [source, setSource] = useState(null);
-  const [scheduleData, setScheduleData] = useState(null);
-  const [loading, setLoading] = useState(true);
+const ScheduleCard = ({ data: scheduleData, loading, source }) => {
+  const { profile, updateProfile } = useAuth();
 
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
@@ -23,17 +19,22 @@ const ScheduleCard = () => {
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
   const [weekType, setWeekType] = useState(null);
-  const [group, setGroup] = useState("A");
 
-  // Загрузка + автоподстановка типа недели
+  // Группа пользователя — из профиля
+  const userGroup = profile?.group || "A";
+  const [group, setGroup] = useState(userGroup);
+
+  // Синхронизация с профилем
   useEffect(() => {
-    loadMaterialData(SCHEDULE_FILE).then(({ data, source }) => {
-      setScheduleData(data);
-      setSource(source);
-      setWeekType(getWeekType(today, data));
-      setLoading(false);
-    });
-  }, [today]);
+    setGroup(userGroup);
+  }, [userGroup]);
+
+  // Автоподстановка типа недели после загрузки
+  useEffect(() => {
+    if (scheduleData) {
+      setWeekType(getWeekType(today, scheduleData));
+    }
+  }, [scheduleData, today]);
 
   const currentWeekType = useMemo(
     () => (scheduleData ? getWeekType(today, scheduleData) : null),
@@ -48,6 +49,19 @@ const ScheduleCard = () => {
     () => getScheduleForDay(scheduleData, weekType, selectedDay, group),
     [scheduleData, weekType, selectedDay, group],
   );
+
+  // 🎯 Смена группы — обновляем локально + в профиле
+  const handleGroupChange = async (newGroup) => {
+    if (newGroup === group) return;
+    setGroup(newGroup);
+    if (profile) {
+      try {
+        await updateProfile({ group: newGroup });
+      } catch (err) {
+        console.error("Не удалось сохранить подгруппу:", err);
+      }
+    }
+  };
 
   if (loading || !weekType) {
     return (
@@ -77,7 +91,6 @@ const ScheduleCard = () => {
 
   return (
     <div className="card schedule-card">
-      <DataWarning source={source} />
       <div className="schedule-header">
         <h3>Расписание</h3>
         <div className="schedule-week-switch">
@@ -117,16 +130,18 @@ const ScheduleCard = () => {
         </div>
       </div>
 
+      <DataWarning source={source} />
+
       <div className="schedule-group-switch">
         <button
           className={`group-btn ${group === "A" ? "active" : ""}`}
-          onClick={() => setGroup("A")}
+          onClick={() => handleGroupChange("A")}
         >
           Группа A
         </button>
         <button
           className={`group-btn ${group === "B" ? "active" : ""}`}
-          onClick={() => setGroup("B")}
+          onClick={() => handleGroupChange("B")}
         >
           Группа B
         </button>
@@ -159,7 +174,6 @@ const ScheduleCard = () => {
         {isCurrentDay && <span className="today-badge">Сегодня</span>}
       </div>
 
-      {/* 📊 Таблица пар */}
       <table className="schedule-table">
         <thead>
           <tr>

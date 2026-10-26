@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Home from "../features/home/Home";
 import WordList from "../features/dictionary/WordList";
@@ -13,6 +13,10 @@ import AnatomyTickets from "../features/exam/AnatomyTickets";
 import ExamQuiz from "../features/exam/ExamQuiz";
 import { SubjectActions } from "../features/subjects/SubjectActions";
 import ExamSubjectActions from "../features/exam/ExamSubjectActions";
+import GamesPage from "../features/games/GamesPage";
+import GameRoom from "../features/games/GameRoom";
+import GameInviteListener from "../features/games/GameInviteListener";
+import { supabase } from "../lib/supabase";
 
 function App() {
   const { user, loading } = useAuth();
@@ -20,9 +24,32 @@ function App() {
   const [trainingWords, setTrainingWords] = useState([]);
   const [trainingGroups, setTrainingGroups] = useState([]);
   const [viewingUserId, setViewingUserId] = useState(null);
+  const [activeGameId, setActiveGameId] = useState(null);
 
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedExamSubject, setSelectedExamSubject] = useState(null);
+
+  // 🎮 Глобальная подписка на игры
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`app-games:${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "games" },
+        (payload) => {
+          const game = payload.new;
+          if (
+            (game.host_id === user.id || game.guest_id === user.id) &&
+            game.status === "active"
+          ) {
+            setActiveGameId(game.id);
+          }
+        },
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [user]);
 
   if (loading) return <div className="app-loading">Загрузка...</div>;
 
@@ -37,7 +64,6 @@ function App() {
     setCurrentScreen("userProfile");
   };
 
-  // 🔒 Хелпер: если экран требует авторизации — редирект на профиль
   const requireAuth = (screen) => {
     if (!user) {
       setCurrentScreen("profile");
@@ -48,9 +74,27 @@ function App() {
   };
 
   const renderScreen = () => {
+    // 🎮 Если есть активная игра — рендерим GameRoom поверх всего
+    if (activeGameId) {
+      return (
+        <GameRoom
+          gameId={activeGameId}
+          onExit={() => {
+            setActiveGameId(null);
+            setCurrentScreen("home");
+          }}
+        />
+      );
+    }
+
     switch (currentScreen) {
       case "home":
         return <Home onNavigate={setCurrentScreen} />;
+
+      case "games":
+        if (!user)
+          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        return <GamesPage onGameStart={(id) => setActiveGameId(id)} />;
 
       // ============================================================
       // МАТЕРИАЛЫ
@@ -203,6 +247,8 @@ function App() {
     <div className="app-layout">
       <Sidebar currentScreen={currentScreen} onNavigate={setCurrentScreen} />
       <main className="app-content">{renderScreen()}</main>
+
+      <GameInviteListener onAccepted={(gameId) => setActiveGameId(gameId)} />
     </div>
   );
 }

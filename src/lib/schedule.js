@@ -10,6 +10,109 @@ const getMonday = (date) => {
   return d;
 };
 
+/**
+ * Парсит строку вида "10:00-11:20" → { startMin, endMin }
+ * (минуты от начала суток)
+ */
+const parseTimeRange = (timeStr) => {
+  if (!timeStr) return null;
+  const [start, end] = timeStr.split("-").map((s) => s.trim());
+  if (!start || !end) return null;
+
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+
+  if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return null;
+
+  return {
+    startMin: sh * 60 + sm,
+    endMin: eh * 60 + em,
+  };
+};
+
+/**
+ * Возвращает следующую пару на сегодня.
+ *
+ * @param {Object} scheduleData — данные расписания (JSON из S3)
+ * @param {string} weekType — "Числитель" | "Знаменатель"
+ * @param {number} dayIndex — 0..5 (0 = Пн)
+ * @param {string} group — "A" | "B"
+ * @param {Date} now — текущее время (по умолчанию new Date())
+ * @returns {null | { bell, subject, room, time, status: "now" | "next", minutesLeft, minutesUntil }}
+ */
+export const getNextLesson = (
+  scheduleData,
+  weekType,
+  dayIndex,
+  group = "A",
+  now = new Date(),
+) => {
+  if (!scheduleData) return null;
+  if (dayIndex < 0 || dayIndex > 5) return null; // воскресенье
+
+  const week = scheduleData.data?.find((w) => w.week_type === weekType);
+  if (!week) return null;
+
+  const day = week.days?.[dayIndex];
+  if (!day) return null;
+
+  const groupKey = group === "A" ? "group_A" : "group_B";
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  const lessons = (day.lessons || [])
+    .map((l) => {
+      const bell = scheduleData.bells?.find((b) => b.id === l.bell_id);
+      const info = l[groupKey];
+      if (!bell || !info?.subject) return null;
+
+      const range = parseTimeRange(bell.time);
+      if (!range) return null;
+
+      return {
+        bell,
+        subject: info.subject,
+        room: info.room,
+        time: bell.time,
+        ...range,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.startMin - b.startMin);
+
+  // 1. Пара идёт сейчас
+  const current = lessons.find(
+    (l) => nowMin >= l.startMin && nowMin <= l.endMin,
+  );
+  if (current) {
+    return {
+      bell: current.bell,
+      subject: current.subject,
+      room: current.room,
+      time: current.time,
+      status: "now",
+      minutesLeft: current.endMin - nowMin,
+      minutesUntil: 0,
+    };
+  }
+
+  // 2. Ближайшая будущая пара
+  const next = lessons.find((l) => l.startMin > nowMin);
+  if (next) {
+    return {
+      bell: next.bell,
+      subject: next.subject,
+      room: next.room,
+      time: next.time,
+      status: "next",
+      minutesLeft: 0,
+      minutesUntil: next.startMin - nowMin,
+    };
+  }
+
+  // 3. Пар больше нет
+  return null;
+};
+
 export const getWeekType = (date = new Date()) => {
   // учебный год начинается 1 сентября; в янв–авг — в прошлом году
   const acYear =

@@ -1,5 +1,6 @@
 // src/components/profile/ProfileCard.jsx
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import {
   getInitials,
   formatMemberSince,
@@ -23,7 +24,24 @@ const ProfileCard = ({
   bottomBar,
   achievements = [],
 }) => {
+  const { updateProfile } = useAuth();
+  const [savingGroup, setSavingGroup] = useState(false);
+
   if (!profile) return null;
+
+  const currentGroup = profile.group || "A";
+
+  const handleGroupChange = async (newGroup) => {
+    if (newGroup === currentGroup) return;
+    setSavingGroup(true);
+    try {
+      await updateProfile({ group: newGroup });
+    } catch (err) {
+      alert("Не удалось сохранить подгруппу: " + (err.message || err));
+    } finally {
+      setSavingGroup(false);
+    }
+  };
 
   const initials = getInitials(profile);
   const memberSince = formatMemberSince(profile.created_at);
@@ -77,6 +95,29 @@ const ProfileCard = ({
         <p className="profile-meta">На платформе с {memberSince}</p>
       </div>
 
+      {/* 🎯 Переключатель подгруппы */}
+      <div className="profile-group-switch">
+        <span className="profile-group-label">Моя подгруппа:</span>
+        <div className="profile-group-buttons">
+          <button
+            type="button"
+            className={`group-btn ${currentGroup === "A" ? "active" : ""}`}
+            onClick={() => handleGroupChange("A")}
+            disabled={savingGroup}
+          >
+            Группа A
+          </button>
+          <button
+            type="button"
+            className={`group-btn ${currentGroup === "B" ? "active" : ""}`}
+            onClick={() => handleGroupChange("B")}
+            disabled={savingGroup}
+          >
+            Группа B
+          </button>
+        </div>
+      </div>
+
       {/* Достижения (заглушка) */}
       <ProfileAchievements achievements={achievements} />
 
@@ -87,11 +128,7 @@ const ProfileCard = ({
 };
 
 /**
- * Блок достижений. Пока заглушка:
- *  - если achievements пуст — показываем placeholder
- *  - если есть — рендерим сетку бейджей
- *
- * TODO: заменить на реальные данные и иконки.
+ * Блок достижений. Пока заглушка.
  */
 const ProfileAchievements = ({ achievements }) => {
   return (
