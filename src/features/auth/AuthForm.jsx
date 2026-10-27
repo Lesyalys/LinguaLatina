@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 const AuthForm = () => {
   const [mode, setMode] = useState("signin"); // 'signin' | 'signup'
@@ -9,6 +10,28 @@ const AuthForm = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Введите email");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`, // куда вернуть после сброса
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setResetSent(true);
+      setMessage(
+        "Если аккаунт с таким email существует, мы отправили письмо для сброса пароля.",
+      );
+    }
+  };
 
   const { signIn, signUp } = useAuth();
 
@@ -117,6 +140,16 @@ const AuthForm = () => {
                 ? "Войти"
                 : "Зарегистрироваться"}
           </button>
+          {mode === "signin" && (
+            <button
+              type="button"
+              className="auth-switch"
+              onClick={handleResetPassword}
+              disabled={resetSent}
+            >
+              {resetSent ? "Письмо отправлено" : "Забыли пароль?"}
+            </button>
+          )}
         </form>
 
         <button type="button" className="auth-switch" onClick={switchMode}>

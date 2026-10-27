@@ -115,7 +115,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         }`}
       >
         <div className="sidebar-header">
-          <h2>Medic</h2>
+          <h2>Medicat</h2>
         </div>
 
         <nav className="sidebar-nav">

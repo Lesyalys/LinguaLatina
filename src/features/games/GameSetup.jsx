@@ -9,27 +9,46 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 
-const LEXICON_FILE = "courses/course-1/semester-1/latin/lexicon.json";
+// 🔑 Карта: subject.id → путь к данным (loadMaterialData сам найдёт S3/кеш/локально)
+const SUBJECT_DATA_FILES = {
+  latin: "courses/course-1/semester-1/latin/lexicon.json",
+  // anatomy: "courses/course-1/semester-1/anatomy/quiz.json",
+};
 
-const GameSetup = ({ friendId, onBack, onGameCreated }) => {
+const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
   const { user } = useAuth();
-  const [selectedGroups, setSelectedGroups] = useState([
-    "lexs_min_1",
-    "lexs_min_2",
-    "lexs_min_3",
-    "lexs_min_4",
-  ]);
+
+  const dataFile = SUBJECT_DATA_FILES[subject?.id] || null;
+
+  const [selectedGroups, setSelectedGroups] = useState([]);
   const [rounds, setRounds] = useState(10);
   const [timePerRound, setTimePerRound] = useState(10);
   const [lexicon, setLexicon] = useState(null);
+  const [source, setSource] = useState(null); // 🆕 S3 / cache / local
   const [creating, setCreating] = useState(false);
   const [waitingGameId, setWaitingGameId] = useState(null);
 
+  // Загрузка через loadMaterialData (S3 → кеш → локально)
   useEffect(() => {
-    loadMaterialData(LEXICON_FILE).then(({ data }) => setLexicon(data));
-  }, []);
+    if (!dataFile) return;
+    let cancelled = false;
 
-  // Слушаем смену статуса: если "active" → выходим в Room
+    setLexicon(null);
+    loadMaterialData(dataFile).then(({ data, source }) => {
+      if (cancelled) return;
+      setLexicon(data);
+      setSource(source);
+      if (data?.data) {
+        setSelectedGroups(data.data.map((g) => g.name));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dataFile]);
+
+  // Слушаем смену статуса игры
   useEffect(() => {
     if (!waitingGameId) return;
 
@@ -45,9 +64,7 @@ const GameSetup = ({ friendId, onBack, onGameCreated }) => {
         },
         (payload) => {
           const game = payload.new;
-          if (game.status === "active") {
-            onGameCreated(game.id);
-          }
+          if (game.status === "active") onGameCreated(game.id);
           if (game.status === "cancelled") {
             setWaitingGameId(null);
             alert("Гость отклонил приглашение");
@@ -75,6 +92,7 @@ const GameSetup = ({ friendId, onBack, onGameCreated }) => {
       groups: selectedGroups,
       rounds,
       timePerRound,
+      subject: subject.id,
     });
 
     if (error) {
@@ -100,7 +118,6 @@ const GameSetup = ({ friendId, onBack, onGameCreated }) => {
     }
   };
 
-  // Экран ожидания
   if (waitingGameId) {
     return (
       <div className="game-setup">
@@ -116,6 +133,17 @@ const GameSetup = ({ friendId, onBack, onGameCreated }) => {
     );
   }
 
+  if (!dataFile) {
+    return (
+      <div className="page-placeholder">
+        <p>Для этого предмета игра недоступна</p>
+        <button className="back-btn" onClick={onBack}>
+          ← Назад
+        </button>
+      </div>
+    );
+  }
+
   if (!lexicon) return <div className="app-loading">Загрузка словаря...</div>;
 
   return (
@@ -124,6 +152,13 @@ const GameSetup = ({ friendId, onBack, onGameCreated }) => {
         ← Назад
       </button>
       <h2>Настройка дуэли</h2>
+
+      {/* 🆕 Индикатор источника */}
+      {source && source !== "s3" && source !== "cache" && (
+        <div className="game-source-warning">
+          ⚠️ Данные из локальной копии — возможны неточности
+        </div>
+      )}
 
       <p>Выберите минимумы:</p>
       <div className="group-selection">

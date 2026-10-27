@@ -5,7 +5,7 @@ import { getFriendships } from "../../lib/friends";
 import { acceptGame, cancelGame } from "../../lib/games";
 import { supabase } from "../../lib/supabase";
 
-const GameLobby = ({ onOpenSetup }) => {
+const GameLobby = ({ subject, onBack, onOpenSetup }) => {
   const { user } = useAuth();
   const onlineUsers = useOnlineUsers();
   const [friends, setFriends] = useState([]);
@@ -68,6 +68,14 @@ const GameLobby = ({ onOpenSetup }) => {
 
   return (
     <div className="game-lobby">
+      <div className="game-lobby-header">
+        <button className="back-btn" onClick={onBack}>
+          ← К предметам
+        </button>
+        <h1 className="page-title">
+          {subject.icon} {subject.title}
+        </h1>
+      </div>
       <h1 className="page-title">🎮 Игра вдвоём</h1>
 
       {incoming.length > 0 && (

@@ -398,6 +398,9 @@ const GameRoom = ({ gameId, onExit }) => {
             )}
           </div>
         </div>
+        <button className="back-btn" onClick={handleExit}>
+          ← Выйти
+        </button>
       </div>
 
       {opponentOffline && (

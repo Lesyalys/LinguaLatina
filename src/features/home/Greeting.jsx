@@ -19,11 +19,10 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
         <div className="greeting-avatar guest-avatar">👋</div>
         <div className="greeting-text">
           <h1 className="greeting-title">
-            Добро пожаловать в{" "}
-            <span className="greeting-name">Lingua Latina</span>!
+            Добро пожаловать в <span className="greeting-name">Medicat</span>!
           </h1>
           <p className="greeting-username">
-            Платформа для изучения латыни и подготовки к экзаменам
+            Платформа для удобного изучения материалов
           </p>
           <p className="greeting-subtitle">
             Откройте материалы или войдите, чтобы начать тренировку.

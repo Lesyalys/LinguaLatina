@@ -4969,3 +4969,113 @@ select {
     width: 100%;
   }
 }
+/* ============================================================
+   GAME SUBJECT PICKER
+   ============================================================ */
+.game-subject-picker {
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.game-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.game-subject-card {
+  position: relative;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 4px solid var(--subject-color, var(--accent));
+  overflow: hidden;
+}
+
+.game-subject-card:hover:not(.disabled) {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.game-subject-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-subject-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.game-subject-card h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.game-subject-card p {
+  font-size: 0.88rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.game-subject-arrow {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 1.2rem;
+  color: var(--subject-color, var(--accent));
+  transition: transform 0.2s;
+}
+
+.game-subject-card:hover:not(.disabled) .game-subject-arrow {
+  transform: translateX(4px);
+}
+
+.game-subject-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-mute);
+}
+
+/* Header лобби */
+.game-lobby-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.game-lobby-header .page-title {
+  margin: 0;
+  flex: 1;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 600px) {
+  .game-subjects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-lobby-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
