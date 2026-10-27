@@ -1,42 +1,73 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useIncomingRequestsCount } from "../../hooks/useIncomingRequestsCount";
+import { useSwipe } from "../../hooks/useSwipe";
 import InstallPWAButton from "../ui/InstallPWAButton";
-import CourseFilter from "../ui/CourseFilter";
+import ThemeToggle from "../ui/ThemeToggle";
 
 const Sidebar = ({ currentScreen, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem("sidebar-collapsed") === "1";
+  });
+
   const { user, profile, signOut } = useAuth();
   const incomingCount = useIncomingRequestsCount(user?.id);
 
-  const menuItems = [
-    {
-      id: "home",
-      label: "🏠 Главная",
-      activeFor: ["home"],
+  // 📱 Свайпы (только на мобильном)
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
+
+  useSwipe({
+    enabled: isMobile,
+    onSwipeRight: () => {
+      if (!isOpen) setIsOpen(true);
     },
+    onSwipeLeft: () => {
+      if (isOpen) setIsOpen(false);
+    },
+  });
+
+  // 💾 Сохраняем состояние collapsed
+  useEffect(() => {
+    localStorage.setItem("sidebar-collapsed", collapsed ? "1" : "0");
+    document.documentElement.classList.toggle("sidebar-collapsed", collapsed);
+  }, [collapsed]);
+
+  const menuItems = [
+    { id: "home", label: "🏠 Главная", activeFor: ["home"] },
     {
       id: "materials",
       label: "📚 Материалы",
       activeFor: [
         "materials",
-        "subjects",
-        "examSubjects",
         "subjectActions",
         "examSubjectActions",
         "wordList",
         "trainingSetup",
         "trainingCards",
         "anatomyTickets",
+        "examQuiz",
       ],
     },
-    {
-      id: "friends",
-      label: "👥 Друзья",
-      activeFor: ["friends"],
-      badge: incomingCount,
-      showLock: !user,
-    },
+    ...(user
+      ? [
+          {
+            id: "games",
+            label: "🎮 Игра вдвоём",
+            activeFor: ["games"],
+          },
+        ]
+      : []),
+    ...(user
+      ? [
+          {
+            id: "friends",
+            label: "👥 Друзья",
+            activeFor: ["friends"],
+            badge: incomingCount,
+          },
+        ]
+      : []),
   ];
 
   const handleNavigate = (screen) => {
@@ -55,6 +86,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
 
   return (
     <>
+      {/* Бургер — только на мобильном */}
       <button
         className="burger-btn"
         onClick={() => setIsOpen(!isOpen)}
@@ -63,13 +95,27 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         {isOpen ? "✕" : "☰"}
       </button>
 
+      {/* ПК: кнопка «Свернуть / Развернуть» */}
+      <button
+        className="sidebar-collapse-btn"
+        onClick={() => setCollapsed((v) => !v)}
+        title={collapsed ? "Развернуть меню" : "Свернуть меню"}
+        aria-label={collapsed ? "Развернуть меню" : "Свернуть меню"}
+      >
+        {collapsed ? "»" : "«"}
+      </button>
+
       {isOpen && (
         <div className="sidebar-overlay" onClick={() => setIsOpen(false)} />
       )}
 
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+      <aside
+        className={`sidebar ${isOpen ? "open" : ""} ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         <div className="sidebar-header">
-          <h2>Lingua Latina</h2>
+          <h2>Medicat</h2>
         </div>
 
         <nav className="sidebar-nav">
@@ -78,24 +124,21 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
               key={item.id}
               className={`sidebar-item ${isActive(item) ? "active" : ""}`}
               onClick={() => handleNavigate(item.id)}
+              title={collapsed ? item.label : undefined}
             >
               <span>{item.label}</span>
               <span className="sidebar-item-right">
-                {item.showLock && <span className="lock-icon">🔒</span>}
                 {item.badge > 0 && (
                   <span className="sidebar-badge">{item.badge}</span>
                 )}
               </span>
             </button>
           ))}
-
-          <div className="sidebar-filter-wrapper">
-            <CourseFilter />
-          </div>
         </nav>
 
         <div className="sidebar-footer">
           <InstallPWAButton />
+          <ThemeToggle />
 
           {user ? (
             <>
@@ -104,6 +147,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
                   currentScreen === "profile" ? "active" : ""
                 }`}
                 onClick={() => handleNavigate("profile")}
+                title={collapsed ? "Профиль" : undefined}
               >
                 <span className="sidebar-avatar">
                   {profile?.avatar_url ? (
@@ -120,6 +164,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
               <button
                 className="sidebar-item signout-btn"
                 onClick={handleSignOut}
+                title={collapsed ? "Выйти" : undefined}
               >
                 🚪 Выйти
               </button>
@@ -130,6 +175,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
                 currentScreen === "profile" ? "active" : ""
               }`}
               onClick={() => handleNavigate("profile")}
+              title={collapsed ? "Войти" : undefined}
             >
               <span className="sidebar-avatar">👤</span>
               <span className="sidebar-username">Войти</span>

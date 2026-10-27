@@ -1,12 +1,10 @@
-// src/components/Greeting.jsx
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
+import NextLesson from "./NextLesson";
 
-const Greeting = () => {
-  const { profile } = useAuth();
-  if (!profile) return null;
+const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
+  const { profile, user } = useAuth();
 
-  // Приветствие по времени суток
   const hour = new Date().getHours();
   let greeting = "Добрый день";
   if (hour < 6) greeting = "Доброй ночи";
@@ -14,15 +12,37 @@ const Greeting = () => {
   else if (hour < 18) greeting = "Добрый день";
   else greeting = "Добрый вечер";
 
-  const name = profile.display_name || profile.username;
+  // 👤 Гость
+  if (!user || !profile) {
+    return (
+      <div className="greeting guest">
+        <div className="greeting-avatar guest-avatar">👋</div>
+        <div className="greeting-text">
+          <h1 className="greeting-title">
+            Добро пожаловать в <span className="greeting-name">Medicat</span>!
+          </h1>
+          <p className="greeting-username">
+            Платформа для удобного изучения материалов
+          </p>
+          <p className="greeting-subtitle">
+            Откройте материалы или войдите, чтобы начать тренировку.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  // Инициалы для аватара-заглушки
+  // 👤 Авторизован
+  const name = profile.display_name || profile.username;
   const initials = (profile.display_name || profile.username || "?")
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const hasSchedule =
+    scheduleData && weekType && dayIndex !== null && dayIndex !== undefined;
 
   return (
     <div className="greeting">
@@ -43,6 +63,14 @@ const Greeting = () => {
           Продолжай учиться — каждый день приближает тебя к цели.
         </p>
       </div>
+
+      {hasSchedule && (
+        <NextLesson
+          scheduleData={scheduleData}
+          weekType={weekType}
+          dayIndex={dayIndex}
+        />
+      )}
     </div>
   );
 };

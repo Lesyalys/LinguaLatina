@@ -4,7 +4,7 @@ import AuthForm from "../auth/AuthForm";
 import ProfileView from "./ProfileView";
 import ProfileEdit from "./ProfileEdit";
 
-const ProfilePage = () => {
+const ProfilePage = ({ onBack }) => {
   const { user, profile, loading } = useAuth();
   const [mode, setMode] = useState("view"); // 'view' | 'edit'
 
@@ -12,12 +12,12 @@ const ProfilePage = () => {
     return <div className="page-placeholder">Загрузка...</div>;
   }
 
-  // Не авторизован — показываем форму входа/регистрации
+  // 🚪 Не авторизован — показываем форму
   if (!user) {
     return <AuthForm />;
   }
 
-  // Авторизован — показываем профиль
+  // ✅ Авторизован — профиль
   if (mode === "edit") {
     return (
       <ProfileEdit

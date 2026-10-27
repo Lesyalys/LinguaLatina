@@ -1,21 +1,24 @@
 import { useState, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 
 const TrainingSetup = ({ dataFile, onStart, onBack }) => {
   const [selectedGroups, setSelectedGroups] = useState([
     "lexs_min_1",
     "lexs_min_2",
     "lexs_min_3",
+    "lexs_min_4",
   ]);
   const [lexicon, setLexicon] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    loadMaterialData(dataFile).then((data) => {
+    loadMaterialData(dataFile).then(({ data, source }) => {
       if (!cancelled) {
         setLexicon(data);
+        setSource(source);
         setLoading(false);
       }
     });
@@ -60,7 +63,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
         </button>
         <h2>Настройка тренировки</h2>
       </div>
-
+      <DataWarning source={source} />
       <p className="setup-description">
         Выберите лексические минимумы для тренировки:
       </p>
