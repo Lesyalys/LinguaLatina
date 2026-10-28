@@ -1,0 +1,448 @@
+{
+  "name": "schedule",
+  "description": "Расписание занятий",
+  "class": "Лечебное дело",
+  "season": "Осень",
+  "version": 2.0,
+  "update_at": "2026-10-16T00:00:00Z",
+  "bells": [
+    { "id": 1, "time": "8:30-9:50" },
+    { "id": 2, "time": "10:00-11:20" },
+    { "id": 3, "time": "11:30-12:50" },
+    { "id": 4, "time": "13:20-14:40" },
+    { "id": 5, "time": "14:50-16:10" },
+    { "id": 6, "time": "16:20-17:40" }
+  ],
+  "data": [
+    {
+      "week_type": "Числитель",
+      "days": [
+        {
+          "day": "Понедельник",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Биоэтика(лек)", "room": "А636" },
+              "group_B": { "subject": "Биоэтика(лек)", "room": "А636" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Химия", "room": "А310" },
+              "group_B": { "subject": "Химия", "room": "А310" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "Химия", "room": "А124" },
+              "group_B": { "subject": "", "room": "" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "Анатомия", "room": "А22" },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Вторник",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "Русс.яз", "room": "А514" },
+              "group_B": { "subject": "Русс.яз", "room": "А514" }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Биоэтика", "room": "А504" },
+              "group_B": { "subject": "Биоэтика", "room": "А504" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "ТОИУ п/г2", "room": "А30" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "ТОИУ п/г2", "room": "А30" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "Электив физ-ра", "room": "С" },
+              "group_B": { "subject": "Электив физ-ра", "room": "С" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Среда",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "ТОИУ", "room": "А30" },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "ТОИУ", "room": "А30" },
+              "group_B": { "subject": "Анатомия", "room": "А24" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Химия(лек)", "room": "А636" },
+              "group_B": { "subject": "Химия(лек)", "room": "А636" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "Философия", "room": "А636" },
+              "group_B": { "subject": "Философия", "room": "А636" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "История России", "room": "А613" },
+              "group_B": { "subject": "История России", "room": "А613" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Четверг",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Анатомия", "room": "А25" },
+              "group_B": { "subject": "Биология", "room": "А424" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Биология", "room": "А424" },
+              "group_B": { "subject": "ТОИУ", "room": "А30" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "Латинский", "room": "А504" },
+              "group_B": { "subject": "ТОИУ", "room": "А30" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Пятница",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Биология(лек)", "room": "А436" },
+              "group_B": { "subject": "Биология(лек)", "room": "А436" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Биоэтика (пр)", "room": "А539" },
+              "group_B": { "subject": "Биоэтика (пр)", "room": "А539" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "Электив физ-ра", "room": "С" },
+              "group_B": { "subject": "Электив физ-ра", "room": "С" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Суббота",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Англ.яз", "room": "А516" },
+              "group_B": { "subject": "Мед.физ", "room": "А317" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Мед.физ", "room": "А317" },
+              "group_B": { "subject": "Англ.яз", "room": "А516" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "Латинский", "room": "А518" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "week_type": "Знаменатель",
+      "days": [
+        {
+          "day": "Понедельник",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Латинский (лек)", "room": "А636" },
+              "group_B": { "subject": "Латинский (лек)", "room": "А636" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Химия", "room": "А310" },
+              "group_B": { "subject": "Химия", "room": "А310" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "Химия", "room": "А124" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "Анатомия", "room": "А22" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Вторник",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "Русс.яз", "room": "А514" },
+              "group_B": { "subject": "Русс.яз", "room": "А514" }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Биоэтика", "room": "А504" },
+              "group_B": { "subject": "Биоэтика", "room": "А504" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "ТОИУ п/г2", "room": "А30" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "Электив физ-ра", "room": "С" },
+              "group_B": { "subject": "Электив физ-ра", "room": "С" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Среда",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "ТОИУ", "room": "А30" },
+              "group_B": { "subject": "Анатомия", "room": "А24" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Мед.физ(лек)", "room": "А436" },
+              "group_B": { "subject": "Мед.физ(лек)", "room": "А436" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Четверг",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Анатомия", "room": "А25" },
+              "group_B": { "subject": "Биология", "room": "А424" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Биология", "room": "А424" },
+              "group_B": { "subject": "ТОИУ", "room": "А30" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "Латинский", "room": "А504" },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Пятница",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "ТОИУ(лек)", "room": "2Б" },
+              "group_B": { "subject": "ТОИУ(лек)", "room": "2Б" }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Анатомия (лек)", "room": "2Б" },
+              "group_B": { "subject": "Анатомия (лек)", "room": "2Б" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "Электив физ-ра", "room": "С" },
+              "group_B": { "subject": "Электив физ-ра", "room": "С" }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        },
+        {
+          "day": "Суббота",
+          "lessons": [
+            {
+              "bell_id": 1,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 2,
+              "group_A": { "subject": "Англ.яз", "room": "А516" },
+              "group_B": { "subject": "Мед.физ", "room": "А317" }
+            },
+            {
+              "bell_id": 3,
+              "group_A": { "subject": "Мед.физ", "room": "А317" },
+              "group_B": { "subject": "Англ.яз", "room": "А516" }
+            },
+            {
+              "bell_id": 4,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "Латинский", "room": "А518" }
+            },
+            {
+              "bell_id": 5,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            },
+            {
+              "bell_id": 6,
+              "group_A": { "subject": "", "room": null },
+              "group_B": { "subject": "", "room": null }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

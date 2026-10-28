@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState, useMemo } from "react";
+import DataWarning from "../../components/ui/DataWarning";
 import {
   getWeekType,
   getDayIndex,
@@ -7,39 +7,42 @@ import {
   WEEK_DAYS_SHORT,
   WEEK_DAYS,
 } from "../../lib/schedule";
-const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule.json";
 
-const ScheduleCard = () => {
-  const [scheduleData, setScheduleData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+const ScheduleCard = ({
+  data: scheduleData,
+  loading,
+  source,
+  viewGroup,
+  onViewGroupChange,
+  profileGroup,
+}) => {
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
-  const currentWeekType = useMemo(() => getWeekType(today), [today]);
 
   const [selectedDay, setSelectedDay] = useState(
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
-  const [weekType, setWeekType] = useState(currentWeekType);
-  const [group, setGroup] = useState("A");
+  // Пользователь может вручную переключить на другую неделю.
+  // Если не переключено — берём авто-значение из scheduleData.
+  const [manualWeekType, setManualWeekType] = useState(null);
+  const autoWeekType = useMemo(
+    () => (scheduleData ? getWeekType(today, scheduleData) : null),
+    [today, scheduleData],
+  );
+  const weekType = manualWeekType ?? autoWeekType;
 
-  useEffect(() => {
-    loadMaterialData(SCHEDULE_FILE).then((data) => {
-      setScheduleData(data);
-      setLoading(false);
-    });
-  }, []);
+  const currentWeekType = autoWeekType;
 
   const isCurrentWeek = weekType === currentWeekType;
   const isCurrentDay =
     isCurrentWeek && selectedDay === todayIndex && todayIndex < 6;
 
   const { bells, lessons } = useMemo(
-    () => getScheduleForDay(scheduleData, weekType, selectedDay, group),
-    [scheduleData, weekType, selectedDay, group],
+    () => getScheduleForDay(scheduleData, weekType, selectedDay, viewGroup),
+    [scheduleData, weekType, selectedDay, viewGroup],
   );
 
-  if (loading) {
+  if (loading || !weekType) {
     return (
       <div className="card schedule-card">
         <div className="schedule-header">
@@ -50,23 +53,31 @@ const ScheduleCard = () => {
     );
   }
 
+  const rows = bells.map((bell) => {
+    const lesson = lessons.find((l) => l.bell?.id === bell.id);
+    const subject = lesson?.subject || "";
+    const room = lesson?.room || "";
+    return {
+      bellId: bell.id,
+      time: bell.time,
+      subject,
+      room,
+      isEmpty: !subject,
+    };
+  });
+
+  const isViewingOtherGroup = viewGroup !== profileGroup;
+
   return (
     <div className="card schedule-card">
-      {/* Заголовок с переключением */}
       <div className="schedule-header">
         <h3>Расписание</h3>
-
         <div className="schedule-week-switch">
           <button
             className={`week-toggle-btn ${
               weekType === "Числитель" ? "active" : ""
             } ${currentWeekType === "Числитель" ? "current" : ""}`}
-            onClick={() => setWeekType("Числитель")}
-            title={
-              currentWeekType === "Числитель"
-                ? "Текущая неделя — числитель"
-                : "Показать числитель"
-            }
+            onClick={() => setManualWeekType("Числитель")}
           >
             Числитель
             {currentWeekType === "Числитель" && (
@@ -78,12 +89,7 @@ const ScheduleCard = () => {
             className={`week-toggle-btn ${
               weekType === "Знаменатель" ? "active" : ""
             } ${currentWeekType === "Знаменатель" ? "current" : ""}`}
-            onClick={() => setWeekType("Знаменатель")}
-            title={
-              currentWeekType === "Знаменатель"
-                ? "Текущая неделя — знаменатель"
-                : "Показать знаменатель"
-            }
+            onClick={() => setManualWeekType("Знаменатель")}
           >
             Знаменатель
             {currentWeekType === "Знаменатель" && (
@@ -93,45 +99,39 @@ const ScheduleCard = () => {
         </div>
       </div>
 
-      {/* Подсказка: смотрим не текущую неделю */}
-      {/* {!isCurrentWeek && (
-        <div className="schedule-note">
-          <span>
-            👀 Вы смотрите{" "}
-            {weekType === "Числитель" ? "числитель" : "знаменатель"} — не
-            текущую неделю
-          </span>
-          <button
-            className="return-to-current"
-            onClick={() => {
-              setWeekType(currentWeekType);
-              setSelectedDay(
-                todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
-              );
-            }}
-          >
-            ← К текущей
-          </button>
-        </div>
-      )} */}
+      <DataWarning source={source} />
 
-      {/* Переключатель групп */}
       <div className="schedule-group-switch">
         <button
-          className={`group-btn ${group === "A" ? "active" : ""}`}
-          onClick={() => setGroup("A")}
+          className={`group-btn ${viewGroup === "A" ? "active" : ""}`}
+          onClick={() => onViewGroupChange("A")}
+          title="Только просмотр — не меняет вашу группу в профиле"
         >
           Группа A
         </button>
         <button
-          className={`group-btn ${group === "B" ? "active" : ""}`}
-          onClick={() => setGroup("B")}
+          className={`group-btn ${viewGroup === "B" ? "active" : ""}`}
+          onClick={() => onViewGroupChange("B")}
+          title="Только просмотр — не меняет вашу группу в профиле"
         >
           Группа B
         </button>
       </div>
 
-      {/* Дни */}
+      {isViewingOtherGroup && (
+        <div className="schedule-view-note">
+          👀 Вы смотрите <strong>группу {viewGroup}</strong>. Ваша группа в
+          профиле — <strong>{profileGroup}</strong>.
+          <button
+            type="button"
+            className="schedule-view-reset"
+            onClick={() => onViewGroupChange(profileGroup)}
+          >
+            ← К моей группе
+          </button>
+        </div>
+      )}
+
       <div className="schedule-days">
         {WEEK_DAYS_SHORT.map((short, idx) => (
           <button
@@ -147,42 +147,46 @@ const ScheduleCard = () => {
         ))}
       </div>
 
-      {/* Заголовок дня */}
       <div className="schedule-day-title">
         {WEEK_DAYS[selectedDay]}
         <span
-          className={`week-type-badge ${weekType === "Числитель" ? "chisl" : "znam"}`}
+          className={`week-type-badge ${
+            weekType === "Числитель" ? "chisl" : "znam"
+          }`}
         >
           {weekType}
         </span>
         {isCurrentDay && <span className="today-badge">Сегодня</span>}
       </div>
 
-      {/* Пары */}
-      <div className="schedule-lessons">
-        {lessons.length === 0 || lessons.every((l) => !l.subject) ? (
-          <div className="schedule-empty">Нет занятий</div>
-        ) : (
-          lessons.map((l) => {
-            if (!l.subject) return null;
-            const [subjectRaw, room] = l.subject
-              .split(",")
-              .map((s) => s.trim());
-            return (
-              <div key={l.bell.id} className="schedule-lesson">
-                <div className="lesson-time">
-                  <strong>{l.bell.id}.</strong>
-                  <span>{l.bell.time}</span>
-                </div>
-                <div className="lesson-info">
-                  <div className="lesson-subject">{subjectRaw}</div>
-                  {room && <div className="lesson-room">📍 {room}</div>}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+      <table className="schedule-table">
+        <thead>
+          <tr>
+            <th className="schedule-th-num">№</th>
+            <th className="schedule-th-subject">Пара</th>
+            <th className="schedule-th-room">Место</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.bellId}
+              className={row.isEmpty ? "schedule-row-empty" : ""}
+            >
+              <td className="schedule-td-num">
+                <div className="schedule-bell-num">{row.bellId}</div>
+                <div className="schedule-bell-time">{row.time}</div>
+              </td>
+              <td className="schedule-td-subject">
+                {row.subject || <span className="schedule-dash">—</span>}
+              </td>
+              <td className="schedule-td-room">
+                {row.room || <span className="schedule-dash">—</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import { usePWAInstall } from "../../hooks/usePWAInstall";
 
 const InstallPWAButton = () => {

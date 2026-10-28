@@ -1,20 +1,28 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useFilter } from "../../context/FilterContext";
+import { shuffleArray } from "../../lib/shuffle";
+import { commitTrainingProgress } from "../../lib/progress";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 
-const TrainingCards = ({ words, selectedGroups, onBack }) => {
+const TrainingCards = ({ words, onBack }) => {
   const { profile, updateProfile } = useAuth();
+  const { courseId, semesterId } = useFilter();
+  const notice = useNotice();
 
-  const shuffledWords = useMemo(() => {
-    return [...words].sort(() => Math.random() - 0.5);
-  }, [words]);
+  // Слова приходят уже перемешанными (перемешивание делается на старте).
+  // При «Пройти заново» перемешиваем заново — в обработчике, а не в рендере.
+  const [reshuffledWords, setReshuffledWords] = useState(null);
+  const shuffledWords = reshuffledWords || words;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
+  // ✅ массив слов, которые пользователь отметил как «Знал»
+  const [correctWords, setCorrectWords] = useState([]);
   const [finished, setFinished] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Флаг, чтобы не сохранять повторно
   const savedRef = useRef(false);
 
   const currentWord = shuffledWords[currentIndex];
@@ -22,102 +30,46 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
   const progress = ((currentIndex + 1) / total) * 100;
 
   // ============================================================
-  // Предупреждение при закрытии вкладки
+  // Предупреждение о закрытии вкладки
   // ============================================================
   useEffect(() => {
-    const hasUnsavedProgress = correctCount > 0 && !savedRef.current;
+    const hasUnsavedProgress = correctWords.length > 0 && !savedRef.current;
 
     const handleBeforeUnload = (e) => {
       if (hasUnsavedProgress) {
         e.preventDefault();
-        e.returnValue = ""; // Chrome требует returnValue
+        e.returnValue = "";
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [correctCount]);
+  }, [correctWords]);
 
   // ============================================================
-  // Построение объекта прогресса (без сохранения)
+  // Построение прогресса — УНИКАЛЬНЫЕ СЛОВА
   // ============================================================
-  const buildProgress = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const oldProgress = profile?.progress || {};
-
-    // 1. wordsLearned
-    const newWordsLearned = (oldProgress.wordsLearned || 0) + correctCount;
-
-    // 2. streak
-    let newStreak = oldProgress.streak || 0;
-    const lastActive = oldProgress.lastActive;
-
-    if (lastActive !== today) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-      if (lastActive === yesterdayStr) {
-        newStreak += 1;
-      } else {
-        newStreak = 1;
-      }
-    }
-
-    // 3. history
-    const history = [...(oldProgress.history || [])];
-    const todayEntry = history.find((h) => h.date === today);
-
-    if (todayEntry) {
-      todayEntry.words += correctCount;
-    } else {
-      history.push({ date: today, words: correctCount });
-    }
-    const trimmedHistory = history.slice(-90);
-
-    // 4. groups
-    const groups = { ...(oldProgress.groups || {}) };
-    const accuracy = total > 0 ? correctCount / total : 0;
-
-    selectedGroups.forEach((groupName) => {
-      const existing = groups[groupName] || {
-        completed: false,
-        bestScore: 0,
-        attempts: 0,
-      };
-
-      groups[groupName] = {
-        completed: existing.completed || (accuracy >= 0.8 && correctCount >= 8),
-        bestScore: Math.max(existing.bestScore || 0, accuracy),
-        attempts: (existing.attempts || 0) + 1,
-        lastAttempt: today,
-      };
+  const buildProgress = (wordsLearnedThisSession) =>
+    commitTrainingProgress(profile?.progress, {
+      courseId,
+      semesterId,
+      subjectId: "latin",
+      words: wordsLearnedThisSession,
     });
 
-    return {
-      wordsLearned: newWordsLearned,
-      streak: newStreak,
-      lastActive: today,
-      history: trimmedHistory,
-      groups,
-    };
-  };
-
   // ============================================================
-  // Сохранение прогресса
+  // Сохранение
   // ============================================================
   const saveProgress = async () => {
     if (savedRef.current) return { skipped: true };
-
-    // Ничего не делаем, если пользователь не ответил ни на одну карточку
-    if (correctCount === 0) {
+    if (correctWords.length === 0) {
       savedRef.current = true;
       return { skipped: true };
     }
 
     setSaving(true);
     try {
-      const newProgress = buildProgress();
+      const newProgress = buildProgress(correctWords);
       const { error } = await updateProfile({ progress: newProgress });
       if (error) throw error;
       savedRef.current = true;
@@ -130,56 +82,48 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
     }
   };
 
-  // ============================================================
-  // Полное прохождение — с экрана завершения
-  // ============================================================
   const handleSaveAndExit = async () => {
     const result = await saveProgress();
     if (result?.error) {
-      alert("Не удалось сохранить прогресс: " + result.error.message);
+      notice.show("Не удалось сохранить прогресс: " + result.error.message);
       return;
     }
     onBack();
   };
 
-  // ============================================================
-  // Досрочный выход — кнопка "Выйти"
-  // ============================================================
   const handleEarlyExit = async () => {
-    // Если ничего не прошёл — просто выходим без диалога
-    if (correctCount === 0) {
+    if (correctWords.length === 0) {
       onBack();
       return;
     }
-
-    // Если уже сохраняли (например, прошёл до конца и снова открыл экран) — выходим
     if (savedRef.current) {
       onBack();
       return;
     }
 
     const confirmExit = window.confirm(
-      `Вы прошли ${correctCount} из ${total} слов.\n\n` +
+      `Вы прошли ${correctWords.length} из ${total} слов.\n\n` +
         `Сохранить результаты перед выходом?`,
     );
-
     if (!confirmExit) return;
 
     const result = await saveProgress();
     if (result?.error) {
-      alert("Не удалось сохранить прогресс: " + result.error.message);
+      notice.show("Не удалось сохранить прогресс: " + result.error.message);
       return;
     }
     onBack();
   };
 
   // ============================================================
-  // Ответы на карточках
+  // Ответы
   // ============================================================
   const handleFlip = () => setIsFlipped(!isFlipped);
 
   const handleAnswer = (isCorrect) => {
-    if (isCorrect) setCorrectCount((c) => c + 1);
+    if (isCorrect) {
+      setCorrectWords((prev) => [...prev, currentWord]);
+    }
 
     if (currentIndex < total - 1) {
       setIsFlipped(false);
@@ -193,21 +137,19 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
     if (!window.confirm("Начать заново? Текущий прогресс будет сброшен."))
       return;
 
-    // Сбрасываем состояние
     setCurrentIndex(0);
     setIsFlipped(false);
-    setCorrectCount(0);
+    setCorrectWords([]);
     setFinished(false);
-    // НЕ сбрасываем savedRef — прогресс уже сохранён (если был)
-    // Если хочешь, чтобы можно было снова сохранить — раскомментируй:
-    // savedRef.current = false;
+    setReshuffledWords(shuffleArray(words));
   };
 
   // ============================================================
   // Экран завершения
   // ============================================================
   if (finished) {
-    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+    const accuracy =
+      total > 0 ? Math.round((correctWords.length / total) * 100) : 0;
 
     return (
       <div className="training-cards">
@@ -223,7 +165,7 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
               <span>слов пройдено</span>
             </div>
             <div className="finished-stat">
-              <strong>{correctCount}</strong>
+              <strong>{correctWords.length}</strong>
               <span>правильных</span>
             </div>
             <div className="finished-stat">
@@ -241,6 +183,7 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
           </p>
 
           <div className="finished-actions">
+            <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
             <button
               className="profile-action-btn"
               onClick={handleRestart}
@@ -276,12 +219,14 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
         </span>
       </div>
 
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
+
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
       <div className="card-container" onClick={handleFlip}>
-        <div className={`card ${isFlipped ? "flipped" : ""}`}>
+        <div className={`flip-card ${isFlipped ? "flipped" : ""}`}>
           <div className="card-face card-front">
             <div className="card-hint">Нажмите, чтобы увидеть ответ</div>
             <div className="card-content">

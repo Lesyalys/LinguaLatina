@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from "react";
+import { createContext, useContext } from "react";
 import { useAuth } from "./AuthContext";
 import { usePresence } from "../hooks/usePresence";
 

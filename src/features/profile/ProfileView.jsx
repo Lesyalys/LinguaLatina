@@ -1,16 +1,10 @@
-// src/components/profile/ProfileView.jsx
-import React from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useGroupPreference } from "../../hooks/useGroupPreference";
 import ProfileCard from "./ProfileCard";
 
 const ProfileView = ({ profile, onEdit }) => {
-  const { signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    if (window.confirm("Выйти из аккаунта?")) {
-      await signOut();
-    }
-  };
+  // Хук живёт только на экране СВОЕГО профиля — на чужих профилях
+  // он не монтируется и не пишет group при unmount.
+  const { group, setGroup } = useGroupPreference();
 
   const topButton = (
     <button className="profile-follow-btn" onClick={onEdit}>
@@ -20,7 +14,13 @@ const ProfileView = ({ profile, onEdit }) => {
 
   return (
     <div className="profile-page">
-      <ProfileCard profile={profile} topButton={topButton} />
+      <ProfileCard
+        profile={profile}
+        topButton={topButton}
+        isOwn={true}
+        group={group}
+        setGroup={setGroup}
+      />
     </div>
   );
 };

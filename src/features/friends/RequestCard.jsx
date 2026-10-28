@@ -1,4 +1,5 @@
 import { useOnlineUsers } from "../../context/PresenceContext";
+import { getInitials } from "../../lib/profileUtils";
 
 const RequestCard = ({
   request,
@@ -11,12 +12,7 @@ const RequestCard = ({
   const u = request.user;
   const onlineUsers = useOnlineUsers();
   const isOnline = onlineUsers.has(u.id);
-  const initials = (u.display_name || u.username || "?")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(u);
 
   return (
     <div className="friend-card">
@@ -40,7 +36,23 @@ const RequestCard = ({
           </p>
         </div>
       </div>
-      <div className="friend-actions">{/* ... кнопки ... */}</div>
+      <div className="friend-actions">
+        {type === "incoming" && (
+          <>
+            <button className="friend-btn primary" onClick={onAccept}>
+              ✅ Принять
+            </button>
+            <button className="friend-btn danger" onClick={onReject}>
+              ✕ Отклонить
+            </button>
+          </>
+        )}
+        {type === "outgoing" && (
+          <button className="friend-btn danger" onClick={onCancel}>
+            Отменить
+          </button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { searchUsers } from "../../lib/friends";
+import { getInitials } from "../../lib/profileUtils";
 import { useOnlineUsers } from "../../context/PresenceContext";
 
 const UserSearch = ({
@@ -136,17 +137,6 @@ const UserSearch = ({
   };
 
   // ============================================================
-  // Инициалы
-  // ============================================================
-  const initials = (name) =>
-    (name || "?")
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
-  // ============================================================
   // Рендер
   // ============================================================
   return (
@@ -172,10 +162,6 @@ const UserSearch = ({
           {results.map((u) => {
             const status = getStatus(u.id);
             const isOnline = onlineUsers.has(u.id);
-            const isRelated =
-              status.type === "friends" ||
-              status.type === "incoming" ||
-              status.type === "outgoing";
 
             return (
               <div key={u.id} className="friend-card">
@@ -187,7 +173,7 @@ const UserSearch = ({
                     {u.avatar_url ? (
                       <img src={u.avatar_url} alt={u.username} />
                     ) : (
-                      <span>{initials(u.display_name || u.username)}</span>
+                      <span>{getInitials(u)}</span>
                     )}
                   </div>
                   <div className="friend-info">

@@ -1,34 +1,29 @@
-// src/components/profile/ProfileCard.jsx
-import React from "react";
 import {
   getInitials,
   formatMemberSince,
   calcExpPercent,
+  countWordsLearned,
 } from "../../lib/profileUtils";
+import GroupSwitcher from "../../components/ui/GroupSwitcher";
+import ActivityGrid from "./ActivityGrid";
 
-/**
- * Презентационный компонент карточки профиля.
- *
- * Props:
- *  - profile: объект профиля
- *  - topButton: ReactNode — кнопка в правом верхнем углу обложки
- *  - online?: boolean — показывать ли индикатор онлайна
- *  - bottomBar?: ReactNode — нижняя панель действий
- *  - achievements?: Array — список достижений (пока заглушка)
- */
 const ProfileCard = ({
   profile,
   topButton,
   online = false,
-  bottomBar,
   achievements = [],
+  isOwn = false,
+  group = "A",
+  setGroup,
 }) => {
   if (!profile) return null;
 
   const initials = getInitials(profile);
   const memberSince = formatMemberSince(profile.created_at);
-  const wordsLearned = profile.progress?.wordsLearned || 0;
+  const wordsLearned = countWordsLearned(profile.progress);
   const expPercent = calcExpPercent(wordsLearned);
+
+  const displayGroup = isOwn ? group : profile.group === "B" ? "B" : "A";
 
   return (
     <div className="profile-view-card">
@@ -77,22 +72,24 @@ const ProfileCard = ({
         <p className="profile-meta">На платформе с {memberSince}</p>
       </div>
 
-      {/* Достижения (заглушка) */}
-      <ProfileAchievements achievements={achievements} />
+      {/* 🎯 Подгруппа */}
+      <div className="profile-group-switch">
+        {isOwn ? (
+          <GroupSwitcher group={group} onChange={setGroup} />
+        ) : (
+          <div className="profile-group-view">
+            <span className="profile-group-label">Группа:</span>
+            <span className="profile-group-badge">{displayGroup}</span>
+          </div>
+        )}
+      </div>
+      <ActivityGrid history={profile?.progress?.history || []} />
 
-      {/* Нижняя панель (опционально) */}
-      {bottomBar && <div className="profile-bottom-bar">{bottomBar}</div>}
+      <ProfileAchievements achievements={achievements} />
     </div>
   );
 };
 
-/**
- * Блок достижений. Пока заглушка:
- *  - если achievements пуст — показываем placeholder
- *  - если есть — рендерим сетку бейджей
- *
- * TODO: заменить на реальные данные и иконки.
- */
 const ProfileAchievements = ({ achievements }) => {
   return (
     <div className="profile-achievements">

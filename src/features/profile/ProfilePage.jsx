@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import AuthForm from "../auth/AuthForm";
 import ProfileView from "./ProfileView";
@@ -12,12 +12,12 @@ const ProfilePage = () => {
     return <div className="page-placeholder">Загрузка...</div>;
   }
 
-  // Не авторизован — показываем форму входа/регистрации
+  // 🚪 Не авторизован — показываем форму
   if (!user) {
     return <AuthForm />;
   }
 
-  // Авторизован — показываем профиль
+  // ✅ Авторизован — профиль
   if (mode === "edit") {
     return (
       <ProfileEdit

@@ -14,7 +14,7 @@
             {
               "id": "latin",
               "title": "Латинский язык",
-              "icon": "🏛️",
+              "icon": "",
               "color": "#e67e22",
               "type": "subject",
               "description": "Словарь и тренажёр для изучения латинской терминологии",
@@ -52,8 +52,10 @@
                 {
                   "id": "examQuiz",
                   "title": "Тест",
+                  "description": "Тест для проверки билетов",
                   "icon": "🎯",
-                  "dataFile": "courses/course-1/semester-1/anatomy/tickets.json"
+                  "requiresAuth": true,
+                  "dataFile": "courses/course-1/semester-1/anatomy/quiz.json"
                 }
               ]
             }

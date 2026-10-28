@@ -1,28 +1,16 @@
-import { useState, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
+import { shuffleArray } from "../../lib/shuffle";
+import DataWarning from "../../components/ui/DataWarning";
 
 const TrainingSetup = ({ dataFile, onStart, onBack }) => {
   const [selectedGroups, setSelectedGroups] = useState([
     "lexs_min_1",
     "lexs_min_2",
     "lexs_min_3",
+    "lexs_min_4",
   ]);
-  const [lexicon, setLexicon] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(dataFile).then((data) => {
-      if (!cancelled) {
-        setLexicon(data);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
+  const { data: lexicon, source, loading } = useMaterialData(dataFile);
 
   // ✅ хуки закончились — теперь можно return
   if (loading) return <div className="app-loading">Загрузка...</div>;
@@ -49,7 +37,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
       }
     });
 
-    onStart(words, selectedGroups);
+    onStart(shuffleArray(words), selectedGroups);
   };
 
   return (
@@ -60,7 +48,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
         </button>
         <h2>Настройка тренировки</h2>
       </div>
-
+      <DataWarning source={source} />
       <p className="setup-description">
         Выберите лексические минимумы для тренировки:
       </p>

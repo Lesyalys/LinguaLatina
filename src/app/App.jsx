@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Home from "../features/home/Home";
 import WordList from "../features/dictionary/WordList";
@@ -8,29 +8,71 @@ import ProfilePage from "../features/profile/ProfilePage";
 import { useAuth } from "../context/AuthContext";
 import FriendsPage from "../features/friends/FriendsPage";
 import UserProfilePage from "../features/profile/UserProfilePage";
-// import SubjectsPage from "../features/subjects/SubjectsPage";
-// import ExamSubjectsPage from "../features/exam/ExamSubjectsPage";
+import MaterialsPage from "../features/materials/MaterialsPage";
 import AnatomyTickets from "../features/exam/AnatomyTickets";
+import ExamQuiz from "../features/exam/ExamQuiz";
 import { SubjectActions } from "../features/subjects/SubjectActions";
 import ExamSubjectActions from "../features/exam/ExamSubjectActions";
-
-import MaterialsPage from "../features/materials/MaterialsPage";
+import GamesPage from "../features/games/GamesPage";
+import GameRoom from "../features/games/GameRoom";
+import GameInviteListener from "../features/games/GameInviteListener";
+import { supabase } from "../lib/supabase";
 
 function App() {
   const { user, loading } = useAuth();
   const [currentScreen, setCurrentScreen] = useState("home");
   const [trainingWords, setTrainingWords] = useState([]);
-  const [trainingGroups, setTrainingGroups] = useState([]);
   const [viewingUserId, setViewingUserId] = useState(null);
+  const [activeGameId, setActiveGameId] = useState(null);
 
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedExamSubject, setSelectedExamSubject] = useState(null);
 
+  // Игры, из которых пользователь уже вышел. Realtime-событие UPDATE приходит
+  // на ЛЮБУЮ правку строки games, включая поздние (finished_at, счёт), поэтому
+  // без этого множества выход из комнаты тут же отменялся бы возвратом в GameRoom.
+  const dismissedGamesRef = useRef(new Set());
+  const activeGameIdRef = useRef(null);
+
+  const openGame = useCallback((gameId) => {
+    dismissedGamesRef.current.delete(gameId);
+    activeGameIdRef.current = gameId;
+    setActiveGameId(gameId);
+  }, []);
+
+  const closeGame = useCallback(() => {
+    if (activeGameIdRef.current) {
+      dismissedGamesRef.current.add(activeGameIdRef.current);
+    }
+    activeGameIdRef.current = null;
+    setActiveGameId(null);
+  }, []);
+
+  // 🎮 Глобальная подписка на игры
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`app-games:${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "games" },
+        (payload) => {
+          const game = payload.new;
+          const isParticipant =
+            game.host_id === user.id || game.guest_id === user.id;
+          if (!isParticipant || game.status !== "active") return;
+          if (dismissedGamesRef.current.has(game.id)) return;
+          openGame(game.id);
+        },
+      )
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [user, openGame]);
+
   if (loading) return <div className="app-loading">Загрузка...</div>;
 
-  const startTraining = (words, groups) => {
+  const startTraining = (words) => {
     setTrainingWords(words);
-    setTrainingGroups(groups);
     setCurrentScreen("trainingCards");
   };
 
@@ -39,13 +81,39 @@ function App() {
     setCurrentScreen("userProfile");
   };
 
+  const requireAuth = (screen) => {
+    if (!user) {
+      setCurrentScreen("profile");
+      return false;
+    }
+    setCurrentScreen(screen);
+    return true;
+  };
+
   const renderScreen = () => {
+    // 🎮 Если есть активная игра — рендерим GameRoom поверх всего
+    if (activeGameId) {
+      return (
+        <GameRoom
+          gameId={activeGameId}
+          onExit={() => {
+            closeGame();
+            setCurrentScreen("home");
+          }}
+        />
+      );
+    }
+
     switch (currentScreen) {
       case "home":
         return <Home onNavigate={setCurrentScreen} />;
 
+      case "games":
+        if (!user) return <ProfilePage />;
+        return <GamesPage onGameStart={openGame} />;
+
       // ============================================================
-      // МАТЕРИАЛЫ (объединённый раздел)
+      // МАТЕРИАЛЫ
       // ============================================================
       case "materials":
         return (
@@ -62,16 +130,19 @@ function App() {
           />
         );
 
-      // Дальше всё как было:
+      // ------------------------------------------------------------
+      // ЛАТИНСКИЙ
+      // ------------------------------------------------------------
       case "subjectActions":
         return (
           <SubjectActions
             subject={selectedSubject}
             onOpenAction={(action) => {
-              if (action.id === "wordList") setCurrentScreen("wordList");
+              if (action.id === "wordList") {
+                setCurrentScreen("wordList");
+              }
               if (action.id === "training") {
-                if (!user) setCurrentScreen("profile");
-                else setCurrentScreen("trainingSetup");
+                requireAuth("trainingSetup");
               }
             }}
             onBack={() => setCurrentScreen("materials")}
@@ -85,15 +156,14 @@ function App() {
               selectedSubject?.actions.find((a) => a.id === "wordList")
                 ?.dataFile
             }
-            onBack={() => setCurrentScreen("subjectActions")}
+            onBack={() =>
+              setCurrentScreen(user ? "subjectActions" : "materials")
+            }
           />
         );
 
       case "trainingSetup":
-        if (!user)
-          return (
-            <ProfilePage onBack={() => setCurrentScreen("subjectActions")} />
-          );
+        if (!user) return <ProfilePage />;
         return (
           <TrainingSetup
             dataFile={
@@ -106,25 +176,28 @@ function App() {
         );
 
       case "trainingCards":
-        if (!user)
-          return (
-            <ProfilePage onBack={() => setCurrentScreen("trainingSetup")} />
-          );
+        if (!user) return <ProfilePage />;
         return (
           <TrainingCards
             words={trainingWords}
-            selectedGroups={trainingGroups}
             onBack={() => setCurrentScreen("trainingSetup")}
           />
         );
 
+      // ------------------------------------------------------------
+      // АНАТОМИЯ
+      // ------------------------------------------------------------
       case "examSubjectActions":
         return (
           <ExamSubjectActions
             subject={selectedExamSubject}
             onOpenAction={(action) => {
-              if (action.id === "tickets") setCurrentScreen("anatomyTickets");
-              if (action.id === "examQuiz") setCurrentScreen("examQuiz");
+              if (action.id === "tickets") {
+                setCurrentScreen("anatomyTickets");
+              }
+              if (action.id === "examQuiz") {
+                requireAuth("examQuiz");
+              }
             }}
             onBack={() => setCurrentScreen("materials")}
           />
@@ -137,14 +210,29 @@ function App() {
               selectedExamSubject?.actions.find((a) => a.id === "tickets")
                 ?.dataFile
             }
+            onBack={() =>
+              setCurrentScreen(user ? "examSubjectActions" : "materials")
+            }
+          />
+        );
+
+      case "examQuiz":
+        if (!user) return <ProfilePage />;
+        return (
+          <ExamQuiz
+            dataFile={
+              selectedExamSubject?.actions.find((a) => a.id === "examQuiz")
+                ?.dataFile
+            }
             onBack={() => setCurrentScreen("examSubjectActions")}
           />
         );
 
-      // Друзья, профиль и т.д. — без изменений
+      // ============================================================
+      // ДРУЗЬЯ, ПРОФИЛЬ
+      // ============================================================
       case "friends":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return <FriendsPage onOpenProfile={openUserProfile} />;
 
       case "userProfile":
@@ -170,6 +258,8 @@ function App() {
     <div className="app-layout">
       <Sidebar currentScreen={currentScreen} onNavigate={setCurrentScreen} />
       <main className="app-content">{renderScreen()}</main>
+
+      <GameInviteListener onAccepted={openGame} />
     </div>
   );
 }

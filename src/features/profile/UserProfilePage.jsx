@@ -1,5 +1,5 @@
 // src/components/profile/UserProfilePage.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnlineUsers } from "../../context/PresenceContext";
 import {
@@ -10,11 +10,14 @@ import {
   removeFriendship,
 } from "../../lib/friends";
 import ProfileCard from "./ProfileCard";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 
 const UserProfilePage = ({ userId, onBack }) => {
   const onlineUsers = useOnlineUsers();
   const isOnline = onlineUsers.has(userId);
   const { user } = useAuth();
+  const notice = useNotice();
   const [profile, setProfile] = useState(null);
   const [friendship, setFriendship] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,9 +25,7 @@ const UserProfilePage = ({ userId, onBack }) => {
 
   const isSelf = user?.id === userId;
 
-  // ============================================================
   // Загрузка профиля и статуса дружбы
-  // ============================================================
   useEffect(() => {
     if (!userId) return;
 
@@ -49,9 +50,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     load();
   }, [userId, user?.id, isSelf]);
 
-  // ============================================================
   // Действия с дружбой
-  // ============================================================
   const refreshFriendship = async () => {
     const { data } = await getFriendshipWithUser(user.id, userId);
     setFriendship(data);
@@ -62,7 +61,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await sendFriendRequest(user.id, userId);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
@@ -73,7 +72,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await acceptFriendRequest(friendship.id);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
@@ -85,19 +84,18 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await removeFriendship(friendship.id);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
   };
 
-  // ============================================================
-  // Рендер: состояния загрузки / ошибки
-  // ============================================================
+  // Рендер: загрузка
   if (loading) {
     return <div className="page-placeholder">Загрузка профиля...</div>;
   }
 
+  // Рендер: не найден
   if (!profile) {
     return (
       <div className="page-placeholder">
@@ -109,9 +107,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     );
   }
 
-  // ============================================================
   // Верхняя кнопка (зависит от статуса дружбы)
-  // ============================================================
   const renderTopButton = () => {
     if (isSelf) return null;
 
@@ -165,9 +161,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     return null;
   };
 
-  // ============================================================
   // Нижняя панель действий
-  // ============================================================
   const renderBottomActions = () => {
     const actions = [];
 
@@ -226,19 +220,6 @@ const UserProfilePage = ({ userId, onBack }) => {
       }
     }
 
-    if (isSelf) {
-      actions.push(
-        <button
-          key="self"
-          className="bottom-bar-btn"
-          onClick={onBack}
-          title="К своему профилю"
-        >
-          👤
-        </button>,
-      );
-    }
-
     actions.push(
       <button
         key="back-btn"
@@ -255,11 +236,13 @@ const UserProfilePage = ({ userId, onBack }) => {
 
   return (
     <div className="user-profile-page">
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
       <ProfileCard
         profile={profile}
         topButton={renderTopButton()}
-        online={isOnline}
         bottomBar={renderBottomActions()}
+        online={isOnline}
+        isOwn={false}
       />
     </div>
   );
