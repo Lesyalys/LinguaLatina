@@ -1,0 +1,1413 @@
+{
+  "name": "test",
+  "description": "Латинский язык: лексические минимумы (3 группы)",
+  "version": 1.0,
+  "update_at": "2026-10-16T00:00:00Z",
+  "data": [
+    {
+      "name": "lexs_min_1",
+      "update_at": "2026-10-16T00:00:00Z",
+      "worlds": [
+        {
+          "text": "aorta",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "аорта"
+        },
+        {
+          "text": "arteria",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "артерия"
+        },
+        {
+          "text": "concha",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "раковина"
+        },
+        {
+          "text": "anasarca",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "отек подкожной клетчатки"
+        },
+        {
+          "text": "cauda",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "хвост"
+        },
+        {
+          "text": "lamina",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "пластинка"
+        },
+        {
+          "text": "lingua",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "язык"
+        },
+        {
+          "text": "maxilla",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "верхняя челюсть"
+        },
+        {
+          "text": "mandibula",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "нижняя челюсть"
+        },
+        {
+          "text": "orbita",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "глазница"
+        },
+        {
+          "text": "scapula",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "лопатка"
+        },
+        { "text": "spina", "ends": "ae", "gender": "f", "translation": "ость" },
+        { "text": "vena", "ends": "ae", "gender": "f", "translation": "вена" },
+        { "text": "bucca", "ends": "ae", "gender": "f", "translation": "щека" },
+        {
+          "text": "cellula",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "клетка, ячейка"
+        },
+        {
+          "text": "commissura",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "спайка"
+        },
+        {
+          "text": "fibula",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "малая берцовая кость"
+        },
+        {
+          "text": "tibia",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "большая берцовая кость"
+        },
+        {
+          "text": "ulna",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "локтевая кость"
+        },
+        {
+          "text": "substantia",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "вещество, основа, сущность"
+        },
+        {
+          "text": "clavicula",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "ключица"
+        },
+        {
+          "text": "allergia",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "аллергия, измененная реактивность организма"
+        },
+        {
+          "text": "fractura",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "перелом"
+        },
+        {
+          "text": "planta",
+          "ends": "ae",
+          "gender": "f",
+          "translation": "подошва; растение"
+        },
+        {
+          "text": "musculus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "мышца"
+        },
+        {
+          "text": "magister",
+          "ends": "tri",
+          "gender": "m",
+          "translation": "учитель, наставник"
+        },
+        {
+          "text": "ligamentum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "связка"
+        },
+        {
+          "text": "ganglion",
+          "ends": "i",
+          "gender": "n",
+          "translation": "нервный узел"
+        },
+        {
+          "text": "paediater",
+          "ends": "tri",
+          "gender": "m",
+          "translation": "педиатр, детский врач"
+        },
+        {
+          "text": "puer",
+          "ends": "eri",
+          "gender": "m",
+          "translation": "мальчик, ребенок"
+        },
+        {
+          "text": "encephalon",
+          "ends": "i",
+          "gender": "n",
+          "translation": "головной мозг"
+        },
+        {
+          "text": "cerebrum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "большой головной мозг"
+        },
+        {
+          "text": "vestibulum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "преддверие"
+        },
+        {
+          "text": "vir",
+          "ends": "viri",
+          "gender": "m",
+          "translation": "муж, мужчина"
+        },
+        {
+          "text": "morbus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "болезнь"
+        },
+        { "text": "lobus", "ends": "i", "gender": "m", "translation": "доля" },
+        {
+          "text": "ostium",
+          "ends": "i",
+          "gender": "n",
+          "translation": "вход, устье, отверстие"
+        },
+        { "text": "oculus", "ends": "i", "gender": "m", "translation": "глаз" },
+        {
+          "text": "rectum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "прямая кишка"
+        },
+        {
+          "text": "periosteum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "надкостница"
+        },
+        { "text": "venenum", "ends": "i", "gender": "n", "translation": "яд" },
+        {
+          "text": "serum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "сыворотка"
+        },
+        {
+          "text": "ventriculus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "желудок, желудочек"
+        },
+        {
+          "text": "oesophagus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "пищевод"
+        },
+        {
+          "text": "truncus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "ствол, туловище"
+        },
+        {
+          "text": "nucleus",
+          "ends": "i",
+          "gender": "m",
+          "translation": "ядро"
+        },
+        {
+          "text": "intestinum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "кишка"
+        },
+        {
+          "text": "membrum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "конечность, орган, часть тела"
+        },
+        {
+          "text": "acidum",
+          "ends": "i",
+          "gender": "n",
+          "translation": "кислота"
+        },
+        {
+          "text": "collega",
+          "ends": "ae",
+          "gender": "m",
+          "translation": "коллега, товарищ по профессии"
+        },
+        {
+          "text": "diabetes",
+          "ends": "ae",
+          "gender": "m",
+          "translation": "диабет"
+        },
+        {
+          "text": "ascites",
+          "ends": "ae",
+          "gender": "m",
+          "translation": "асцит, водянка брюшной полости"
+        },
+        {
+          "text": "systole",
+          "ends": "es",
+          "gender": "f",
+          "translation": "систола, сокращение желудочков сердца"
+        },
+        {
+          "text": "diastole",
+          "ends": "es",
+          "gender": "f",
+          "translation": "диастола, пауза (противоположная систоле фаза)"
+        },
+        {
+          "text": "chole",
+          "ends": "es",
+          "gender": "f",
+          "translation": "желчь"
+        },
+        {
+          "text": "dyspnoe",
+          "ends": "es",
+          "gender": "f",
+          "translation": "одышка"
+        },
+        { "text": "Aloe", "ends": "es", "gender": "f", "translation": "алоэ" },
+        {
+          "text": "Amygdalus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "миндаль"
+        },
+        { "text": "Pinus", "ends": "i", "gender": "f", "translation": "сосна" },
+        {
+          "text": "Crataegus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "боярышник"
+        },
+        {
+          "text": "bolus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "глина, большая пилюля"
+        },
+        {
+          "text": "humus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "земля, почва"
+        },
+        {
+          "text": "periodus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "период, промежуток времени"
+        },
+        {
+          "text": "methodus",
+          "ends": "i",
+          "gender": "f",
+          "translation": "метод"
+        },
+        {
+          "text": "diameter",
+          "ends": "tri",
+          "gender": "f",
+          "translation": "диаметр"
+        },
+        {
+          "text": "virus",
+          "ends": "i",
+          "gender": "n",
+          "translation": "вирус, яд"
+        },
+        {
+          "text": "vulgus",
+          "ends": "i",
+          "gender": "n",
+          "translation": "толпа, чернь"
+        }
+      ]
+    },
+    {
+      "name": "lexs_min_2",
+      "update_at": "2026-10-16T00:00:00Z",
+      "worlds": [
+        {
+          "text": "aegrotus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "больной"
+        },
+        {
+          "text": "acutus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "острый, остро протекающий"
+        },
+        {
+          "text": "chronicus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "хронический"
+        },
+        {
+          "text": "albus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "белый"
+        },
+        {
+          "text": "flavus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "желтый"
+        },
+        {
+          "text": "niger",
+          "ends": "gra, grum",
+          "gender": "",
+          "translation": "черный"
+        },
+        {
+          "text": "sinister",
+          "ends": "tra, trum",
+          "gender": "",
+          "translation": "левый"
+        },
+        {
+          "text": "dexter",
+          "ends": "tra, trum",
+          "gender": "",
+          "translation": "правый"
+        },
+        {
+          "text": "externus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наружный"
+        },
+        {
+          "text": "internus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "внутренний"
+        },
+        {
+          "text": "profundus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "глубокий"
+        },
+        {
+          "text": "medianus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "срединный"
+        },
+        {
+          "text": "medius",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "средний"
+        },
+        {
+          "text": "longus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "длинный"
+        },
+        {
+          "text": "obliquus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "косой"
+        },
+        {
+          "text": "oblongatus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "продолговатый"
+        },
+        {
+          "text": "durus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "твердый"
+        },
+        {
+          "text": "cavus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "полый"
+        },
+        {
+          "text": "transversus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "поперечный"
+        },
+        {
+          "text": "verus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "истинный"
+        },
+        {
+          "text": "ruber",
+          "ends": "bra, brum",
+          "gender": "",
+          "translation": "красный"
+        },
+        {
+          "text": "osseus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "костный"
+        },
+        {
+          "text": "xiphoideus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "мечевидный"
+        },
+        {
+          "text": "mastoideus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "сосцевидный"
+        },
+        {
+          "text": "pterygoideus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "крыловидный"
+        },
+        {
+          "text": "thoracicus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "грудной"
+        },
+        {
+          "text": "thyroideus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "щитовидный"
+        },
+        {
+          "text": "venosus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "венозный"
+        },
+        {
+          "text": "zygomaticus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "скуловой"
+        },
+        {
+          "text": "compositus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "сложный"
+        },
+        {
+          "text": "contagiosus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "заразный"
+        },
+        {
+          "text": "cribrosus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "решетчатый"
+        },
+        {
+          "text": "cutaneus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "кожный"
+        },
+        {
+          "text": "felleus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "желчный"
+        },
+        {
+          "text": "fluidus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "жидкий"
+        },
+        {
+          "text": "frigidus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "холодный"
+        },
+        {
+          "text": "malignus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "злокачественный"
+        },
+        {
+          "text": "multus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "многочисленный"
+        },
+        {
+          "text": "palatinus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "нёбный"
+        },
+        {
+          "text": "purus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "чистый"
+        },
+        {
+          "text": "sanus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "здоровый"
+        },
+        {
+          "text": "sedativus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "успокаивающий"
+        },
+        {
+          "text": "gluteus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "ягодичный"
+        },
+        {
+          "text": "rectus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "прямой"
+        },
+        {
+          "text": "longior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "более длинный"
+        },
+        {
+          "text": "longissimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "самый длинный, длиннейший"
+        },
+        {
+          "text": "asper",
+          "ends": "era, erum",
+          "gender": "",
+          "translation": "трудный, шероховатый"
+        },
+        {
+          "text": "asperior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "более трудный"
+        },
+        {
+          "text": "asperrimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "труднейший, самый трудный"
+        },
+        {
+          "text": "nigrior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "более темный (черный)"
+        },
+        {
+          "text": "nigerrimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "самый темный (черный)"
+        },
+        {
+          "text": "bonus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "хороший"
+        },
+        {
+          "text": "melior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "лучший"
+        },
+        {
+          "text": "optimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наилучший"
+        },
+        {
+          "text": "malus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "плохой"
+        },
+        {
+          "text": "pejor",
+          "ends": "jus",
+          "gender": "",
+          "translation": "худший"
+        },
+        {
+          "text": "pessimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наихудший"
+        },
+        {
+          "text": "magnus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "большой"
+        },
+        {
+          "text": "major",
+          "ends": "jus",
+          "gender": "",
+          "translation": "больший"
+        },
+        {
+          "text": "maximus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наибольший"
+        },
+        {
+          "text": "parvus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "малый"
+        },
+        {
+          "text": "minor",
+          "ends": "us",
+          "gender": "",
+          "translation": "меньший"
+        },
+        {
+          "text": "minimus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наименьший"
+        },
+        {
+          "text": "superior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "верхний"
+        },
+        {
+          "text": "supremus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "наивысший, самый верхний"
+        },
+        {
+          "text": "inferior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "нижний"
+        },
+        {
+          "text": "anterior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "передний"
+        },
+        {
+          "text": "posterior",
+          "ends": "ius",
+          "gender": "",
+          "translation": "задний"
+        },
+        {
+          "text": "proximus",
+          "ends": "a, um",
+          "gender": "",
+          "translation": "ближайший"
+        }
+      ]
+    },
+    {
+      "name": "lexs_min_3",
+      "update_at": "2026-10-16T00:00:00Z",
+      "worlds": [
+        {
+          "text": "apex",
+          "ends": "icis",
+          "gender": "m",
+          "translation": "верхушка, кончик"
+        },
+        {
+          "text": "flos",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "цветок"
+        },
+        {
+          "text": "calor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "жар"
+        },
+        {
+          "text": "tumor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "опухоль, припухлость"
+        },
+        {
+          "text": "rubor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "краснота"
+        },
+        {
+          "text": "dolor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "боль"
+        },
+        {
+          "text": "liquor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "жидкость"
+        },
+        {
+          "text": "levator",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "поднимающая мышца"
+        },
+        {
+          "text": "depressor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "опускающая мышца"
+        },
+        {
+          "text": "abductor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "отводящая мышца"
+        },
+        {
+          "text": "adductor",
+          "ends": "oris",
+          "gender": "m",
+          "translation": "приводящая мышца"
+        },
+        {
+          "text": "venter",
+          "ends": "tris",
+          "gender": "m",
+          "translation": "живот, брюшко (мышцы)"
+        },
+        {
+          "text": "aether",
+          "ends": "eris",
+          "gender": "m",
+          "translation": "эфир"
+        },
+        {
+          "text": "trochanter",
+          "ends": "eris",
+          "gender": "m",
+          "translation": "вертел"
+        },
+        {
+          "text": "ureter",
+          "ends": "eris",
+          "gender": "m",
+          "translation": "мочеточник"
+        },
+        {
+          "text": "cortex",
+          "ends": "icis",
+          "gender": "m",
+          "translation": "кора"
+        },
+        {
+          "text": "pollex",
+          "ends": "icis",
+          "gender": "m",
+          "translation": "большой палец руки"
+        },
+        {
+          "text": "pes",
+          "ends": "pedis",
+          "gender": "m",
+          "translation": "нога, стопа"
+        },
+        {
+          "text": "paries",
+          "ends": "etis",
+          "gender": "m",
+          "translation": "стена, стенка"
+        },
+        {
+          "text": "homo",
+          "ends": "inis",
+          "gender": "m",
+          "translation": "человек"
+        },
+        {
+          "text": "pulmo",
+          "ends": "onis",
+          "gender": "m",
+          "translation": "легкое"
+        },
+        { "text": "auris", "ends": "is", "gender": "f", "translation": "ухо" },
+        { "text": "cutis", "ends": "is", "gender": "f", "translation": "кожа" },
+        {
+          "text": "cavitas",
+          "ends": "atis",
+          "gender": "f",
+          "translation": "впадина, полость"
+        },
+        {
+          "text": "tuberositas",
+          "ends": "atis",
+          "gender": "f",
+          "translation": "бугристость"
+        },
+        {
+          "text": "extremitas",
+          "ends": "atis",
+          "gender": "f",
+          "translation": "конец (длинного органа)"
+        },
+        {
+          "text": "sanitas",
+          "ends": "atis",
+          "gender": "f",
+          "translation": "здоровье"
+        },
+        {
+          "text": "amputatio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "отсечение"
+        },
+        {
+          "text": "sectio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "сечение, разрезание"
+        },
+        {
+          "text": "resectio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "удаление части органа"
+        },
+        {
+          "text": "flexio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "сгибание"
+        },
+        {
+          "text": "extensio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "разгибание"
+        },
+        {
+          "text": "regio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "область"
+        },
+        {
+          "text": "articulatio",
+          "ends": "onis",
+          "gender": "f",
+          "translation": "сустав"
+        },
+        {
+          "text": "basis",
+          "ends": "is",
+          "gender": "f",
+          "translation": "основание"
+        },
+        { "text": "pelvis", "ends": "is", "gender": "f", "translation": "таз" },
+        {
+          "text": "febris",
+          "ends": "is",
+          "gender": "f",
+          "translation": "лихорадка"
+        },
+        {
+          "text": "symphysis",
+          "ends": "is",
+          "gender": "f",
+          "translation": "сращение"
+        },
+        {
+          "text": "synostosis",
+          "ends": "is",
+          "gender": "f",
+          "translation": "костное соединение"
+        },
+        {
+          "text": "pubes",
+          "ends": "is",
+          "gender": "f",
+          "translation": "лобок"
+        },
+        {
+          "text": "tabes",
+          "ends": "is",
+          "gender": "f",
+          "translation": "истощение, сухотка"
+        },
+        {
+          "text": "frons",
+          "ends": "frontis",
+          "gender": "f",
+          "translation": "лоб"
+        },
+        {
+          "text": "mens",
+          "ends": "mentis",
+          "gender": "f",
+          "translation": "ум, разум"
+        },
+        {
+          "text": "mors",
+          "ends": "mortis",
+          "gender": "f",
+          "translation": "смерть"
+        },
+        {
+          "text": "pars",
+          "ends": "partis",
+          "gender": "f",
+          "translation": "часть"
+        },
+        {
+          "text": "iris",
+          "ends": "idis",
+          "gender": "f",
+          "translation": "радужная оболочка глаза"
+        },
+        {
+          "text": "pyramis",
+          "ends": "idis",
+          "gender": "f",
+          "translation": "пирамида"
+        },
+        {
+          "text": "cervix",
+          "ends": "icis",
+          "gender": "f",
+          "translation": "шея, шейка"
+        },
+        {
+          "text": "radix",
+          "ends": "icis",
+          "gender": "f",
+          "translation": "корень"
+        },
+        {
+          "text": "phalanx",
+          "ends": "ngis",
+          "gender": "f",
+          "translation": "фаланга"
+        },
+        {
+          "text": "hirudo",
+          "ends": "inis",
+          "gender": "f",
+          "translation": "пиявка"
+        },
+        {
+          "text": "cartilago",
+          "ends": "inis",
+          "gender": "f",
+          "translation": "хрящ"
+        },
+        {
+          "text": "foramen",
+          "ends": "inis",
+          "gender": "n",
+          "translation": "отверстие"
+        },
+        {
+          "text": "abdomen",
+          "ends": "inis",
+          "gender": "n",
+          "translation": "живот"
+        },
+        {
+          "text": "semen",
+          "ends": "inis",
+          "gender": "n",
+          "translation": "семя"
+        },
+        {
+          "text": "tempus",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "висок, время"
+        },
+        {
+          "text": "corpus",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "тело"
+        },
+        {
+          "text": "pectus",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "грудь"
+        },
+        {
+          "text": "viscus",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "внутренность"
+        },
+        {
+          "text": "ulcus",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "язва"
+        },
+        {
+          "text": "vulnus",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "рана"
+        },
+        {
+          "text": "femur",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "бедро"
+        },
+        {
+          "text": "jecur",
+          "ends": "oris",
+          "gender": "n",
+          "translation": "печень (фарм.)"
+        },
+        {
+          "text": "crus",
+          "ends": "cruris",
+          "gender": "n",
+          "translation": "ножка, голень"
+        },
+        {
+          "text": "Sulfur",
+          "ends": "uris",
+          "gender": "n",
+          "translation": "сера"
+        },
+        { "text": "rete", "ends": "is", "gender": "n", "translation": "сеть" },
+        {
+          "text": "secale",
+          "ends": "is",
+          "gender": "n",
+          "translation": "рожь"
+        },
+        {
+          "text": "animal",
+          "ends": "alis",
+          "gender": "n",
+          "translation": "животное"
+        },
+        {
+          "text": "hepar",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "печень (анат.)"
+        },
+        {
+          "text": "calcar",
+          "ends": "aris",
+          "gender": "n",
+          "translation": "шпора"
+        },
+        {
+          "text": "lac",
+          "ends": "lactis",
+          "gender": "n",
+          "translation": "молоко"
+        },
+        {
+          "text": "mel",
+          "ends": "mellis",
+          "gender": "n",
+          "translation": "мед"
+        },
+        {
+          "text": "fel",
+          "ends": "fellis",
+          "gender": "n",
+          "translation": "желчь"
+        },
+        {
+          "text": "caput",
+          "ends": "itis",
+          "gender": "n",
+          "translation": "голова"
+        },
+        {
+          "text": "occiput",
+          "ends": "itis",
+          "gender": "n",
+          "translation": "затылок"
+        },
+        {
+          "text": "symptoma",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "признак"
+        },
+        {
+          "text": "haema",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "кровь"
+        },
+        {
+          "text": "soma",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "тело"
+        },
+        {
+          "text": "diaphragma",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "диафрагма, грудобрюшная преграда"
+        },
+        {
+          "text": "oedema",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "отек"
+        },
+        {
+          "text": "parenchyma",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "паренхима"
+        },
+        {
+          "text": "sol",
+          "ends": "solis",
+          "gender": "m",
+          "translation": "солнце"
+        },
+        {
+          "text": "sal",
+          "ends": "salis",
+          "gender": "m",
+          "translation": "соль"
+        },
+        { "text": "os", "ends": "oris", "gender": "n", "translation": "рот" },
+        {
+          "text": "os",
+          "ends": "ossis",
+          "gender": "n",
+          "translation": "кость"
+        },
+        {
+          "text": "cor",
+          "ends": "cordis",
+          "gender": "n",
+          "translation": "сердце"
+        },
+        {
+          "text": "tuber",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "бугор"
+        },
+        {
+          "text": "cadaver",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "труп"
+        },
+        {
+          "text": "piper",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "перец"
+        },
+        {
+          "text": "lex",
+          "ends": "legis",
+          "gender": "f",
+          "translation": "закон"
+        },
+        {
+          "text": "mater",
+          "ends": "tris",
+          "gender": "f",
+          "translation": "мать, мозговая оболочка"
+        },
+        {
+          "text": "gaster",
+          "ends": "tris",
+          "gender": "f",
+          "translation": "желудок"
+        },
+        {
+          "text": "papaver",
+          "ends": "eris",
+          "gender": "n",
+          "translation": "мак"
+        },
+        {
+          "text": "canalis",
+          "ends": "is",
+          "gender": "m",
+          "translation": "канал"
+        },
+        {
+          "text": "dens",
+          "ends": "dentis",
+          "gender": "m",
+          "translation": "зуб"
+        },
+        {
+          "text": "margo",
+          "ends": "inis",
+          "gender": "m",
+          "translation": "край"
+        },
+        {
+          "text": "sanguis",
+          "ends": "inis",
+          "gender": "m",
+          "translation": "кровь"
+        },
+        {
+          "text": "tendo",
+          "ends": "inis",
+          "gender": "m",
+          "translation": "сухожилие"
+        },
+        {
+          "text": "larynx",
+          "ends": "ngis",
+          "gender": "m",
+          "translation": "гортань"
+        },
+        {
+          "text": "pharynx",
+          "ends": "ngis",
+          "gender": "m",
+          "translation": "глотка"
+        },
+        {
+          "text": "thorax",
+          "ends": "acis",
+          "gender": "m",
+          "translation": "грудь, грудная клетка"
+        },
+        {
+          "text": "vas",
+          "ends": "vasis",
+          "gender": "n",
+          "translation": "сосуд"
+        },
+        {
+          "text": "pancreas",
+          "ends": "atis",
+          "gender": "n",
+          "translation": "поджелудочная железа"
+        },
+        {
+          "text": "ren",
+          "ends": "renis",
+          "gender": "m",
+          "translation": "почка"
+        },
+        {
+          "text": "lien",
+          "ends": "enis",
+          "gender": "m",
+          "translation": "селезенка"
+        },
+        {
+          "text": "aden",
+          "ends": "enis",
+          "gender": "m",
+          "translation": "железа"
+        }
+      ]
+    }
+  ]
+}
