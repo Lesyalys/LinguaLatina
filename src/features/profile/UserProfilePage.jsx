@@ -1,5 +1,5 @@
 // src/components/profile/UserProfilePage.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnlineUsers } from "../../context/PresenceContext";
 import {

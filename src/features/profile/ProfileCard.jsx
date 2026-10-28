@@ -1,22 +1,12 @@
-// src/components/profile/ProfileCard.jsx
-import React, { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import React from "react";
 import {
   getInitials,
   formatMemberSince,
   calcExpPercent,
 } from "../../lib/profileUtils";
+import { useGroupPreference } from "../../hooks/useGroupPreference";
+import GroupSwitcher from "../../components/ui/GroupSwitcher";
 
-/**
- * Презентационный компонент карточки профиля.
- *
- * Props:
- *  - profile: объект профиля
- *  - topButton: ReactNode — кнопка в правом верхнем углу обложки
- *  - online?: boolean — показывать ли индикатор онлайна
- *  - bottomBar?: ReactNode — нижняя панель действий
- *  - achievements?: Array — список достижений (пока заглушка)
- */
 const ProfileCard = ({
   profile,
   topButton,
@@ -24,24 +14,9 @@ const ProfileCard = ({
   bottomBar,
   achievements = [],
 }) => {
-  const { updateProfile } = useAuth();
-  const [savingGroup, setSavingGroup] = useState(false);
+  const { group, setGroup } = useGroupPreference();
 
   if (!profile) return null;
-
-  const currentGroup = profile.group || "A";
-
-  const handleGroupChange = async (newGroup) => {
-    if (newGroup === currentGroup) return;
-    setSavingGroup(true);
-    try {
-      await updateProfile({ group: newGroup });
-    } catch (err) {
-      alert("Не удалось сохранить подгруппу: " + (err.message || err));
-    } finally {
-      setSavingGroup(false);
-    }
-  };
 
   const initials = getInitials(profile);
   const memberSince = formatMemberSince(profile.created_at);
@@ -95,41 +70,20 @@ const ProfileCard = ({
         <p className="profile-meta">На платформе с {memberSince}</p>
       </div>
 
-      {/* 🎯 Переключатель подгруппы */}
+      {/* 🎯 Подгруппа */}
       <div className="profile-group-switch">
-        <span className="profile-group-label">Моя подгруппа:</span>
-        <div className="profile-group-buttons">
-          <button
-            type="button"
-            className={`group-btn ${currentGroup === "A" ? "active" : ""}`}
-            onClick={() => handleGroupChange("A")}
-            disabled={savingGroup}
-          >
-            Группа A
-          </button>
-          <button
-            type="button"
-            className={`group-btn ${currentGroup === "B" ? "active" : ""}`}
-            onClick={() => handleGroupChange("B")}
-            disabled={savingGroup}
-          >
-            Группа B
-          </button>
-        </div>
+        <GroupSwitcher group={group} onChange={setGroup} />
       </div>
 
-      {/* Достижения (заглушка) */}
+      {/* Достижения */}
       <ProfileAchievements achievements={achievements} />
 
-      {/* Нижняя панель (опционально) */}
+      {/* Нижняя панель */}
       {bottomBar && <div className="profile-bottom-bar">{bottomBar}</div>}
     </div>
   );
 };
 
-/**
- * Блок достижений. Пока заглушка.
- */
 const ProfileAchievements = ({ achievements }) => {
   return (
     <div className="profile-achievements">

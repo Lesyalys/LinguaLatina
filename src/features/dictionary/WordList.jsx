@@ -8,6 +8,9 @@ const WordList = ({ dataFile, onBack }) => {
   const [source, setSource] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 📂 Состояние раскрытых групп (по умолчанию — все раскрыты)
+  const [collapsedGroups, setCollapsedGroups] = useState(new Set());
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -52,6 +55,29 @@ const WordList = ({ dataFile, onBack }) => {
     [groupedData],
   );
 
+  // 🔀 Переключить группу
+  const toggleGroup = (groupName) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupName)) next.delete(groupName);
+      else next.add(groupName);
+      return next;
+    });
+  };
+
+  // 📂 Свернуть / развернуть все
+  const collapseAll = () => {
+    setCollapsedGroups(new Set(groupedData.map((g) => g.name)));
+  };
+
+  const expandAll = () => {
+    setCollapsedGroups(new Set());
+  };
+
+  const allCollapsed =
+    groupedData.length > 0 &&
+    groupedData.every((g) => collapsedGroups.has(g.name));
+
   if (loading) return <div className="app-loading">Загрузка...</div>;
   if (!lexicon)
     return <div className="page-placeholder">Не удалось загрузить данные</div>;
@@ -65,7 +91,6 @@ const WordList = ({ dataFile, onBack }) => {
         <h2>Список слов ({totalFound})</h2>
       </div>
 
-      {/* ⚠️ Предупреждение о локальных данных */}
       <DataWarning source={source} />
 
       <div className="search-box">
@@ -77,27 +102,55 @@ const WordList = ({ dataFile, onBack }) => {
         />
       </div>
 
-      {groupedData.map((group) => (
-        <div key={group.name} className="group-section">
-          <h3 className="group-title">
-            {group.name.replace("lexs_min_", "Лексический минимум ")}
-            <span className="group-count">
-              ({group.filteredCount} из {group.totalCount})
-            </span>
-          </h3>
-
-          <div className="words-grid">
-            {group.worlds.map((word, index) => (
-              <div key={index} className="word-card">
-                <div className="word-latin">
-                  <strong>{word.text}</strong>, {word.ends} {word.gender}
-                </div>
-                <div className="word-russian">{word.translation}</div>
-              </div>
-            ))}
-          </div>
+      {/* 📂 Управление всеми группами */}
+      {groupedData.length > 0 && (
+        <div className="group-controls">
+          <button
+            type="button"
+            className="group-control-btn"
+            onClick={allCollapsed ? expandAll : collapseAll}
+          >
+            {allCollapsed ? "📂 Развернуть все" : "📁 Свернуть все"}
+          </button>
         </div>
-      ))}
+      )}
+
+      {groupedData.map((group) => {
+        const isCollapsed = collapsedGroups.has(group.name);
+
+        return (
+          <div key={group.name} className="group-section">
+            <button
+              type="button"
+              className="group-title group-title--toggle"
+              onClick={() => toggleGroup(group.name)}
+            >
+              <span className="group-title-text">
+                <span className={`group-chevron ${isCollapsed ? "" : "open"}`}>
+                  ▸
+                </span>
+                {group.name.replace("lexs_min_", "Лексический минимум ")}
+              </span>
+              <span className="group-count">
+                ({group.filteredCount} из {group.totalCount})
+              </span>
+            </button>
+
+            {!isCollapsed && (
+              <div className="words-grid">
+                {group.worlds.map((word, index) => (
+                  <div key={index} className="word-card">
+                    <div className="word-latin">
+                      <strong>{word.text}</strong>, {word.ends} {word.gender}
+                    </div>
+                    <div className="word-russian">{word.translation}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {totalFound === 0 && <p className="no-results">Ничего не найдено</p>}
     </div>

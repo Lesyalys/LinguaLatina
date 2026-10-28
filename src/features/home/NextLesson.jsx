@@ -2,27 +2,22 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getNextLesson } from "../../lib/schedule";
 
-const NextLesson = ({ scheduleData, weekType, dayIndex }) => {
+const NextLesson = ({ scheduleData, weekType, dayIndex, viewGroup }) => {
   const { user, profile } = useAuth();
 
-  const group = profile?.group || "A";
+  // 🎯 Используем viewGroup (просмотр), а не profile.group
+  const group = viewGroup === "B" ? "B" : "A";
 
-  // ⏰ «Текущее время» — обновляется раз в 30 секунд
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     const tick = () => setNow(new Date());
-
-    // Обновляем сразу, затем — каждые 30 секунд
     tick();
     const interval = setInterval(tick, 30 * 1000);
-
-    // Также при возврате на вкладку — обновляем, чтобы не было «залипшего» времени
     const onVisibility = () => {
       if (document.visibilityState === "visible") tick();
     };
     document.addEventListener("visibilitychange", onVisibility);
-
     return () => {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisibility);

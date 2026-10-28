@@ -1,12 +1,19 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { shuffleArray } from "../../lib/shuffle";
+import {
+  updateSubjectProgress,
+  getSubjectProgress,
+  updateHistory,
+} from "../../lib/progress";
 
-const TrainingCards = ({ words, selectedGroups, onBack }) => {
+const TrainingCards = ({ words, onBack }) => {
   const { profile, updateProfile } = useAuth();
 
-  const shuffledWords = useMemo(() => {
-    return [...words].sort(() => Math.random() - 0.5);
-  }, [words]);
+  // Слова приходят уже перемешанными (перемешивание делается на старте).
+  // При «Пройти заново» перемешиваем заново — в обработчике, а не в рендере.
+  const [reshuffledWords, setReshuffledWords] = useState(null);
+  const shuffledWords = reshuffledWords || words;
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -44,43 +51,44 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
   const buildProgress = (wordsLearnedThisSession) => {
     const today = new Date().toISOString().split("T")[0];
     const oldProgress = profile?.progress || {};
-    const subjects = { ...(oldProgress.subjects || {}) };
 
-    const oldLatin = subjects.latin || {
-      type: "subject",
+    // 1. Читаем старый прогресс по латыни
+    const oldLatin = getSubjectProgress(
+      oldProgress,
+      "course-1",
+      "semester-1",
+      "latin",
+    ) || {
       wordsLearned: [],
       attempts: 0,
     };
 
+    // 2. Уникальные слова
     const oldSet = new Set(oldLatin.wordsLearned || []);
     wordsLearnedThisSession.forEach((w) => oldSet.add(w.text));
     const uniqueWords = Array.from(oldSet);
 
-    subjects.latin = {
-      ...oldLatin,
-      type: "subject",
-      wordsLearned: uniqueWords,
-      attempts: (oldLatin.attempts || 0) + 1,
-      lastActive: today,
-    };
+    // 3. Обновляем subject "latin"
+    let newProgress = updateSubjectProgress(
+      oldProgress,
+      "course-1",
+      "semester-1",
+      "latin",
+      {
+        type: "subject",
+        wordsLearned: uniqueWords,
+        attempts: (oldLatin.attempts || 0) + 1,
+        lastActive: today,
+      },
+    );
 
-    // history — только для логов, без streak
-    const history = [...(oldProgress.history || [])];
-    const todayEntry = history.find((h) => h.date === today);
+    // 4. Обновляем history
+    newProgress = updateHistory(newProgress, today, {
+      words: uniqueWords.length,
+    });
 
-    if (todayEntry) {
-      todayEntry.words = uniqueWords.length;
-    } else {
-      history.push({ date: today, words: uniqueWords.length });
-    }
-
-    return {
-      lastActive: today,
-      history: history.slice(-90),
-      subjects,
-    };
+    return newProgress;
   };
-
   // ============================================================
   // Сохранение
   // ============================================================
@@ -165,6 +173,7 @@ const TrainingCards = ({ words, selectedGroups, onBack }) => {
     setIsFlipped(false);
     setCorrectWords([]);
     setFinished(false);
+    setReshuffledWords(shuffleArray(words));
   };
 
   // ============================================================

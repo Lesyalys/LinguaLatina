@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import AuthForm from "../auth/AuthForm";
 import ProfileView from "./ProfileView";
 import ProfileEdit from "./ProfileEdit";
 
-const ProfilePage = ({ onBack }) => {
+const ProfilePage = () => {
   const { user, profile, loading } = useAuth();
   const [mode, setMode] = useState("view"); // 'view' | 'edit'
 

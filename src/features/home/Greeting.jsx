@@ -2,7 +2,7 @@ import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import NextLesson from "./NextLesson";
 
-const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
+const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
   const { profile, user } = useAuth();
 
   const hour = new Date().getHours();
@@ -12,27 +12,29 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
   else if (hour < 18) greeting = "Добрый день";
   else greeting = "Добрый вечер";
 
-  // 👤 Гость
   if (!user || !profile) {
     return (
       <div className="greeting guest">
         <div className="greeting-avatar guest-avatar">👋</div>
         <div className="greeting-text">
           <h1 className="greeting-title">
-            Добро пожаловать в <span className="greeting-name">Medicat</span>!
+            Добро пожаловать в{" "}
+            <span className="greeting-name">Lingua Latina</span>!
           </h1>
           <p className="greeting-username">
-            Платформа для удобного изучения материалов
+            Платформа для изучения латыни и подготовки к экзаменам
           </p>
           <p className="greeting-subtitle">
             Откройте материалы или войдите, чтобы начать тренировку.
           </p>
+          <button className="greeting-login-btn" onClick={onLogin}>
+            👤 Войти / Зарегистрироваться
+          </button>
         </div>
       </div>
     );
   }
 
-  // 👤 Авторизован
   const name = profile.display_name || profile.username;
   const initials = (profile.display_name || profile.username || "?")
     .split(" ")
@@ -69,6 +71,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex }) => {
           scheduleData={scheduleData}
           weekType={weekType}
           dayIndex={dayIndex}
+          viewGroup={viewGroup}
         />
       )}
     </div>

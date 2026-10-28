@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
 import DataWarning from "../../components/ui/DataWarning";
 import {
   getWeekType,
@@ -9,9 +8,14 @@ import {
   WEEK_DAYS,
 } from "../../lib/schedule";
 
-const ScheduleCard = ({ data: scheduleData, loading, source }) => {
-  const { profile, updateProfile } = useAuth();
-
+const ScheduleCard = ({
+  data: scheduleData,
+  loading,
+  source,
+  viewGroup,
+  onViewGroupChange,
+  profileGroup,
+}) => {
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
 
@@ -20,16 +24,6 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
   );
   const [weekType, setWeekType] = useState(null);
 
-  // Группа пользователя — из профиля
-  const userGroup = profile?.group || "A";
-  const [group, setGroup] = useState(userGroup);
-
-  // Синхронизация с профилем
-  useEffect(() => {
-    setGroup(userGroup);
-  }, [userGroup]);
-
-  // Автоподстановка типа недели после загрузки
   useEffect(() => {
     if (scheduleData) {
       setWeekType(getWeekType(today, scheduleData));
@@ -46,22 +40,9 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
     isCurrentWeek && selectedDay === todayIndex && todayIndex < 6;
 
   const { bells, lessons } = useMemo(
-    () => getScheduleForDay(scheduleData, weekType, selectedDay, group),
-    [scheduleData, weekType, selectedDay, group],
+    () => getScheduleForDay(scheduleData, weekType, selectedDay, viewGroup),
+    [scheduleData, weekType, selectedDay, viewGroup],
   );
-
-  // 🎯 Смена группы — обновляем локально + в профиле
-  const handleGroupChange = async (newGroup) => {
-    if (newGroup === group) return;
-    setGroup(newGroup);
-    if (profile) {
-      try {
-        await updateProfile({ group: newGroup });
-      } catch (err) {
-        console.error("Не удалось сохранить подгруппу:", err);
-      }
-    }
-  };
 
   if (loading || !weekType) {
     return (
@@ -74,12 +55,10 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
     );
   }
 
-  // Все пары (по bells), даже если lessons нет — оставляем пустыми
   const rows = bells.map((bell) => {
     const lesson = lessons.find((l) => l.bell?.id === bell.id);
     const subject = lesson?.subject || "";
     const room = lesson?.room || "";
-
     return {
       bellId: bell.id,
       time: bell.time,
@@ -88,6 +67,8 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
       isEmpty: !subject,
     };
   });
+
+  const isViewingOtherGroup = viewGroup !== profileGroup;
 
   return (
     <div className="card schedule-card">
@@ -99,11 +80,6 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
               weekType === "Числитель" ? "active" : ""
             } ${currentWeekType === "Числитель" ? "current" : ""}`}
             onClick={() => setWeekType("Числитель")}
-            title={
-              currentWeekType === "Числитель"
-                ? "Текущая неделя — числитель"
-                : "Показать числитель"
-            }
           >
             Числитель
             {currentWeekType === "Числитель" && (
@@ -116,11 +92,6 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
               weekType === "Знаменатель" ? "active" : ""
             } ${currentWeekType === "Знаменатель" ? "current" : ""}`}
             onClick={() => setWeekType("Знаменатель")}
-            title={
-              currentWeekType === "Знаменатель"
-                ? "Текущая неделя — знаменатель"
-                : "Показать знаменатель"
-            }
           >
             Знаменатель
             {currentWeekType === "Знаменатель" && (
@@ -134,18 +105,34 @@ const ScheduleCard = ({ data: scheduleData, loading, source }) => {
 
       <div className="schedule-group-switch">
         <button
-          className={`group-btn ${group === "A" ? "active" : ""}`}
-          onClick={() => handleGroupChange("A")}
+          className={`group-btn ${viewGroup === "A" ? "active" : ""}`}
+          onClick={() => onViewGroupChange("A")}
+          title="Только просмотр — не меняет вашу группу в профиле"
         >
           Группа A
         </button>
         <button
-          className={`group-btn ${group === "B" ? "active" : ""}`}
-          onClick={() => handleGroupChange("B")}
+          className={`group-btn ${viewGroup === "B" ? "active" : ""}`}
+          onClick={() => onViewGroupChange("B")}
+          title="Только просмотр — не меняет вашу группу в профиле"
         >
           Группа B
         </button>
       </div>
+
+      {isViewingOtherGroup && (
+        <div className="schedule-view-note">
+          👀 Вы смотрите <strong>группу {viewGroup}</strong>. Ваша группа в
+          профиле — <strong>{profileGroup}</strong>.
+          <button
+            type="button"
+            className="schedule-view-reset"
+            onClick={() => onViewGroupChange(profileGroup)}
+          >
+            ← К моей группе
+          </button>
+        </div>
+      )}
 
       <div className="schedule-days">
         {WEEK_DAYS_SHORT.map((short, idx) => (

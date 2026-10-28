@@ -1,4 +1,3 @@
-import React from "react";
 
 const SOURCE_LABELS = {
   s3: null,

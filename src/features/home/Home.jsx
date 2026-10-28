@@ -5,13 +5,12 @@ import Greeting from "./Greeting";
 import { useAuth } from "../../context/AuthContext";
 import { loadMaterialData } from "../../lib/materials";
 import { getWeekType, getDayIndex } from "../../lib/schedule";
-import RoomLegend from "./RoomLegend";
-import GuestFeatures from "../auth/GuestFeatures";
+import { getResolvedGroup } from "../../lib/group";
 
 const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule_v2.json";
 
 const Home = ({ onNavigate }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [scheduleData, setScheduleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState(null);
@@ -19,6 +18,19 @@ const Home = ({ onNavigate }) => {
   const today = new Date();
   const todayIndex = getDayIndex(today);
   const weekType = scheduleData ? getWeekType(today, scheduleData) : null;
+
+  // 🎯 Просматриваемая группа — общая для ScheduleCard и NextLesson
+  const profileGroup = getResolvedGroup(profile);
+  const [viewGroup, setViewGroup] = useState(profileGroup);
+
+  // Сброс viewGroup при изменении profileGroup
+  const lastProfileGroupRef = React.useRef(profileGroup);
+  useEffect(() => {
+    if (lastProfileGroupRef.current !== profileGroup) {
+      lastProfileGroupRef.current = profileGroup;
+      setViewGroup(profileGroup);
+    }
+  }, [profileGroup]);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,17 +54,22 @@ const Home = ({ onNavigate }) => {
         scheduleData={scheduleData}
         weekType={weekType}
         dayIndex={todayIndex}
+        viewGroup={viewGroup} // ← передаём в NextLesson
       />
+
       <div className="home-grid">
-        {!user && <GuestFeatures onLogin={() => onNavigate("profile")} />}
         <div className="home-column">
           <Calendar />
         </div>
         <div className="home-column">
-          <ScheduleCard data={scheduleData} loading={loading} source={source} />
-        </div>
-        <div className="home-column">
-          <RoomLegend />
+          <ScheduleCard
+            data={scheduleData}
+            loading={loading}
+            source={source}
+            viewGroup={viewGroup} // ← управляемый
+            onViewGroupChange={setViewGroup} // ← callback
+            profileGroup={profileGroup} // ← для сравнения
+          />
         </div>
       </div>
     </div>

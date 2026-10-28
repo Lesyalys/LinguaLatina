@@ -1,5 +1,4 @@
 // src/components/profile/ProfileView.jsx
-import React from "react";
 import { useAuth } from "../../context/AuthContext";
 import ProfileCard from "./ProfileCard";
 

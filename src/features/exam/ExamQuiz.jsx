@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { loadMaterialData } from "../../lib/materials";
 import DataWarning from "../../components/ui/DataWarning";
+import {
+  updateSubjectProgress,
+  getSubjectProgress,
+  updateHistory,
+} from "../../lib/progress";
 
 const ExamQuiz = ({ dataFile, onBack }) => {
   const [source, setSource] = useState(null);
@@ -126,41 +131,45 @@ const ExamQuiz = ({ dataFile, onBack }) => {
   const buildProgress = (correctIds) => {
     const today = new Date().toISOString().split("T")[0];
     const oldProgress = profile?.progress || {};
-    const subjects = { ...(oldProgress.subjects || {}) };
 
-    const oldAnatomy = subjects.anatomy || {
-      type: "exam",
+    // 1. Старый прогресс по анатомии
+    const oldAnatomy = getSubjectProgress(
+      oldProgress,
+      "course-1",
+      "semester-1",
+      "anatomy",
+    ) || {
       quizLearned: [],
       attempts: 0,
     };
 
+    // 2. Уникальные карточки
     const oldSet = new Set(oldAnatomy.quizLearned || []);
     correctIds.forEach((id) => oldSet.add(id));
     const uniqueCards = Array.from(oldSet);
 
-    subjects.anatomy = {
-      ...oldAnatomy,
-      type: "exam",
-      quizLearned: uniqueCards,
-      attempts: (oldAnatomy.attempts || 0) + 1,
-      lastActive: today,
-    };
+    // 3. Обновляем subject "anatomy"
+    let newProgress = updateSubjectProgress(
+      oldProgress,
+      "course-1",
+      "semester-1",
+      "anatomy",
+      {
+        type: "exam",
+        quizLearned: uniqueCards,
+        attempts: (oldAnatomy.attempts || 0) + 1,
+        lastActive: today,
+      },
+    );
 
-    const history = [...(oldProgress.history || [])];
-    const todayEntry = history.find((h) => h.date === today);
+    // 4. Обновляем history
+    newProgress = updateHistory(newProgress, today, {
+      quizAnswers: uniqueCards.length,
+    });
 
-    if (todayEntry) {
-      todayEntry.quizAnswers = uniqueCards.length;
-    } else {
-      history.push({ date: today, quizAnswers: uniqueCards.length });
-    }
-
-    return {
-      lastActive: today,
-      history: history.slice(-90),
-      subjects,
-    };
+    return newProgress;
   };
+
   const saveProgress = async () => {
     if (correctCardIds.length === 0) return { skipped: true };
     setSaving(true);

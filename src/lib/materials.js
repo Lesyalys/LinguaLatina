@@ -1,5 +1,22 @@
 import manifest from "../data/manifest.json";
 
+// Локальные копии данных (собираются в бандл как обычные ассеты).
+// Ключ — путь относительно src/data, значение — URL ассета с хэшем.
+const localDataAssets = import.meta.glob("../data/**/*.json", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+
+const LOCAL_DATA_URLS = Object.entries(localDataAssets).reduce(
+  (acc, [globKey, url]) => {
+    const idx = globKey.indexOf("/data/");
+    if (idx !== -1) acc[globKey.slice(idx + "/data/".length)] = url;
+    return acc;
+  },
+  {},
+);
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const MATERIALS_BUCKET =
   import.meta.env.VITE_SUPABASE_MATERIALS_BUCKET || "materials";
@@ -109,11 +126,20 @@ export const loadMaterialData = async (dataFile) => {
 
 /**
  * Локальный fallback (если S3 и кеш недоступны).
+ * Данные уже собраны в бандл как ассеты, fetch по URL работает через precache SW.
  */
 const loadLocal = async (dataFile, reason = "") => {
+  const url = LOCAL_DATA_URLS[dataFile];
+  if (!url) {
+    console.error(
+      `[materials] Нет локальной копии для ${dataFile} (${reason})`,
+    );
+    return { data: null, source: "error" };
+  }
   try {
-    const module = await import(`../data/${dataFile}`);
-    return { data: module.default, source: "local" };
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return { data: await res.json(), source: "local" };
   } catch (err) {
     console.error(
       `[materials] Не удалось загрузить ${dataFile} локально (${reason}):`,

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { getWeekType, getDayIndex, WEEK_DAYS_SHORT } from "../../lib/schedule";
+import { useState, useMemo } from "react";
+import { getWeekType, WEEK_DAYS_SHORT } from "../../lib/schedule";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());

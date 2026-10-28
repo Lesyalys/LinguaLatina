@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { searchUsers } from "../../lib/friends";
 import { useOnlineUsers } from "../../context/PresenceContext";
 
@@ -172,10 +172,6 @@ const UserSearch = ({
           {results.map((u) => {
             const status = getStatus(u.id);
             const isOnline = onlineUsers.has(u.id);
-            const isRelated =
-              status.type === "friends" ||
-              status.type === "incoming" ||
-              status.type === "outgoing";
 
             return (
               <div key={u.id} className="friend-card">

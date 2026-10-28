@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
 import DataWarning from "../../components/ui/DataWarning";
 

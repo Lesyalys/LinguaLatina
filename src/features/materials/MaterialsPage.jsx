@@ -1,4 +1,3 @@
-import React from "react";
 import { useFilter } from "../../context/FilterContext";
 import { getSubjects } from "../../lib/materials";
 import SubjectCard from "../../components/ui/SubjectCard";

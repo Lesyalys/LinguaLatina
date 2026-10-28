@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
+import { shuffleArray } from "../../lib/shuffle";
 import DataWarning from "../../components/ui/DataWarning";
 
 const TrainingSetup = ({ dataFile, onStart, onBack }) => {
@@ -52,7 +53,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
       }
     });
 
-    onStart(words, selectedGroups);
+    onStart(shuffleArray(words), selectedGroups);
   };
 
   return (

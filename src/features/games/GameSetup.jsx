@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { loadMaterialData } from "../../lib/materials";
 import {
   createGame,
@@ -9,7 +9,6 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 
-// 🔑 Карта: subject.id → путь к данным (loadMaterialData сам найдёт S3/кеш/локально)
 const SUBJECT_DATA_FILES = {
   latin: "courses/course-1/semester-1/latin/lexicon.json",
   // anatomy: "courses/course-1/semester-1/anatomy/quiz.json",
@@ -27,6 +26,7 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
   const [source, setSource] = useState(null); // 🆕 S3 / cache / local
   const [creating, setCreating] = useState(false);
   const [waitingGameId, setWaitingGameId] = useState(null);
+  const [notice, setNotice] = useState(null); // { type: "info" | "error", text }
 
   // Загрузка через loadMaterialData (S3 → кеш → локально)
   useEffect(() => {
@@ -67,7 +67,7 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
           if (game.status === "active") onGameCreated(game.id);
           if (game.status === "cancelled") {
             setWaitingGameId(null);
-            alert("Гость отклонил приглашение");
+            setNotice({ type: "info", text: "Гость отклонил приглашение" });
           }
         },
       )
@@ -85,6 +85,7 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
   const handleStart = async () => {
     if (!lexicon || selectedGroups.length === 0) return;
     setCreating(true);
+    setNotice(null);
 
     const wordQueue = buildWordQueue(lexicon, selectedGroups, rounds);
 
@@ -96,7 +97,10 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
     });
 
     if (error) {
-      alert("Не удалось создать игру: " + error.message);
+      setNotice({
+        type: "error",
+        text: "Не удалось создать игру: " + error.message,
+      });
       setCreating(false);
       return;
     }
@@ -152,6 +156,18 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
         ← Назад
       </button>
       <h2>Настройка дуэли</h2>
+
+      {notice && (
+        <div
+          className={`game-notice ${
+            notice.type === "error" ? "game-notice--error" : ""
+          }`}
+          role="alert"
+          onClick={() => setNotice(null)}
+        >
+          {notice.text}
+        </div>
+      )}
 
       {/* 🆕 Индикатор источника */}
       {source && source !== "s3" && source !== "cache" && (

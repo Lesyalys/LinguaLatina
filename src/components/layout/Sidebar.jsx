@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useIncomingRequestsCount } from "../../hooks/useIncomingRequestsCount";
 import { useSwipe } from "../../hooks/useSwipe";
@@ -115,7 +115,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
         }`}
       >
         <div className="sidebar-header">
-          <h2>Medicat</h2>
+          <h2>MedSur</h2>
         </div>
 
         <nav className="sidebar-nav">

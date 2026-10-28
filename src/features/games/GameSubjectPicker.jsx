@@ -1,4 +1,3 @@
-import React from "react";
 import { getSubjects } from "../../lib/materials";
 import { useFilter } from "../../context/FilterContext";
 

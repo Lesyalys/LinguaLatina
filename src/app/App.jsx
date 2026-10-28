@@ -22,7 +22,6 @@ function App() {
   const { user, loading } = useAuth();
   const [currentScreen, setCurrentScreen] = useState("home");
   const [trainingWords, setTrainingWords] = useState([]);
-  const [trainingGroups, setTrainingGroups] = useState([]);
   const [viewingUserId, setViewingUserId] = useState(null);
   const [activeGameId, setActiveGameId] = useState(null);
 
@@ -53,9 +52,8 @@ function App() {
 
   if (loading) return <div className="app-loading">Загрузка...</div>;
 
-  const startTraining = (words, groups) => {
+  const startTraining = (words) => {
     setTrainingWords(words);
-    setTrainingGroups(groups);
     setCurrentScreen("trainingCards");
   };
 
@@ -92,8 +90,7 @@ function App() {
         return <Home onNavigate={setCurrentScreen} />;
 
       case "games":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return <GamesPage onGameStart={(id) => setActiveGameId(id)} />;
 
       // ============================================================
@@ -147,8 +144,7 @@ function App() {
         );
 
       case "trainingSetup":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return (
           <TrainingSetup
             dataFile={
@@ -161,12 +157,10 @@ function App() {
         );
 
       case "trainingCards":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return (
           <TrainingCards
             words={trainingWords}
-            selectedGroups={trainingGroups}
             onBack={() => setCurrentScreen("trainingSetup")}
           />
         );
@@ -204,8 +198,7 @@ function App() {
         );
 
       case "examQuiz":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return (
           <ExamQuiz
             dataFile={
@@ -220,8 +213,7 @@ function App() {
       // ДРУЗЬЯ, ПРОФИЛЬ
       // ============================================================
       case "friends":
-        if (!user)
-          return <ProfilePage onBack={() => setCurrentScreen("home")} />;
+        if (!user) return <ProfilePage />;
         return <FriendsPage onOpenProfile={openUserProfile} />;
 
       case "userProfile":

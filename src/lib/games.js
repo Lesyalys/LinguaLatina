@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { shuffleArray } from "./shuffle";
 
 // Создать приглашение
 export const createGame = async (hostId, guestId, settings) => {
@@ -16,7 +17,7 @@ export const createGame = async (hostId, guestId, settings) => {
     .single();
 
   if (error) {
-    console.error("Ошибка создания игры:", error); // Это покажет реальную причину
+    console.error("Ошибка создания игры:", error);
   } else {
     console.log("Игра создана:", data);
   }
@@ -105,19 +106,19 @@ export const buildWordQueue = (lexicon, groupNames, count) => {
   });
 
   // Перемешать
-  const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+  const shuffled = shuffleArray(allWords);
   const selected = shuffled.slice(0, count);
 
   // Для каждого — 4 варианта (1 правильный + 3 дистрактора)
   return selected.map((word) => {
-    const distractors = allWords
-      .filter((w) => w.text !== word.text)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
+    const distractors = shuffleArray(
+      allWords.filter((w) => w.text !== word.text),
+    ).slice(0, 3);
 
-    const options = [word.text, ...distractors.map((d) => d.text)].sort(
-      () => Math.random() - 0.5,
-    );
+    const options = shuffleArray([
+      word.text,
+      ...distractors.map((d) => d.text),
+    ]);
 
     return {
       translation: word.translation,

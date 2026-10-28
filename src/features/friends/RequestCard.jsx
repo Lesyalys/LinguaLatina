@@ -40,7 +40,23 @@ const RequestCard = ({
           </p>
         </div>
       </div>
-      <div className="friend-actions">{/* ... кнопки ... */}</div>
+      <div className="friend-actions">
+        {type === "incoming" && (
+          <>
+            <button className="friend-btn primary" onClick={onAccept}>
+              ✅ Принять
+            </button>
+            <button className="friend-btn danger" onClick={onReject}>
+              ✕ Отклонить
+            </button>
+          </>
+        )}
+        {type === "outgoing" && (
+          <button className="friend-btn danger" onClick={onCancel}>
+            Отменить
+          </button>
+        )}
+      </div>
     </div>
   );
 };
