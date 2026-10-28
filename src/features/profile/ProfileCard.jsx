@@ -6,6 +6,7 @@ import {
 } from "../../lib/profileUtils";
 import { useGroupPreference } from "../../hooks/useGroupPreference";
 import GroupSwitcher from "../../components/ui/GroupSwitcher";
+import ActivityGrid from "./ActivityGrid";
 
 const ProfileCard = ({
   profile,
@@ -13,6 +14,7 @@ const ProfileCard = ({
   online = false,
   bottomBar,
   achievements = [],
+  isOwn = false,
 }) => {
   const { group, setGroup } = useGroupPreference();
 
@@ -22,6 +24,8 @@ const ProfileCard = ({
   const memberSince = formatMemberSince(profile.created_at);
   const wordsLearned = profile.progress?.wordsLearned || 0;
   const expPercent = calcExpPercent(wordsLearned);
+
+  const displayGroup = isOwn ? group : profile.group === "B" ? "B" : "A";
 
   return (
     <div className="profile-view-card">
@@ -48,7 +52,7 @@ const ProfileCard = ({
           )}
         </div>
 
-        <div className="profile-progress-bar">
+        {/* <div className="profile-progress-bar">
           <span className="progress-label">exp.</span>
           <div className="progress-track">
             <div
@@ -56,7 +60,7 @@ const ProfileCard = ({
               style={{ width: `${expPercent}%` }}
             />
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Имя, био, мета */}
@@ -72,14 +76,20 @@ const ProfileCard = ({
 
       {/* 🎯 Подгруппа */}
       <div className="profile-group-switch">
-        <GroupSwitcher group={group} onChange={setGroup} />
+        {isOwn ? (
+          <GroupSwitcher group={group} onChange={setGroup} />
+        ) : (
+          <div className="profile-group-view">
+            <span className="profile-group-label">Группа:</span>
+            <span className="profile-group-badge">{displayGroup}</span>
+          </div>
+        )}
       </div>
+      <ActivityGrid history={profile?.progress?.history || []} />
 
-      {/* Достижения */}
       <ProfileAchievements achievements={achievements} />
 
-      {/* Нижняя панель */}
-      {bottomBar && <div className="profile-bottom-bar">{bottomBar}</div>}
+      {/* {bottomBar && <div className="profile-bottom-bar">{bottomBar}</div>} */}
     </div>
   );
 };

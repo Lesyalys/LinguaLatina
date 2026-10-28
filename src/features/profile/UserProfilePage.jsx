@@ -22,9 +22,7 @@ const UserProfilePage = ({ userId, onBack }) => {
 
   const isSelf = user?.id === userId;
 
-  // ============================================================
   // Загрузка профиля и статуса дружбы
-  // ============================================================
   useEffect(() => {
     if (!userId) return;
 
@@ -49,9 +47,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     load();
   }, [userId, user?.id, isSelf]);
 
-  // ============================================================
   // Действия с дружбой
-  // ============================================================
   const refreshFriendship = async () => {
     const { data } = await getFriendshipWithUser(user.id, userId);
     setFriendship(data);
@@ -91,13 +87,12 @@ const UserProfilePage = ({ userId, onBack }) => {
     await refreshFriendship();
   };
 
-  // ============================================================
-  // Рендер: состояния загрузки / ошибки
-  // ============================================================
+  // Рендер: загрузка
   if (loading) {
     return <div className="page-placeholder">Загрузка профиля...</div>;
   }
 
+  // Рендер: не найден
   if (!profile) {
     return (
       <div className="page-placeholder">
@@ -109,9 +104,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     );
   }
 
-  // ============================================================
   // Верхняя кнопка (зависит от статуса дружбы)
-  // ============================================================
   const renderTopButton = () => {
     if (isSelf) return null;
 
@@ -165,9 +158,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     return null;
   };
 
-  // ============================================================
   // Нижняя панель действий
-  // ============================================================
   const renderBottomActions = () => {
     const actions = [];
 
@@ -258,8 +249,9 @@ const UserProfilePage = ({ userId, onBack }) => {
       <ProfileCard
         profile={profile}
         topButton={renderTopButton()}
-        online={isOnline}
         bottomBar={renderBottomActions()}
+        online={isOnline}
+        isOwn={false}
       />
     </div>
   );

@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { loadMaterialData } from "../../lib/materials";
 import { getWeekType, getDayIndex } from "../../lib/schedule";
 import { getResolvedGroup } from "../../lib/group";
+import RoomLegend from "./RoomLegend";
 
 const SCHEDULE_FILE = "courses/course-1/semester-1/schedule/schedule_v2.json";
 
@@ -71,6 +72,7 @@ const Home = ({ onNavigate }) => {
             profileGroup={profileGroup} // ← для сравнения
           />
         </div>
+        <RoomLegend />
       </div>
     </div>
   );

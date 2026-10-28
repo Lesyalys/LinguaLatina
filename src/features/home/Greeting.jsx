@@ -15,7 +15,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
   if (!user || !profile) {
     return (
       <div className="greeting guest">
-        <div className="greeting-avatar guest-avatar">👋</div>
+        <div className="greeting-avatar guest-avatar"></div>
         <div className="greeting-text">
           <h1 className="greeting-title">
             Добро пожаловать в{" "}
@@ -58,7 +58,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
 
       <div className="greeting-text">
         <h1 className="greeting-title">
-          {greeting}, <span className="greeting-name">{name}</span>! 👋
+          {greeting}, <span className="greeting-name">{name}</span>!
         </h1>
         <p className="greeting-username">@{profile.username}</p>
         <p className="greeting-subtitle">

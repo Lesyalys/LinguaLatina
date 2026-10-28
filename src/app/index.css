@@ -5353,3 +5353,27 @@ select {
   padding: 6px 14px;
   font-size: 0.82rem;
 }
+/* Просмотр группы (чужой профиль) */
+.profile-group-view {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-group-view .profile-group-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.profile-group-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+}

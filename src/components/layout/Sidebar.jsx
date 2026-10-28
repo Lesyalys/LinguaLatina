@@ -34,10 +34,10 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
   }, [collapsed]);
 
   const menuItems = [
-    { id: "home", label: "🏠 Главная", activeFor: ["home"] },
+    { id: "home", label: "Главная", activeFor: ["home"] },
     {
       id: "materials",
-      label: "📚 Материалы",
+      label: "Материалы",
       activeFor: [
         "materials",
         "subjectActions",
@@ -53,7 +53,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
       ? [
           {
             id: "games",
-            label: "🎮 Игра вдвоём",
+            label: "Игра вдвоём",
             activeFor: ["games"],
           },
         ]
@@ -62,7 +62,7 @@ const Sidebar = ({ currentScreen, onNavigate }) => {
       ? [
           {
             id: "friends",
-            label: "👥 Друзья",
+            label: "Друзья",
             activeFor: ["friends"],
             badge: incomingCount,
           },

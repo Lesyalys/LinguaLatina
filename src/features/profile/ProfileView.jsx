@@ -1,4 +1,3 @@
-// src/components/profile/ProfileView.jsx
 import { useAuth } from "../../context/AuthContext";
 import ProfileCard from "./ProfileCard";
 
@@ -38,6 +37,7 @@ const ProfileView = ({ profile, onEdit }) => {
         profile={profile}
         topButton={topButton}
         bottomBar={bottomBar}
+        isOwn={true}
       />
     </div>
   );
