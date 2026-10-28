@@ -9,10 +9,13 @@ import {
 import UserSearch from "./UserSearch";
 import FriendCard from "./FriendCard";
 import RequestCard from "./RequestCard";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 import { useFriendshipsRealtime } from "../../hooks/useFriendshipsRealtime";
 
 const FriendsPage = ({ onOpenProfile }) => {
   const { user } = useAuth();
+  const notice = useNotice();
   const [tab, setTab] = useState("friends"); // 'friends' | 'search'
   const [friendships, setFriendships] = useState({
     friends: [],
@@ -44,9 +47,9 @@ const FriendsPage = ({ onOpenProfile }) => {
     const { error } = await sendFriendRequest(user.id, targetUserId);
     if (error) {
       if (error.code === "23505") {
-        alert("Заявка уже отправлена");
+        notice.show("Заявка уже отправлена", "info");
       } else {
-        alert("Ошибка: " + error.message);
+        notice.show("Ошибка: " + error.message);
       }
       return;
     }
@@ -56,7 +59,7 @@ const FriendsPage = ({ onOpenProfile }) => {
   const handleAccept = async (friendshipId) => {
     const { error } = await acceptFriendRequest(friendshipId);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await loadFriendships();
@@ -66,7 +69,7 @@ const FriendsPage = ({ onOpenProfile }) => {
     if (confirmText && !window.confirm(confirmText)) return;
     const { error } = await removeFriendship(friendshipId);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await loadFriendships();
@@ -207,6 +210,8 @@ const FriendsPage = ({ onOpenProfile }) => {
   // ============================================================
   return (
     <div className="friends-page">
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
+
       <div className="friends-tabs">
         {tabs.map((t) => (
           <button

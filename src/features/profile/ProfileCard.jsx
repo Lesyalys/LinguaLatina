@@ -1,10 +1,9 @@
-import React from "react";
 import {
   getInitials,
   formatMemberSince,
   calcExpPercent,
+  countWordsLearned,
 } from "../../lib/profileUtils";
-import { useGroupPreference } from "../../hooks/useGroupPreference";
 import GroupSwitcher from "../../components/ui/GroupSwitcher";
 import ActivityGrid from "./ActivityGrid";
 
@@ -12,17 +11,16 @@ const ProfileCard = ({
   profile,
   topButton,
   online = false,
-  bottomBar,
   achievements = [],
   isOwn = false,
+  group = "A",
+  setGroup,
 }) => {
-  const { group, setGroup } = useGroupPreference();
-
   if (!profile) return null;
 
   const initials = getInitials(profile);
   const memberSince = formatMemberSince(profile.created_at);
-  const wordsLearned = profile.progress?.wordsLearned || 0;
+  const wordsLearned = countWordsLearned(profile.progress);
   const expPercent = calcExpPercent(wordsLearned);
 
   const displayGroup = isOwn ? group : profile.group === "B" ? "B" : "A";
@@ -52,7 +50,7 @@ const ProfileCard = ({
           )}
         </div>
 
-        {/* <div className="profile-progress-bar">
+        <div className="profile-progress-bar">
           <span className="progress-label">exp.</span>
           <div className="progress-track">
             <div
@@ -60,7 +58,7 @@ const ProfileCard = ({
               style={{ width: `${expPercent}%` }}
             />
           </div>
-        </div> */}
+        </div>
       </div>
 
       {/* Имя, био, мета */}
@@ -88,8 +86,6 @@ const ProfileCard = ({
       <ActivityGrid history={profile?.progress?.history || []} />
 
       <ProfileAchievements achievements={achievements} />
-
-      {/* {bottomBar && <div className="profile-bottom-bar">{bottomBar}</div>} */}
     </div>
   );
 };

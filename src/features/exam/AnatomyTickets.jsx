@@ -1,29 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState, useMemo } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
 import DataWarning from "../../components/ui/DataWarning";
 
 const AnatomyTickets = ({ dataFile, onBack }) => {
   const [expandedTicket, setExpandedTicket] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [data, setData] = useState(null);
-  const [source, setSource] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [lightboxImage, setLightboxImage] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(dataFile).then(({ data, source }) => {
-      if (!cancelled) {
-        setData(data);
-        setSource(source);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
+  const { data, source, loading } = useMaterialData(dataFile);
 
   const tickets = useMemo(() => data?.data || [], [data]);
 

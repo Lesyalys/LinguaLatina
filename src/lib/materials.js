@@ -74,7 +74,26 @@ const writeCache = (dataFile, data) => {
 // Загрузка
 // Возвращает: { data, source: "s3" | "cache" | "cache-stale" | "local" | "error" }
 // ============================================================
-export const loadMaterialData = async (dataFile) => {
+
+/**
+ * Путь к данным нормализуется в один формате: относительно src/data,
+ * без ведущего слэша. Это защищает и от `undefined` в ключе localStorage,
+ * и от двойного слэша в URL S3, и от расхождения с ключами LOCAL_DATA_URLS.
+ */
+const normalizeDataFile = (dataFile) =>
+  typeof dataFile === "string" ? dataFile.replace(/^\/+/, "").trim() : "";
+
+export const loadMaterialData = async (rawDataFile) => {
+  const dataFile = normalizeDataFile(rawDataFile);
+
+  // Guard: пустой/некорректный путь — не ходим ни в S3, ни в кеш
+  if (!dataFile || !dataFile.endsWith(".json")) {
+    console.error(
+      `[materials] Некорректный путь к данным: ${JSON.stringify(rawDataFile)}`,
+    );
+    return { data: null, source: "error" };
+  }
+
   const cached = readCache(dataFile);
   const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 

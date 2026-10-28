@@ -1,28 +1,11 @@
-import { useMemo, useState, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useMemo, useState } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
 import { ROOMS_FILE } from "../../lib/rooms";
 import DataWarning from "../../components/ui/DataWarning";
 
 const RoomLegend = ({ collapsible = true }) => {
   const [open, setOpen] = useState(false);
-  const [data, setData] = useState(null);
-  const [source, setSource] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(ROOMS_FILE).then(({ data, source }) => {
-      if (!cancelled) {
-        setData(data);
-        setSource(source);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, source, loading } = useMaterialData(ROOMS_FILE);
 
   const items = useMemo(() => {
     const codes = data?.data || data || {};

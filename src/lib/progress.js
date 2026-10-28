@@ -90,3 +90,73 @@ export const updateHistory = (progress, today, delta) => {
 
   return newProgress;
 };
+
+// ============================================================
+// Сегодняшняя дата в формате YYYY-MM-DD
+// ============================================================
+export const todayISO = () => new Date().toISOString().split("T")[0];
+
+// ============================================================
+// Зафиксировать результаты тренировки по латыни
+// ============================================================
+// Принимает слова, отмеченные как «Знал» в этой сессии, объединяет их с уже
+// выученными (уникально) и возвращает новый объект progress целиком.
+// Компоненту остаётся только отдать его в updateProfile.
+export const commitTrainingProgress = (
+  oldProgress,
+  { courseId, semesterId, subjectId = "latin", words },
+) => {
+  const today = todayISO();
+  const base = oldProgress || {};
+
+  const old = getSubjectProgress(base, courseId, semesterId, subjectId) || {
+    wordsLearned: [],
+    attempts: 0,
+  };
+
+  const uniqueWords = Array.from(
+    new Set([...(old.wordsLearned || []), ...words.map((w) => w.text)]),
+  );
+
+  let next = updateSubjectProgress(base, courseId, semesterId, subjectId, {
+    type: "subject",
+    wordsLearned: uniqueWords,
+    attempts: (old.attempts || 0) + 1,
+    lastActive: today,
+  });
+
+  next = updateHistory(next, today, { words: uniqueWords.length });
+
+  return next;
+};
+
+// ============================================================
+// Зафиксировать результаты теста (экзамен)
+// ============================================================
+export const commitQuizProgress = (
+  oldProgress,
+  { courseId, semesterId, subjectId = "anatomy", cardIds },
+) => {
+  const today = todayISO();
+  const base = oldProgress || {};
+
+  const old = getSubjectProgress(base, courseId, semesterId, subjectId) || {
+    quizLearned: [],
+    attempts: 0,
+  };
+
+  const uniqueCards = Array.from(
+    new Set([...(old.quizLearned || []), ...cardIds]),
+  );
+
+  let next = updateSubjectProgress(base, courseId, semesterId, subjectId, {
+    type: "exam",
+    quizLearned: uniqueCards,
+    attempts: (old.attempts || 0) + 1,
+    lastActive: today,
+  });
+
+  next = updateHistory(next, today, { quizAnswers: uniqueCards.length });
+
+  return next;
+};

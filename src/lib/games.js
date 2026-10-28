@@ -3,7 +3,6 @@ import { shuffleArray } from "./shuffle";
 
 // Создать приглашение
 export const createGame = async (hostId, guestId, settings) => {
-  console.log("Создаю игру с hostId:", hostId); // Проверь, что hostId не null
   const { data, error } = await supabase
     .from("games")
     .insert({
@@ -18,8 +17,6 @@ export const createGame = async (hostId, guestId, settings) => {
 
   if (error) {
     console.error("Ошибка создания игры:", error);
-  } else {
-    console.log("Игра создана:", data);
   }
   return { data, error };
 };
@@ -95,6 +92,45 @@ export const subscribeToGame = (gameId, callback) => {
     )
     .subscribe();
   return () => supabase.removeChannel(channel);
+};
+
+// ============================================================
+// Определение победителя раунда
+// ============================================================
+// Таймстампы ответов приходят с РАЗНЫХ машин, и их системные часы могут
+// расходиться на минуты. Поэтому сравниваем не абсолютное время, а
+// elapsed — сколько миллисекунд прошло у самого игрока от момента, когда он
+// увидел слово, до нажатия. Эта величина измерена «своими» часами на каждом
+// клиенте и сравнима между игроками.
+export const elapsedSince = (since) =>
+  since ? Math.max(0, Date.now() - since) : null;
+
+/**
+ * @param {{correct: boolean, elapsed?: number, timestamp?: number}|null} hostAnswer
+ * @param {{correct: boolean, elapsed?: number, timestamp?: number}|null} guestAnswer
+ * @returns {"host" | "guest" | null}
+ */
+export const resolveRoundWinner = (hostAnswer, guestAnswer) => {
+  if (!hostAnswer || !guestAnswer) return null;
+
+  const hostCorrect = !!hostAnswer.correct;
+  const guestCorrect = !!guestAnswer.correct;
+
+  if (hostCorrect && !guestCorrect) return "host";
+  if (!hostCorrect && guestCorrect) return "guest";
+  if (!hostCorrect && !guestCorrect) return null;
+
+  // Оба правильные — быстрее тот, у кого меньше elapsed.
+  // Фолбэк на timestamp для игр, сыгранных до появления elapsed.
+  const rank = (a) =>
+    typeof a.elapsed === "number" ? a.elapsed : (a.timestamp ?? Infinity);
+
+  const hostRank = rank(hostAnswer);
+  const guestRank = rank(guestAnswer);
+
+  if (hostRank < guestRank) return "host";
+  if (guestRank < hostRank) return "guest";
+  return null; // точное совпадение — ничья
 };
 
 // Сгенерировать очередь слов

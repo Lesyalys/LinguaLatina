@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import DataWarning from "../../components/ui/DataWarning";
 import {
   getWeekType,
@@ -22,18 +22,16 @@ const ScheduleCard = ({
   const [selectedDay, setSelectedDay] = useState(
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
-  const [weekType, setWeekType] = useState(null);
-
-  useEffect(() => {
-    if (scheduleData) {
-      setWeekType(getWeekType(today, scheduleData));
-    }
-  }, [scheduleData, today]);
-
-  const currentWeekType = useMemo(
+  // Пользователь может вручную переключить на другую неделю.
+  // Если не переключено — берём авто-значение из scheduleData.
+  const [manualWeekType, setManualWeekType] = useState(null);
+  const autoWeekType = useMemo(
     () => (scheduleData ? getWeekType(today, scheduleData) : null),
     [today, scheduleData],
   );
+  const weekType = manualWeekType ?? autoWeekType;
+
+  const currentWeekType = autoWeekType;
 
   const isCurrentWeek = weekType === currentWeekType;
   const isCurrentDay =
@@ -79,7 +77,7 @@ const ScheduleCard = ({
             className={`week-toggle-btn ${
               weekType === "Числитель" ? "active" : ""
             } ${currentWeekType === "Числитель" ? "current" : ""}`}
-            onClick={() => setWeekType("Числитель")}
+            onClick={() => setManualWeekType("Числитель")}
           >
             Числитель
             {currentWeekType === "Числитель" && (
@@ -91,7 +89,7 @@ const ScheduleCard = ({
             className={`week-toggle-btn ${
               weekType === "Знаменатель" ? "active" : ""
             } ${currentWeekType === "Знаменатель" ? "current" : ""}`}
-            onClick={() => setWeekType("Знаменатель")}
+            onClick={() => setManualWeekType("Знаменатель")}
           >
             Знаменатель
             {currentWeekType === "Знаменатель" && (

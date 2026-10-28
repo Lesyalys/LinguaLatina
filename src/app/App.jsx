@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Sidebar from "../components/layout/Sidebar";
 import Home from "../features/home/Home";
 import WordList from "../features/dictionary/WordList";
@@ -28,6 +28,26 @@ function App() {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedExamSubject, setSelectedExamSubject] = useState(null);
 
+  // Игры, из которых пользователь уже вышел. Realtime-событие UPDATE приходит
+  // на ЛЮБУЮ правку строки games, включая поздние (finished_at, счёт), поэтому
+  // без этого множества выход из комнаты тут же отменялся бы возвратом в GameRoom.
+  const dismissedGamesRef = useRef(new Set());
+  const activeGameIdRef = useRef(null);
+
+  const openGame = useCallback((gameId) => {
+    dismissedGamesRef.current.delete(gameId);
+    activeGameIdRef.current = gameId;
+    setActiveGameId(gameId);
+  }, []);
+
+  const closeGame = useCallback(() => {
+    if (activeGameIdRef.current) {
+      dismissedGamesRef.current.add(activeGameIdRef.current);
+    }
+    activeGameIdRef.current = null;
+    setActiveGameId(null);
+  }, []);
+
   // 🎮 Глобальная подписка на игры
   useEffect(() => {
     if (!user) return;
@@ -38,17 +58,16 @@ function App() {
         { event: "UPDATE", schema: "public", table: "games" },
         (payload) => {
           const game = payload.new;
-          if (
-            (game.host_id === user.id || game.guest_id === user.id) &&
-            game.status === "active"
-          ) {
-            setActiveGameId(game.id);
-          }
+          const isParticipant =
+            game.host_id === user.id || game.guest_id === user.id;
+          if (!isParticipant || game.status !== "active") return;
+          if (dismissedGamesRef.current.has(game.id)) return;
+          openGame(game.id);
         },
       )
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, [user]);
+  }, [user, openGame]);
 
   if (loading) return <div className="app-loading">Загрузка...</div>;
 
@@ -78,7 +97,7 @@ function App() {
         <GameRoom
           gameId={activeGameId}
           onExit={() => {
-            setActiveGameId(null);
+            closeGame();
             setCurrentScreen("home");
           }}
         />
@@ -91,7 +110,7 @@ function App() {
 
       case "games":
         if (!user) return <ProfilePage />;
-        return <GamesPage onGameStart={(id) => setActiveGameId(id)} />;
+        return <GamesPage onGameStart={openGame} />;
 
       // ============================================================
       // МАТЕРИАЛЫ
@@ -240,7 +259,7 @@ function App() {
       <Sidebar currentScreen={currentScreen} onNavigate={setCurrentScreen} />
       <main className="app-content">{renderScreen()}</main>
 
-      <GameInviteListener onAccepted={(gameId) => setActiveGameId(gameId)} />
+      <GameInviteListener onAccepted={openGame} />
     </div>
   );
 }

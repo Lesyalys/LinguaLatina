@@ -1,30 +1,13 @@
-import { useState, useMemo, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState, useMemo } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
 import DataWarning from "../../components/ui/DataWarning";
 
 const WordList = ({ dataFile, onBack }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [lexicon, setLexicon] = useState(null);
-  const [source, setSource] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: lexicon, source, loading } = useMaterialData(dataFile);
 
   // 📂 Состояние раскрытых групп (по умолчанию — все раскрыты)
   const [collapsedGroups, setCollapsedGroups] = useState(new Set());
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(dataFile).then(({ data, source }) => {
-      if (!cancelled) {
-        setLexicon(data);
-        setSource(source);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
 
   const groupedData = useMemo(() => {
     if (!lexicon?.data) return [];

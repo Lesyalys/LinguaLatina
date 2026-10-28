@@ -19,8 +19,7 @@ export const useFriendshipsRealtime = (userId, onUpdate) => {
           table: "friendships",
           filter: `user_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log("🔔 friendship change (as user):", payload);
+        () => {
           onUpdate();
         },
       )
@@ -32,8 +31,7 @@ export const useFriendshipsRealtime = (userId, onUpdate) => {
           table: "friendships",
           filter: `friend_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log("🔔 friendship change (as friend):", payload);
+        () => {
           onUpdate();
         },
       )

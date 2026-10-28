@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
-
-const STORAGE_KEY = "user-group-preference";
+import { GROUP_STORAGE_KEY } from "../lib/group";
 
 export const useGroupPreference = () => {
   const { user, profile, updateProfile } = useAuth();
 
   const [group, setGroupState] = useState(() => {
     if (typeof window === "undefined") return "A";
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(GROUP_STORAGE_KEY);
     if (saved === "A" || saved === "B") return saved;
     if (profile?.group === "A" || profile?.group === "B") return profile.group;
     return "A";
@@ -26,7 +25,7 @@ export const useGroupPreference = () => {
     // Если есть несохранённые — не перезаписываем
     if (hasUnsavedRef.current) return;
 
-    const localSaved = localStorage.getItem(STORAGE_KEY);
+    const localSaved = localStorage.getItem(GROUP_STORAGE_KEY);
 
     // Если localStorage уже "B", а profile.group "A" — оставляем "B"
     // (значит, profile ещё не догрузился с сервера)
@@ -35,14 +34,14 @@ export const useGroupPreference = () => {
     }
 
     setGroupState(profile.group);
-    localStorage.setItem(STORAGE_KEY, profile.group);
+    localStorage.setItem(GROUP_STORAGE_KEY, profile.group);
     lastSavedRef.current = profile.group;
   }, [profile?.group]);
 
   const setGroup = useCallback((newGroup) => {
     if (newGroup !== "A" && newGroup !== "B") return;
     setGroupState(newGroup);
-    localStorage.setItem(STORAGE_KEY, newGroup);
+    localStorage.setItem(GROUP_STORAGE_KEY, newGroup);
     if (newGroup !== lastSavedRef.current) {
       hasUnsavedRef.current = true;
     }

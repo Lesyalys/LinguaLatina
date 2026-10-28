@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { acceptGame, cancelGame } from "../../lib/games";
+import { getInitials } from "../../lib/profileUtils";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 
 const GameInviteListener = ({ onAccepted }) => {
   const { user } = useAuth();
+  const notice = useNotice();
   const [invite, setInvite] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -56,7 +60,7 @@ const GameInviteListener = ({ onAccepted }) => {
     setLoading(false);
 
     if (error) {
-      alert("Не удалось принять: " + error.message);
+      notice.show("Не удалось принять: " + error.message);
       return;
     }
 
@@ -79,12 +83,14 @@ const GameInviteListener = ({ onAccepted }) => {
   return (
     <div className="game-invite-toast">
       <div className="game-invite-toast__header">🎮 Приглашение в игру</div>
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
+
       <div className="game-invite-toast__body">
         <div className="game-invite-toast__avatar">
           {invite.host?.avatar_url ? (
             <img src={invite.host.avatar_url} alt={hostName} />
           ) : (
-            <span>{hostName[0].toUpperCase()}</span>
+            <span>{getInitials(invite.host)}</span>
           )}
         </div>
         <div>

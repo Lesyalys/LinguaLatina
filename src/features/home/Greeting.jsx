@@ -1,16 +1,18 @@
-import React from "react";
 import { useAuth } from "../../context/AuthContext";
+import { getInitials } from "../../lib/profileUtils";
 import NextLesson from "./NextLesson";
+
+const greetingByHour = (hour) => {
+  if (hour < 6) return "Доброй ночи";
+  if (hour < 12) return "Доброе утро";
+  if (hour < 18) return "Добрый день";
+  return "Добрый вечер";
+};
 
 const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
   const { profile, user } = useAuth();
 
-  const hour = new Date().getHours();
-  let greeting = "Добрый день";
-  if (hour < 6) greeting = "Доброй ночи";
-  else if (hour < 12) greeting = "Доброе утро";
-  else if (hour < 18) greeting = "Добрый день";
-  else greeting = "Добрый вечер";
+  const greeting = greetingByHour(new Date().getHours());
 
   if (!user || !profile) {
     return (
@@ -36,12 +38,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
   }
 
   const name = profile.display_name || profile.username;
-  const initials = (profile.display_name || profile.username || "?")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(profile);
 
   const hasSchedule =
     scheduleData && weekType && dayIndex !== null && dayIndex !== undefined;

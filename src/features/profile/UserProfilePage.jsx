@@ -10,11 +10,14 @@ import {
   removeFriendship,
 } from "../../lib/friends";
 import ProfileCard from "./ProfileCard";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 
 const UserProfilePage = ({ userId, onBack }) => {
   const onlineUsers = useOnlineUsers();
   const isOnline = onlineUsers.has(userId);
   const { user } = useAuth();
+  const notice = useNotice();
   const [profile, setProfile] = useState(null);
   const [friendship, setFriendship] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await sendFriendRequest(user.id, userId);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
@@ -69,7 +72,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await acceptFriendRequest(friendship.id);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
@@ -81,7 +84,7 @@ const UserProfilePage = ({ userId, onBack }) => {
     const { error } = await removeFriendship(friendship.id);
     setActionLoading(false);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     await refreshFriendship();
@@ -217,19 +220,6 @@ const UserProfilePage = ({ userId, onBack }) => {
       }
     }
 
-    if (isSelf) {
-      actions.push(
-        <button
-          key="self"
-          className="bottom-bar-btn"
-          onClick={onBack}
-          title="К своему профилю"
-        >
-          👤
-        </button>,
-      );
-    }
-
     actions.push(
       <button
         key="back-btn"
@@ -246,6 +236,7 @@ const UserProfilePage = ({ userId, onBack }) => {
 
   return (
     <div className="user-profile-page">
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
       <ProfileCard
         profile={profile}
         topButton={renderTopButton()}

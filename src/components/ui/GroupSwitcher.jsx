@@ -1,5 +1,3 @@
-import React from "react";
-
 const GroupSwitcher = ({ group, onChange, label = "Моя подгруппа:" }) => {
   return (
     <div className="group-switcher">

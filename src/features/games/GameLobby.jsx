@@ -3,10 +3,14 @@ import { useAuth } from "../../context/AuthContext";
 import { useOnlineUsers } from "../../context/PresenceContext";
 import { getFriendships } from "../../lib/friends";
 import { acceptGame, cancelGame } from "../../lib/games";
+import { getInitials } from "../../lib/profileUtils";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 import { supabase } from "../../lib/supabase";
 
 const GameLobby = ({ subject, onBack, onOpenSetup }) => {
   const { user } = useAuth();
+  const notice = useNotice();
   const onlineUsers = useOnlineUsers();
   const [friends, setFriends] = useState([]);
   const [incoming, setIncoming] = useState([]);
@@ -53,7 +57,7 @@ const GameLobby = ({ subject, onBack, onOpenSetup }) => {
   const handleAccept = async (gameId) => {
     const { error } = await acceptGame(gameId);
     if (error) {
-      alert("Ошибка: " + error.message);
+      notice.show("Ошибка: " + error.message);
       return;
     }
     // Дальше App сам перекинет в GameRoom через глобальную подписку
@@ -77,6 +81,8 @@ const GameLobby = ({ subject, onBack, onOpenSetup }) => {
         </h1>
       </div>
       <h1 className="page-title">🎮 Игра вдвоём</h1>
+
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
 
       {incoming.length > 0 && (
         <div className="lobby-section">
@@ -146,11 +152,7 @@ const GameLobby = ({ subject, onBack, onOpenSetup }) => {
                       {f.user.avatar_url ? (
                         <img src={f.user.avatar_url} alt={f.user.username} />
                       ) : (
-                        <span>
-                          {(f.user.display_name ||
-                            f.user.username ||
-                            "?")[0].toUpperCase()}
-                        </span>
+                        <span>{getInitials(f.user)}</span>
                       )}
                     </div>
                     {online && <span className="online-dot" />}

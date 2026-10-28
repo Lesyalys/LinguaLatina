@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useFilter } from "../../context/FilterContext";
 import { shuffleArray } from "../../lib/shuffle";
-import {
-  updateSubjectProgress,
-  getSubjectProgress,
-  updateHistory,
-} from "../../lib/progress";
+import { commitTrainingProgress } from "../../lib/progress";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
 
 const TrainingCards = ({ words, onBack }) => {
   const { profile, updateProfile } = useAuth();
+  const { courseId, semesterId } = useFilter();
+  const notice = useNotice();
 
   // Слова приходят уже перемешанными (перемешивание делается на старте).
   // При «Пройти заново» перемешиваем заново — в обработчике, а не в рендере.
@@ -48,47 +49,14 @@ const TrainingCards = ({ words, onBack }) => {
   // ============================================================
   // Построение прогресса — УНИКАЛЬНЫЕ СЛОВА
   // ============================================================
-  const buildProgress = (wordsLearnedThisSession) => {
-    const today = new Date().toISOString().split("T")[0];
-    const oldProgress = profile?.progress || {};
-
-    // 1. Читаем старый прогресс по латыни
-    const oldLatin = getSubjectProgress(
-      oldProgress,
-      "course-1",
-      "semester-1",
-      "latin",
-    ) || {
-      wordsLearned: [],
-      attempts: 0,
-    };
-
-    // 2. Уникальные слова
-    const oldSet = new Set(oldLatin.wordsLearned || []);
-    wordsLearnedThisSession.forEach((w) => oldSet.add(w.text));
-    const uniqueWords = Array.from(oldSet);
-
-    // 3. Обновляем subject "latin"
-    let newProgress = updateSubjectProgress(
-      oldProgress,
-      "course-1",
-      "semester-1",
-      "latin",
-      {
-        type: "subject",
-        wordsLearned: uniqueWords,
-        attempts: (oldLatin.attempts || 0) + 1,
-        lastActive: today,
-      },
-    );
-
-    // 4. Обновляем history
-    newProgress = updateHistory(newProgress, today, {
-      words: uniqueWords.length,
+  const buildProgress = (wordsLearnedThisSession) =>
+    commitTrainingProgress(profile?.progress, {
+      courseId,
+      semesterId,
+      subjectId: "latin",
+      words: wordsLearnedThisSession,
     });
 
-    return newProgress;
-  };
   // ============================================================
   // Сохранение
   // ============================================================
@@ -117,7 +85,7 @@ const TrainingCards = ({ words, onBack }) => {
   const handleSaveAndExit = async () => {
     const result = await saveProgress();
     if (result?.error) {
-      alert("Не удалось сохранить прогресс: " + result.error.message);
+      notice.show("Не удалось сохранить прогресс: " + result.error.message);
       return;
     }
     onBack();
@@ -141,7 +109,7 @@ const TrainingCards = ({ words, onBack }) => {
 
     const result = await saveProgress();
     if (result?.error) {
-      alert("Не удалось сохранить прогресс: " + result.error.message);
+      notice.show("Не удалось сохранить прогресс: " + result.error.message);
       return;
     }
     onBack();
@@ -215,6 +183,7 @@ const TrainingCards = ({ words, onBack }) => {
           </p>
 
           <div className="finished-actions">
+            <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
             <button
               className="profile-action-btn"
               onClick={handleRestart}
@@ -249,6 +218,8 @@ const TrainingCards = ({ words, onBack }) => {
           {currentIndex + 1} / {total}
         </span>
       </div>
+
+      <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
 
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${progress}%` }} />

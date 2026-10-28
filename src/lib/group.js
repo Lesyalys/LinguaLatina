@@ -1,6 +1,12 @@
 const STORAGE_KEY = "user-group-preference";
 
 /**
+ * Ключ localStorage, в котором хранится выбранная подгруппа.
+ * Единый источник правды — его используют и getResolvedGroup, и useGroupPreference.
+ */
+export const GROUP_STORAGE_KEY = STORAGE_KEY;
+
+/**
  * Актуальная группа пользователя:
  * 1. localStorage (мгновенно, последнее изменение)
  * 2. profile.group (из БД — может быть устаревшим на 1 рендер)
@@ -18,5 +24,3 @@ export const getResolvedGroup = (profile) => {
 
   return "A";
 };
-
-export const STORAGE_KEY_GROUP = STORAGE_KEY;

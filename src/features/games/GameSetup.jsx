@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState, useEffect, useMemo } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
 import {
   createGame,
   buildWordQueue,
@@ -19,34 +19,26 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
 
   const dataFile = SUBJECT_DATA_FILES[subject?.id] || null;
 
-  const [selectedGroups, setSelectedGroups] = useState([]);
+  const [deselectedGroups, setDeselectedGroups] = useState([]);
   const [rounds, setRounds] = useState(10);
   const [timePerRound, setTimePerRound] = useState(10);
-  const [lexicon, setLexicon] = useState(null);
-  const [source, setSource] = useState(null); // 🆕 S3 / cache / local
   const [creating, setCreating] = useState(false);
   const [waitingGameId, setWaitingGameId] = useState(null);
   const [notice, setNotice] = useState(null); // { type: "info" | "error", text }
 
-  // Загрузка через loadMaterialData (S3 → кеш → локально)
-  useEffect(() => {
-    if (!dataFile) return;
-    let cancelled = false;
+  // Загрузка через useMaterialData (S3 → кеш → локально)
+  const { data: lexicon, source, loading } = useMaterialData(dataFile);
 
-    setLexicon(null);
-    loadMaterialData(dataFile).then(({ data, source }) => {
-      if (cancelled) return;
-      setLexicon(data);
-      setSource(source);
-      if (data?.data) {
-        setSelectedGroups(data.data.map((g) => g.name));
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
+  // По умолчанию выбраны все минимумы; снимаем только отмеченные.
+  // Так не нужен useEffect для инициализации состояния из загруженных данных.
+  const allGroupNames = useMemo(
+    () => (lexicon?.data || []).map((g) => g.name),
+    [lexicon],
+  );
+  const selectedGroups = useMemo(
+    () => allGroupNames.filter((n) => !deselectedGroups.includes(n)),
+    [allGroupNames, deselectedGroups],
+  );
 
   // Слушаем смену статуса игры
   useEffect(() => {
@@ -77,7 +69,7 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
   }, [waitingGameId, onGameCreated]);
 
   const toggleGroup = (g) => {
-    setSelectedGroups((prev) =>
+    setDeselectedGroups((prev) =>
       prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g],
     );
   };
@@ -148,7 +140,9 @@ const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
     );
   }
 
-  if (!lexicon) return <div className="app-loading">Загрузка словаря...</div>;
+  if (loading) return <div className="app-loading">Загрузка словаря...</div>;
+  if (!lexicon)
+    return <div className="page-placeholder">Не удалось загрузить словарь</div>;
 
   return (
     <div className="game-setup">

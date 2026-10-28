@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { loadMaterialData } from "../../lib/materials";
+import { useState } from "react";
+import { useMaterialData } from "../../hooks/useMaterialData";
 import { shuffleArray } from "../../lib/shuffle";
 import DataWarning from "../../components/ui/DataWarning";
 
@@ -10,23 +10,7 @@ const TrainingSetup = ({ dataFile, onStart, onBack }) => {
     "lexs_min_3",
     "lexs_min_4",
   ]);
-  const [lexicon, setLexicon] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [source, setSource] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadMaterialData(dataFile).then(({ data, source }) => {
-      if (!cancelled) {
-        setLexicon(data);
-        setSource(source);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
+  const { data: lexicon, source, loading } = useMaterialData(dataFile);
 
   // ✅ хуки закончились — теперь можно return
   if (loading) return <div className="app-loading">Загрузка...</div>;

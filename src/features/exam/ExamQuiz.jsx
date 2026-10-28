@@ -1,18 +1,18 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { loadMaterialData } from "../../lib/materials";
+import { useFilter } from "../../context/FilterContext";
+import { useMaterialData } from "../../hooks/useMaterialData";
+import { shuffleArray } from "../../lib/shuffle";
 import DataWarning from "../../components/ui/DataWarning";
-import {
-  updateSubjectProgress,
-  getSubjectProgress,
-  updateHistory,
-} from "../../lib/progress";
+import { Notice } from "../../components/ui/Notification";
+import { useNotice } from "../../hooks/useNotice";
+import { commitQuizProgress } from "../../lib/progress";
 
 const ExamQuiz = ({ dataFile, onBack }) => {
-  const [source, setSource] = useState(null);
   const { profile, updateProfile } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { courseId, semesterId } = useFilter();
+  const notice = useNotice();
+  const { data, source, loading } = useMaterialData(dataFile);
 
   const [stage, setStage] = useState("setup");
   const [selectedTickets, setSelectedTickets] = useState(new Set());
@@ -24,21 +24,6 @@ const ExamQuiz = ({ dataFile, onBack }) => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    loadMaterialData(dataFile).then(({ data, source }) => {
-      if (!cancelled) {
-        setData(data);
-        setSource(source);
-        setLoading(false);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [dataFile]);
 
   const tickets = useMemo(() => data?.data || [], [data]);
 
@@ -58,10 +43,7 @@ const ExamQuiz = ({ dataFile, onBack }) => {
     });
 
     if (shuffle) {
-      for (let i = allCards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [allCards[i], allCards[j]] = [allCards[j], allCards[i]];
-      }
+      return shuffleArray(allCards);
     }
     return allCards;
   };
@@ -83,7 +65,7 @@ const ExamQuiz = ({ dataFile, onBack }) => {
     if (selectedTickets.size === 0) return;
     const prepared = prepareQuestions(selectedTickets, shuffleQuestions);
     if (prepared.length === 0) {
-      alert("В выбранных билетах нет вопросов");
+      notice.show("В выбранных билетах нет вопросов");
       return;
     }
     setQuestions(prepared);
@@ -128,47 +110,13 @@ const ExamQuiz = ({ dataFile, onBack }) => {
   // ============================================================
   // Сохранение прогресса — уникальные card.id
   // ============================================================
-  const buildProgress = (correctIds) => {
-    const today = new Date().toISOString().split("T")[0];
-    const oldProgress = profile?.progress || {};
-
-    // 1. Старый прогресс по анатомии
-    const oldAnatomy = getSubjectProgress(
-      oldProgress,
-      "course-1",
-      "semester-1",
-      "anatomy",
-    ) || {
-      quizLearned: [],
-      attempts: 0,
-    };
-
-    // 2. Уникальные карточки
-    const oldSet = new Set(oldAnatomy.quizLearned || []);
-    correctIds.forEach((id) => oldSet.add(id));
-    const uniqueCards = Array.from(oldSet);
-
-    // 3. Обновляем subject "anatomy"
-    let newProgress = updateSubjectProgress(
-      oldProgress,
-      "course-1",
-      "semester-1",
-      "anatomy",
-      {
-        type: "exam",
-        quizLearned: uniqueCards,
-        attempts: (oldAnatomy.attempts || 0) + 1,
-        lastActive: today,
-      },
-    );
-
-    // 4. Обновляем history
-    newProgress = updateHistory(newProgress, today, {
-      quizAnswers: uniqueCards.length,
+  const buildProgress = (correctIds) =>
+    commitQuizProgress(profile?.progress, {
+      courseId,
+      semesterId,
+      subjectId: "anatomy",
+      cardIds: correctIds,
     });
-
-    return newProgress;
-  };
 
   const saveProgress = async () => {
     if (correctCardIds.length === 0) return { skipped: true };
@@ -189,7 +137,7 @@ const ExamQuiz = ({ dataFile, onBack }) => {
   const handleSaveAndExit = async () => {
     const result = await saveProgress();
     if (result?.error) {
-      alert("Не удалось сохранить: " + result.error.message);
+      notice.show("Не удалось сохранить: " + result.error.message);
       return;
     }
     onBack();
@@ -229,6 +177,7 @@ const ExamQuiz = ({ dataFile, onBack }) => {
           <h2>Тест по билетам</h2>
         </div>
         <DataWarning source={source} />
+        <Notice msg={notice.msg} type={notice.type} onClose={notice.hide} />
         <p className="setup-description">Выберите билеты для теста:</p>
 
         <div className="quiz-setup-actions">

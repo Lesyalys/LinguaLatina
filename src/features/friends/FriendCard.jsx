@@ -1,15 +1,11 @@
 import { useOnlineUsers } from "../../context/PresenceContext";
+import { getInitials } from "../../lib/profileUtils";
 
 const FriendCard = ({ friendship, onOpen, onRemove }) => {
   const u = friendship.user;
   const onlineUsers = useOnlineUsers();
   const isOnline = onlineUsers.has(u.id);
-  const initials = (u.display_name || u.username || "?")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = getInitials(u);
 
   return (
     <div className="friend-card">

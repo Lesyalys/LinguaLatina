@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useOnlineUsers } from "../../context/PresenceContext";
 import { supabase } from "../../lib/supabase";
@@ -8,7 +8,10 @@ import {
   finishGame,
   cancelGame,
   subscribeToGame,
+  elapsedSince,
+  resolveRoundWinner,
 } from "../../lib/games";
+import { getInitials } from "../../lib/profileUtils";
 
 const RESULT_DELAY_MS = 3000;
 
@@ -26,6 +29,9 @@ const GameRoom = ({ gameId, onExit }) => {
   const disconnectTimerRef = useRef(null);
   const exitedRef = useRef(false);
   const advanceTimerRef = useRef(null);
+  // Когда этот игрок увидел слово текущего раунда — база для elapsed.
+  // Обновляется в эффекте смены раунда, читается только в обработчике ответа.
+  const roundSeenAtRef = useRef(null);
 
   const isHost = game?.host_id === user?.id;
   const myRole = isHost ? "host" : "guest";
@@ -41,7 +47,10 @@ const GameRoom = ({ gameId, onExit }) => {
   const currentIndex = game?.state?.currentIndex || 0;
   const currentWord = wordQueue[currentIndex];
   const timePerRound = game?.settings?.timePerRound || 10;
-  const answers = game?.state?.answers || {};
+  const answers = useMemo(
+    () => game?.state?.answers || {},
+    [game?.state?.answers],
+  );
   const hostAnswered = !!answers.host;
   const guestAnswered = !!answers.guest;
   const bothAnswered = hostAnswered && guestAnswered;
@@ -109,6 +118,7 @@ const GameRoom = ({ gameId, onExit }) => {
   // Сброс состояния при новом раунде
   // ============================================================
   useEffect(() => {
+    roundSeenAtRef.current = Date.now();
     setRoundResult(null);
     setMyAnswer(null);
     setShowResult(false);
@@ -169,12 +179,27 @@ const GameRoom = ({ gameId, onExit }) => {
 
     advanceTimerRef.current = setTimeout(async () => {
       const nextIndex = currentIndex + 1;
+
+      // === Начисление очка победителю раунда (только хост) ===
+      const hostA = answers.host;
+      const guestA = answers.guest;
+      const winner = resolveRoundWinner(hostA, guestA);
+
+      let newScoreHost = game.score_host;
+      let newScoreGuest = game.score_guest;
+      if (winner === "host") newScoreHost += 1;
+      else if (winner === "guest") newScoreGuest += 1;
+      // winner === null (ничья) — очко никому не даём
+
       if (nextIndex >= wordQueue.length) {
-        await finishGame(gameId, game.score_host, game.score_guest);
+        await finishGame(gameId, newScoreHost, newScoreGuest);
         return;
       }
+
       await updateGameState(gameId, {
         state: { ...game.state, currentIndex: nextIndex, answers: {} },
+        score_host: newScoreHost,
+        score_guest: newScoreGuest,
       });
       // сброс произойдёт в useEffect по currentIndex
     }, RESULT_DELAY_MS);
@@ -185,7 +210,15 @@ const GameRoom = ({ gameId, onExit }) => {
         advanceTimerRef.current = null;
       }
     };
-  }, [showResult, currentIndex, currentWord, game, gameId, wordQueue.length]);
+  }, [
+    showResult,
+    currentIndex,
+    currentWord,
+    game,
+    gameId,
+    wordQueue.length,
+    answers,
+  ]);
 
   // ============================================================
   // Обработчик ответа
@@ -196,14 +229,16 @@ const GameRoom = ({ gameId, onExit }) => {
 
     const isCorrect = option === currentWord.correct;
 
-    // Формируем ответ в game.state.answers
+    // Записываем elapsed (мс от появления слова) — чистое значение,
+    // без Date.now() в рендере. Для старых игр держим timestamp.
     const newAnswers = {
       ...answers,
       [myRole]: {
         player: myRole,
         option,
         correct: isCorrect,
-        timestamp: Date.now(),
+        elapsed: elapsedSince(roundSeenAtRef.current),
+        timestamp: roundSeenAtRef.current,
       },
     };
 
@@ -211,38 +246,17 @@ const GameRoom = ({ gameId, onExit }) => {
     const opponentAnswer = answers[myRole === "host" ? "guest" : "host"];
     const willBothAnswer = !!opponentAnswer;
 
-    // Счёт обновляем, если правильно
-    let newScoreHost = game.score_host;
-    let newScoreGuest = game.score_guest;
-    if (isCorrect) {
-      if (myRole === "host") newScoreHost += 1;
-      else newScoreGuest += 1;
-    }
+    // ⚠️ Очки НЕ начисляем здесь — это делает хост в автопереходе.
+    // handleAnswer может вызываться на обоих клиентах, и только один
+    // должен обновлять счёт, чтобы избежать гонки.
 
     await updateGameState(gameId, {
       state: { ...game.state, answers: newAnswers },
-      score_host: newScoreHost,
-      score_guest: newScoreGuest,
     });
 
     // Если оба ответили — показываем результат
     if (willBothAnswer) {
-      const bothCorrect = isCorrect && opponentAnswer.correct;
-      const winner = (() => {
-        if (isCorrect && !opponentAnswer.correct) return myRole;
-        if (!isCorrect && opponentAnswer.correct) {
-          return myRole === "host" ? "guest" : "host";
-        }
-        if (bothCorrect) {
-          // сравнение timestamp
-          return Date.now() < opponentAnswer.timestamp
-            ? myRole
-            : myRole === "host"
-              ? "guest"
-              : "host";
-        }
-        return null;
-      })();
+      const winner = resolveRoundWinner(newAnswers[myRole], opponentAnswer);
 
       setRoundResult({
         winner,
@@ -263,15 +277,7 @@ const GameRoom = ({ gameId, onExit }) => {
 
     const hostA = answers.host;
     const guestA = answers.guest;
-
-    const winner = (() => {
-      if (hostA.correct && !guestA.correct) return "host";
-      if (!hostA.correct && guestA.correct) return "guest";
-      if (hostA.correct && guestA.correct) {
-        return hostA.timestamp < guestA.timestamp ? "host" : "guest";
-      }
-      return null;
-    })();
+    const winner = resolveRoundWinner(hostA, guestA);
 
     setRoundResult({
       winner,
@@ -342,12 +348,6 @@ const GameRoom = ({ gameId, onExit }) => {
   if (!game) return <div className="app-loading">Загрузка игры...</div>;
   if (!currentWord)
     return <div className="app-loading">Загрузка раундов...</div>;
-
-  // ============================================================
-  // Рендер
-  // ============================================================
-  const getInitials = (p) =>
-    (p?.display_name || p?.username || "?")[0].toUpperCase();
 
   return (
     <div className="game-room">

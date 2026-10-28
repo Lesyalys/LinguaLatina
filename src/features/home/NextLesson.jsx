@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { getNextLesson } from "../../lib/schedule";
 
