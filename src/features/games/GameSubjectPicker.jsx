@@ -1,37 +1,83 @@
-import { getSubjects } from "../../lib/materials";
-import { useFilter } from "../../context/FilterContext";
-
-// 🎮 Только предметы, у которых есть action для игры
-const getGameSubjects = (courseId, semesterId) => {
-  const all = getSubjects({ courseId, semesterId, type: "subject" });
-  return all
-    .map((subject) => {
-      // Ищем action "training" или "wordList" — то, что использует GameSetup
-      const gameAction =
-        subject.actions?.find((a) => a.id === "training") ||
-        subject.actions?.find((a) => a.id === "wordList");
-
-      return {
-        ...subject,
-        available: !!gameAction,
-        gameAction, // сохраняем для отладки
-      };
-    })
-    .filter((s) => s.available); // показываем только те, где есть игра
-};
+import React, { useState, useEffect, useMemo } from "react";
+import { useScheduleGroup } from "../../hooks/useScheduleGroup";
+import { loadMaterialData, buildMaterialPath } from "../../lib/materials";
+import DataWarning from "../../components/ui/DataWarning";
 
 const GameSubjectPicker = ({ onSelectSubject }) => {
-  const { courseId, semesterId } = useFilter();
-  const subjects = getGameSubjects(courseId, semesterId);
+  const { courseId, season, scheduleGroup } = useScheduleGroup();
+
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    const path = buildMaterialPath({
+      courseId,
+      season,
+      relativePath: "manifest.json",
+    });
+
+    loadMaterialData(path).then(({ data, source }) => {
+      if (cancelled) return;
+      setSource(source);
+
+      // 🎯 Берём только предметы, у которых есть action "training"
+      // (игра = тренировка по лексике)
+      const filtered = (data?.subjects || [])
+        .map((subject) => {
+          const trainingAction = (subject.actions || []).find(
+            (a) => a.id === "training",
+          );
+          if (!trainingAction) return null;
+
+          return {
+            ...subject,
+            trainingAction,
+            // для GameSetup — dataFile с полным путём
+            trainingDataFile: buildMaterialPath({
+              courseId,
+              season,
+              relativePath: trainingAction.relativeFile || "",
+            }),
+          };
+        })
+        .filter(Boolean);
+
+      setSubjects(filtered);
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, season]);
+
+  // 🎨 Цвет из темы по умолчанию
+  const FALLBACK_COLOR = "#8b9cff";
+
+  if (loading) return <div className="app-loading">Загрузка...</div>;
 
   return (
     <div className="game-subject-picker">
       <h1 className="page-title">🎮 Игра вдвоём</h1>
-      <p className="page-subtitle">Выберите предмет для игры</p>
+      <p className="page-subtitle">
+        Выберите предмет для игры
+        {scheduleGroup && (
+          <>
+            {" · "}
+            <span className="page-subtitle-group">{scheduleGroup}</span>
+          </>
+        )}
+      </p>
+
+      <DataWarning source={source} />
 
       {subjects.length === 0 ? (
         <div className="no-results">
-          <p>Пока нет предметов, доступных для игры</p>
+          <p>Для этой группы нет предметов, доступных для игры</p>
         </div>
       ) : (
         <div className="game-subjects-grid">
@@ -39,7 +85,9 @@ const GameSubjectPicker = ({ onSelectSubject }) => {
             <div
               key={subject.id}
               className="game-subject-card"
-              style={{ "--subject-color": subject.color }}
+              style={{
+                "--subject-color": subject.color || FALLBACK_COLOR,
+              }}
               onClick={() => onSelectSubject(subject)}
             >
               <div className="game-subject-icon">{subject.icon}</div>

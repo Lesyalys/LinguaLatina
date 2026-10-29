@@ -1,53 +1,48 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { getAvailableFilters } from "../lib/materials";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useScheduleGroup } from "../hooks/useScheduleGroup";
+import { useScheduleContext } from "./ScheduleContext";
 
 const FilterContext = createContext(null);
 
+// 🎯 Фиксированный список семестров
+const ALL_SEASONS = ["Осень", "Зима"];
+
 export const FilterProvider = ({ children }) => {
-  const availableFilters = getAvailableFilters();
+  const { scheduleArray, loading: scheduleLoading } = useScheduleContext();
+  const { courseId, season: groupSeason } = useScheduleGroup();
 
-  // Выбранный курс — по умолчанию первый
-  const [courseId, setCourseId] = useState(
-    () =>
-      localStorage.getItem("filter-course") ||
-      availableFilters[0]?.id ||
-      "course-1",
-  );
-
-  // Выбранный семестр — по умолчанию первый семестр выбранного курса
-  const [semesterId, setSemesterId] = useState(() => {
-    const saved = localStorage.getItem("filter-semester");
-    if (saved) return saved;
-    const course = availableFilters.find((c) => c.id === courseId);
-    return course?.semesters[0]?.id || "semester-1";
+  // 🎯 season — локальный стейт, НЕ синхронизируется с группой
+  // (только стартовое значение — от группы)
+  const [season, setSeasonState] = useState(() => {
+    const saved = localStorage.getItem("filter-season");
+    if (saved && ALL_SEASONS.includes(saved)) return saved;
+    return groupSeason && ALL_SEASONS.includes(groupSeason)
+      ? groupSeason
+      : ALL_SEASONS[0];
   });
 
-  // Синхронизация с localStorage
-  useEffect(() => {
-    localStorage.setItem("filter-course", courseId);
-  }, [courseId]);
-
-  useEffect(() => {
-    localStorage.setItem("filter-semester", semesterId);
-  }, [semesterId]);
-
-  // При смене курса — переключаем семестр на первый доступный
-  const changeCourse = (newCourseId) => {
-    setCourseId(newCourseId);
-    const course = availableFilters.find((c) => c.id === newCourseId);
-    setSemesterId(course?.semesters[0]?.id || "semester-1");
+  // 🎯 Пользовательский setSeason — обновляет стейт + localStorage
+  const setSeason = (newSeason) => {
+    if (!ALL_SEASONS.includes(newSeason)) return;
+    setSeasonState(newSeason);
+    localStorage.setItem("filter-season", newSeason);
   };
 
-  const value = {
-    courseId,
-    semesterId,
-    setSemesterId,
-    changeCourse,
-    availableFilters,
-  };
+  if (scheduleLoading) {
+    return <div className="app-loading">Загрузка расписания...</div>;
+  }
 
   return (
-    <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
+    <FilterContext.Provider
+      value={{
+        courseId, // 🎯 из группы
+        season, // 🎯 независимый (Осень / Зима)
+        setSeason,
+        availableSeasons: ALL_SEASONS,
+      }}
+    >
+      {children}
+    </FilterContext.Provider>
   );
 };
 

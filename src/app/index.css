@@ -5415,3 +5415,177 @@ select {
   font-size: 0.85rem;
   font-weight: 700;
 }
+/* Заголовок с группой */
+.schedule-header-group {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Переключатель учебной группы в расписании */
+.schedule-schedule-group-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.schedule-schedule-group-label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.schedule-schedule-group-select {
+  padding: 6px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.schedule-schedule-group-select:hover {
+  border-color: var(--border-strong);
+}
+
+.schedule-schedule-group-select:focus {
+  border-color: var(--accent);
+}
+
+/* Профиль: селектор учебной группы */
+.profile-schedule-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.profile-schedule-group__label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.profile-schedule-group__select {
+  padding: 8px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  margin-left: auto;
+}
+
+.profile-schedule-group__select:hover {
+  border-color: var(--border-strong);
+}
+
+.profile-schedule-group__select:focus {
+  border-color: var(--accent);
+}
+.profile-group-switch--disabled {
+  opacity: 0.7;
+}
+
+.profile-group-badge--muted {
+  background: var(--bg-hover);
+  color: var(--text-mute);
+}
+
+.profile-group-hint {
+  font-size: 0.78rem;
+  color: var(--text-mute);
+  font-style: italic;
+  margin-left: 4px;
+}
+/* Season filter */
+.season-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.season-filter__label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.season-filter__select {
+  padding: 8px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.season-filter__select:hover {
+  border-color: var(--border-strong);
+}
+
+.season-filter__select:focus {
+  border-color: var(--accent);
+}
+
+/* В профиле */
+.profile-season-switch {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+}
+.season-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.season-filter__label {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.season-filter__select {
+  padding: 8px 12px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.season-filter__select:hover {
+  border-color: var(--border-strong);
+}
+
+.season-filter__select:focus {
+  border-color: var(--accent);
+}
+
+/* Мобильная адаптация — на всю ширину */
+@media (max-width: 600px) {
+  .season-filter {
+    width: 100%;
+  }
+
+  .season-filter__select {
+    flex: 1;
+  }
+}

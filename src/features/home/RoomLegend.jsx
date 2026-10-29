@@ -17,9 +17,12 @@ const RoomLegend = ({ collapsible = true }) => {
 
   const visibleItems = collapsible && !open ? items.slice(0, 4) : items;
 
-  const getMapUrl = (address) => {
-    if (!address) return null;
-    const encoded = encodeURIComponent(address);
+  // В данных есть готовая ссылка togis (точка на карте) — используем её.
+  // Fallback на поиск по address — только если togis пустая.
+  const getMapUrl = (item) => {
+    if (item.togis) return item.togis;
+    if (!item.address) return null;
+    const encoded = encodeURIComponent(item.address);
     return `https://2gis.ru/surgut/search/${encoded}`;
   };
 
@@ -62,7 +65,7 @@ const RoomLegend = ({ collapsible = true }) => {
       ) : (
         <ul className="room-legend__list">
           {visibleItems.map((item) => {
-            const mapUrl = getMapUrl(item.address);
+            const mapUrl = getMapUrl(item);
             return (
               <li key={item.code} className="room-legend__item">
                 <span

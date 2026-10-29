@@ -1,11 +1,39 @@
+// src/components/profile/ProfileCard.jsx
+import React from "react";
 import {
   getInitials,
   formatMemberSince,
   calcExpPercent,
-  countWordsLearned,
 } from "../../lib/profileUtils";
+import { useAuth } from "../../context/AuthContext";
 import GroupSwitcher from "../../components/ui/GroupSwitcher";
+// import SeasonFilter from "../../components/ui/SeasonFilter";
 import ActivityGrid from "./ActivityGrid";
+import { useScheduleGroup } from "../../hooks/useScheduleGroup";
+
+// ============================================================
+// Подсчёт выученных слов по всем курсам/семестрам/предметам
+// (progress.courses[courseId].semesters[semId].subjects[subjId])
+// ============================================================
+const countWordsLearned = (progress) => {
+  if (!progress?.courses) return 0;
+  let total = 0;
+
+  Object.values(progress.courses).forEach((course) => {
+    Object.values(course?.semesters || {}).forEach((semester) => {
+      Object.values(semester?.subjects || {}).forEach((subject) => {
+        if (Array.isArray(subject?.wordsLearned)) {
+          total += subject.wordsLearned.length;
+        }
+        if (Array.isArray(subject?.quizLearned)) {
+          total += subject.quizLearned.length;
+        }
+      });
+    });
+  });
+
+  return total;
+};
 
 const ProfileCard = ({
   profile,
@@ -16,6 +44,17 @@ const ProfileCard = ({
   group = "A",
   setGroup,
 }) => {
+  const { user } = useAuth();
+  const {
+    scheduleGroup,
+    setScheduleGroup,
+    hasGroups,
+    courseId,
+    season,
+    availableGroups = [], // 🎯 получаем из хука
+    loading: scheduleLoading,
+  } = useScheduleGroup();
+
   if (!profile) return null;
 
   const initials = getInitials(profile);
@@ -27,7 +66,9 @@ const ProfileCard = ({
 
   return (
     <div className="profile-view-card">
-      {/* Обложка */}
+      {/* ======================================================
+          Обложка профиля
+         ====================================================== */}
       <div
         className="profile-cover"
         style={
@@ -40,7 +81,9 @@ const ProfileCard = ({
         <div className="profile-cover-overlay" />
       </div>
 
-      {/* Аватар + прогресс */}
+      {/* ======================================================
+          Аватар + прогресс
+         ====================================================== */}
       <div className="profile-view-body">
         <div className="profile-avatar-large">
           {profile.avatar_url ? (
@@ -61,7 +104,9 @@ const ProfileCard = ({
         </div>
       </div>
 
-      {/* Имя, био, мета */}
+      {/* ======================================================
+          Имя, ник, био, мета
+         ====================================================== */}
       <div className="profile-view-info">
         <h2>{profile.display_name || profile.username}</h2>
         <p className="profile-username">
@@ -72,24 +117,86 @@ const ProfileCard = ({
         <p className="profile-meta">На платформе с {memberSince}</p>
       </div>
 
-      {/* 🎯 Подгруппа */}
-      <div className="profile-group-switch">
-        {isOwn ? (
-          <GroupSwitcher group={group} onChange={setGroup} />
-        ) : (
-          <div className="profile-group-view">
-            <span className="profile-group-label">Группа:</span>
-            <span className="profile-group-badge">{displayGroup}</span>
-          </div>
-        )}
-      </div>
+      {/* ======================================================
+          🎯 Учебная группа (только для своего профиля)
+         ====================================================== */}
+      {isOwn && (
+        <div className="profile-schedule-group">
+          <label className="profile-schedule-group__label">
+            Учебная группа
+          </label>
+
+          {scheduleLoading || availableGroups.length === 0 ? (
+            <span className="profile-schedule-group__placeholder">
+              Загрузка...
+            </span>
+          ) : (
+            <select
+              className="profile-schedule-group__select"
+              value={scheduleGroup || ""}
+              onChange={(e) => setScheduleGroup(e.target.value)}
+            >
+              {availableGroups.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
+
+      {/* ======================================================
+          🎯 Семестр (Осень / Зима) — только для своего профиля
+         ====================================================== */}
+      {/* {isOwn && (
+        <div className="profile-season-switch">
+          <SeasonFilter />
+        </div>
+      )} */}
+
+      {/* ======================================================
+          🎯 Подгруппа (A/B) — только если у группы есть подгруппы
+         ====================================================== */}
+      {hasGroups ? (
+        <div className="profile-group-switch">
+          {isOwn ? (
+            <GroupSwitcher group={group} onChange={setGroup} />
+          ) : (
+            <div className="profile-group-view">
+              <span className="profile-group-label">Подгруппа:</span>
+              <span className="profile-group-badge">{displayGroup}</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="profile-group-switch profile-group-switch--disabled">
+          <span className="profile-group-label">Подгруппа:</span>
+          <span className="profile-group-badge profile-group-badge--muted">
+            Не требуется
+          </span>
+          <span className="profile-group-hint">
+            У этой группы нет деления на подгруппы
+          </span>
+        </div>
+      )}
+
+      {/* ======================================================
+          📊 Активность (GitHub-like)
+         ====================================================== */}
       <ActivityGrid history={profile?.progress?.history || []} />
 
+      {/* ======================================================
+          🏅 Достижения
+         ====================================================== */}
       <ProfileAchievements achievements={achievements} />
     </div>
   );
 };
 
+// ============================================================
+// Достижения — заглушка
+// ============================================================
 const ProfileAchievements = ({ achievements }) => {
   return (
     <div className="profile-achievements">

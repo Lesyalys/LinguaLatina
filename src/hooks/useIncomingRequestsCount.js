@@ -4,8 +4,8 @@ import { supabase } from "../lib/supabase";
 export const useIncomingRequestsCount = (userId) => {
   const [count, setCount] = useState(0);
 
-  const loadCount = useCallback(async () => {
-    if (!userId) return;
+  const fetchCount = useCallback(async () => {
+    if (!userId) return null;
 
     const { count: c, error } = await supabase
       .from("friendships")
@@ -13,12 +13,23 @@ export const useIncomingRequestsCount = (userId) => {
       .eq("friend_id", userId)
       .eq("status", "pending");
 
-    if (!error) setCount(c || 0);
+    return error ? null : c || 0;
   }, [userId]);
 
+  const loadCount = useCallback(async () => {
+    const next = await fetchCount();
+    if (next !== null) setCount(next);
+  }, [fetchCount]);
+
   useEffect(() => {
-    loadCount();
-  }, [loadCount]);
+    let cancelled = false;
+    fetchCount().then((next) => {
+      if (!cancelled && next !== null) setCount(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchCount]);
 
   // Realtime
   useEffect(() => {

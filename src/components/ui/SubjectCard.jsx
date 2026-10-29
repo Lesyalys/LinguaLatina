@@ -1,4 +1,3 @@
-
 /**
  * Универсальная карточка предмета / экзамена.
  *
@@ -10,11 +9,12 @@
 const SubjectCard = ({ subject, onOpen, actionsLimit }) => {
   if (!subject) return null;
 
-  const actions = actionsLimit
-    ? subject.actions.slice(0, actionsLimit)
-    : subject.actions;
+  // subject.actions может отсутствовать — обращаемся только через safeList,
+  // иначе .slice()/.length упадут до проверки ниже.
+  const safeList = subject.actions || [];
+  const actions = actionsLimit ? safeList.slice(0, actionsLimit) : safeList;
 
-  const hiddenCount = subject.actions.length - actions.length;
+  const hiddenCount = safeList.length - actions.length;
 
   return (
     <div

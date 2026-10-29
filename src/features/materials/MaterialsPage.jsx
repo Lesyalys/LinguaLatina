@@ -1,19 +1,36 @@
+import React, { useState, useEffect } from "react";
 import { useFilter } from "../../context/FilterContext";
-import { getSubjects } from "../../lib/materials";
+import { loadAndEnrichManifest } from "../../lib/materials";
 import SubjectCard from "../../components/ui/SubjectCard";
-import CourseFilter from "../../components/ui/CourseFilter";
+import SeasonFilter from "../../components/ui/SeasonFilter";
+import DataWarning from "../../components/ui/DataWarning";
 
 const MaterialsPage = ({ onOpenSubject }) => {
-  const { courseId, semesterId, availableFilters } = useFilter();
+  // 🎯 courseId — из группы, season — из фильтра
+  const { courseId, season } = useFilter();
 
-  const materials = getSubjects({ courseId, semesterId });
+  const [subjects, setSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState(null);
 
-  const currentCourse = availableFilters.find((c) => c.id === courseId);
-  const currentSemester = currentCourse?.semesters.find(
-    (s) => s.id === semesterId,
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
 
-  const totalCount = materials.length;
+    // 🎯 Путь: course-N/season-{autumn|winter}/manifest.json
+    loadAndEnrichManifest({ courseId, season }).then(({ subjects, source }) => {
+      if (cancelled) return;
+      setSubjects(subjects);
+      setSource(source);
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId, season]);
+
+  if (loading) return <div className="app-loading">Загрузка...</div>;
 
   return (
     <div className="materials-page">
@@ -21,26 +38,27 @@ const MaterialsPage = ({ onOpenSubject }) => {
         <div>
           <h1 className="page-title">Материалы</h1>
           <p className="page-subtitle">
-            {currentCourse?.title} • {currentSemester?.title}
-            {totalCount > 0 && ` • ${totalCount} предметов`}
+            {courseId.replace("course-", "")} курс • {season}
           </p>
         </div>
 
-        {/* 🎯 Фильтр курса/семестра внутри страницы */}
-        <CourseFilter variant="inline" />
+        {/* 🎯 Фильтр семестра */}
+        <SeasonFilter />
       </div>
 
-      {totalCount === 0 ? (
+      <DataWarning source={source} />
+
+      {subjects.length === 0 ? (
         <div className="no-results">
-          <p>В этом семестре пока нет материалов</p>
+          <p>В семестре «{season}» пока нет материалов</p>
         </div>
       ) : (
         <div className="subjects-grid">
-          {materials.map((material) => (
+          {subjects.map((subject) => (
             <SubjectCard
-              key={material.id}
-              subject={material}
-              onOpen={() => onOpenSubject(material)}
+              key={subject.id}
+              subject={subject}
+              onOpen={() => onOpenSubject(subject)}
             />
           ))}
         </div>

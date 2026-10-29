@@ -1,22 +1,18 @@
 import { useState, useEffect } from "react";
 
+// Запуск ли приложение как установленное PWA — проверяется один раз при
+// инициализации состояния: matchMedia доступен уже на первом рендере,
+// поэтому не нужно делать setState внутри эффекта.
+const checkStandalone = () =>
+  typeof window !== "undefined" &&
+  (window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true);
+
 export const usePWAInstall = () => {
   const [installPrompt, setInstallPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(checkStandalone);
 
   useEffect(() => {
-    // Проверяем, запущено ли приложение как PWA
-    const checkStandalone = () => {
-      return (
-        window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone === true
-      );
-    };
-
-    if (checkStandalone()) {
-      setIsInstalled(true);
-    }
-
     // Слушаем событие установки
     const handler = (e) => {
       e.preventDefault();

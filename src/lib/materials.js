@@ -1,38 +1,23 @@
-import manifest from "../data/manifest.json";
-
-// Локальные копии данных (собираются в бандл как обычные ассеты).
-// Ключ — путь относительно src/data, значение — URL ассета с хэшем.
-const localDataAssets = import.meta.glob("../data/**/*.json", {
-  query: "?url",
-  import: "default",
-  eager: true,
-});
-
-const LOCAL_DATA_URLS = Object.entries(localDataAssets).reduce(
-  (acc, [globKey, url]) => {
-    const idx = globKey.indexOf("/data/");
-    if (idx !== -1) acc[globKey.slice(idx + "/data/".length)] = url;
-    return acc;
-  },
-  {},
-);
+// ============================================================
+// Материалы: только S3 + localStorage-кэш
+// ============================================================
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const MATERIALS_BUCKET =
   import.meta.env.VITE_SUPABASE_MATERIALS_BUCKET || "materials";
 
 // ============================================================
-// Кеш (localStorage)
+// Кэш (localStorage)
 // ============================================================
 const CACHE_PREFIX = "materials-cache:";
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 1 день
-const CACHE_STALE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 дней — максимальный срок жизни
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 1 день — обновляем раз в сутки
+const CACHE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 дней — совсем старый удаляем
 
 const getCacheKey = (dataFile) => `${CACHE_PREFIX}${dataFile}`;
 
 /**
- * Читает кеш и возвращает { data, timestamp, isFresh }.
- * isFresh — true, если кеш моложе TTL (1 день).
+ * Читает кэш.
+ * Возвращает { data, timestamp, age, isFresh } или null.
  */
 const readCache = (dataFile) => {
   try {
@@ -42,8 +27,8 @@ const readCache = (dataFile) => {
     const { data, timestamp } = JSON.parse(raw);
     const age = Date.now() - timestamp;
 
-    // Совсем старый — считаем отсутствующим
-    if (age > CACHE_STALE_TTL) {
+    // Совсем старый — удаляем
+    if (age > CACHE_MAX_AGE) {
       localStorage.removeItem(getCacheKey(dataFile));
       return null;
     }
@@ -71,22 +56,36 @@ const writeCache = (dataFile, data) => {
 };
 
 // ============================================================
-// Загрузка
-// Возвращает: { data, source: "s3" | "cache" | "cache-stale" | "local" | "error" }
+// Нормализация пути
 // ============================================================
-
-/**
- * Путь к данным нормализуется в один формате: относительно src/data,
- * без ведущего слэша. Это защищает и от `undefined` в ключе localStorage,
- * и от двойного слэша в URL S3, и от расхождения с ключами LOCAL_DATA_URLS.
- */
 const normalizeDataFile = (dataFile) =>
   typeof dataFile === "string" ? dataFile.replace(/^\/+/, "").trim() : "";
 
+// ============================================================
+// Построение пути
+// course-1/season-autumn/latin/lexicon.json
+// ============================================================
+export const getSeasonFolder = (season) => {
+  const s = (season || "").toLowerCase();
+  if (s === "зима" || s === "winter") return "season-winter";
+  if (s === "весна" || s === "spring") return "season-spring";
+  if (s === "лето" || s === "summer") return "season-summer";
+  return "season-autumn"; // Осень
+};
+
+export const buildMaterialPath = ({ courseId, season, relativePath }) => {
+  const course = courseId || "course-1";
+  const seasonFolder = getSeasonFolder(season);
+  const rel = (relativePath || "").replace(/^\/+/, "");
+  return `${course}/${seasonFolder}/${rel}`;
+};
+// ============================================================
+// Загрузка: S3 → кэш → error
+// ============================================================
 export const loadMaterialData = async (rawDataFile) => {
   const dataFile = normalizeDataFile(rawDataFile);
 
-  // Guard: пустой/некорректный путь — не ходим ни в S3, ни в кеш
+  // Guard
   if (!dataFile || !dataFile.endsWith(".json")) {
     console.error(
       `[materials] Некорректный путь к данным: ${JSON.stringify(rawDataFile)}`,
@@ -97,12 +96,12 @@ export const loadMaterialData = async (rawDataFile) => {
   const cached = readCache(dataFile);
   const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
-  // 1. Свежий кеш + онлайн — отдаём сразу, не дёргаем S3
+  // 1. Свежий кэш + онлайн — отдаём сразу, S3 не дёргаем
   if (cached?.isFresh && isOnline) {
     return { data: cached.data, source: "cache" };
   }
 
-  // 2. Офлайн — отдаём кеш (даже устаревший) или локальный fallback
+  // 2. Офлайн — только кэш
   if (!isOnline) {
     if (cached) {
       return {
@@ -110,10 +109,12 @@ export const loadMaterialData = async (rawDataFile) => {
         source: cached.isFresh ? "cache" : "cache-stale",
       };
     }
-    return loadLocal(dataFile, "offline");
+    // Офлайн и нет кэша — ошибка
+    console.warn(`[materials] Офлайн, кэша нет: ${dataFile}`);
+    return { data: null, source: "error" };
   }
 
-  // 3. Онлайн + кеш устарел (или его нет) — пробуем S3
+  // 3. Онлайн + кэш устарел (или нет) — пробуем S3
   try {
     const url = `${SUPABASE_URL}/storage/v1/object/public/${MATERIALS_BUCKET}/${dataFile}`;
     const res = await fetch(url, { cache: "no-cache" });
@@ -124,14 +125,12 @@ export const loadMaterialData = async (rawDataFile) => {
       return { data, source: "s3" };
     }
 
-    console.warn(
-      `[materials] S3 ответил ${res.status} для ${dataFile}, пробуем кеш/локально`,
-    );
+    console.warn(`[materials] S3 ${res.status} для ${dataFile}, пробуем кэш`);
   } catch (err) {
     console.warn(`[materials] S3 недоступен для ${dataFile}:`, err.message);
   }
 
-  // 4. S3 упал — пробуем кеш (даже устаревший)
+  // 4. S3 упал — отдаём кэш (даже устаревший)
   if (cached) {
     return {
       data: cached.data,
@@ -139,92 +138,58 @@ export const loadMaterialData = async (rawDataFile) => {
     };
   }
 
-  // 5. Кеша нет — локальный fallback
-  return loadLocal(dataFile, "offline");
-};
-
-/**
- * Локальный fallback (если S3 и кеш недоступны).
- * Данные уже собраны в бандл как ассеты, fetch по URL работает через precache SW.
- */
-const loadLocal = async (dataFile, reason = "") => {
-  const url = LOCAL_DATA_URLS[dataFile];
-  if (!url) {
-    console.error(
-      `[materials] Нет локальной копии для ${dataFile} (${reason})`,
-    );
-    return { data: null, source: "error" };
-  }
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return { data: await res.json(), source: "local" };
-  } catch (err) {
-    console.error(
-      `[materials] Не удалось загрузить ${dataFile} локально (${reason}):`,
-      err,
-    );
-    return { data: null, source: "error" };
-  }
+  // 5. Совсем ничего нет
+  return { data: null, source: "error" };
 };
 
 // ============================================================
-// Очистка кеша (по кнопке в профиле, например)
+// Очистка кэша
 // ============================================================
-// export const clearMaterialsCache = () => {
-//   const keys = Object.keys(localStorage).filter((k) =>
-//     k.startsWith(CACHE_PREFIX),
-//   );
-//   keys.forEach((k) => localStorage.removeItem(k));
-// };
-
-// ============================================================
-// Manifest / Subjects / Filters — без изменений
-// ============================================================
-export const getManifest = () => manifest;
-
-export const getCourses = () => manifest.courses;
-
-export const getSemesters = (courseId) => {
-  const course = manifest.courses.find((c) => c.id === courseId);
-  return course?.semesters || [];
+export const clearMaterialsCache = () => {
+  const keys = Object.keys(localStorage).filter((k) =>
+    k.startsWith(CACHE_PREFIX),
+  );
+  keys.forEach((k) => localStorage.removeItem(k));
 };
 
-export const getSubjects = ({ courseId, semesterId, type } = {}) => {
-  const result = [];
-  manifest.courses.forEach((course) => {
-    if (courseId && course.id !== courseId) return;
-    course.semesters.forEach((semester) => {
-      if (semesterId && semester.id !== semesterId) return;
-      semester.subjects.forEach((subject) => {
-        if (type && subject.type !== type) return;
-        result.push({
-          ...subject,
-          courseId: course.id,
-          courseTitle: course.title,
-          semesterId: semester.id,
-          semesterTitle: semester.title,
-        });
-      });
-    });
+// ============================================================
+// Загрузка манифеста (на курс/семестр) + обогащение
+// ============================================================
+export const loadMaterialsManifest = async ({ courseId, season }) => {
+  const path = buildMaterialPath({
+    courseId,
+    season,
+    relativePath: "manifest.json",
   });
-  return result;
+  return loadMaterialData(path);
 };
 
-export const getSubjectById = ({ courseId, semesterId, subjectId }) => {
-  const course = manifest.courses.find((c) => c.id === courseId);
-  const semester = course?.semesters.find((s) => s.id === semesterId);
-  return semester?.subjects.find((s) => s.id === subjectId) || null;
+export const enrichAction = (action, { courseId, season }) => ({
+  ...action,
+  dataFile: buildMaterialPath({
+    courseId,
+    season,
+    relativePath: action.relativeFile || "",
+  }),
+});
+
+export const enrichSubject = (subject, context) => ({
+  ...subject,
+  actions: (subject.actions || []).map((a) => enrichAction(a, context)),
+});
+
+export const loadAndEnrichManifest = async ({ courseId, season }) => {
+  const { data, source } = await loadMaterialsManifest({ courseId, season });
+  if (!data) return { subjects: [], source };
+
+  const subjects = (data.subjects || []).map((s) =>
+    enrichSubject(s, { courseId, season }),
+  );
+  return { subjects, source };
 };
 
-export const getAvailableFilters = () => {
-  return manifest.courses.map((course) => ({
-    id: course.id,
-    title: course.title,
-    semesters: course.semesters.map((s) => ({
-      id: s.id,
-      title: s.title,
-      subjectsCount: s.subjects.length,
-    })),
-  }));
-};
+export const findAction = (subject, actionId) =>
+  subject?.actions?.find((a) => a.id === actionId) || null;
+
+export const findSubject = (subjects, subjectId) =>
+  subjects.find((s) => s.id === subjectId) || null;

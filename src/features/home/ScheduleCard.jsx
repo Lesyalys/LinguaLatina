@@ -1,5 +1,7 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useAuth } from "../../context/AuthContext";
 import DataWarning from "../../components/ui/DataWarning";
+import { getResolvedGroup } from "../../lib/group";
 import {
   getWeekType,
   getDayIndex,
@@ -12,34 +14,61 @@ const ScheduleCard = ({
   data: scheduleData,
   loading,
   source,
-  viewGroup,
-  onViewGroupChange,
-  profileGroup,
+  scheduleGroup,
+  availableGroups = [],
+  onScheduleGroupChange,
 }) => {
+  const { profile } = useAuth();
+
   const today = useMemo(() => new Date(), []);
   const todayIndex = useMemo(() => getDayIndex(today), [today]);
 
   const [selectedDay, setSelectedDay] = useState(
     todayIndex >= 0 && todayIndex < 6 ? todayIndex : 0,
   );
-  // Пользователь может вручную переключить на другую неделю.
-  // Если не переключено — берём авто-значение из scheduleData.
-  const [manualWeekType, setManualWeekType] = useState(null);
-  const autoWeekType = useMemo(
-    () => (scheduleData ? getWeekType(today, scheduleData) : null),
+  const [weekType, setWeekType] = useState(null);
+
+  const profileGroup = getResolvedGroup(profile);
+  const [viewGroup, setViewGroup] = useState(profileGroup);
+
+  const lastProfileGroupRef = useRef(profileGroup);
+  useEffect(() => {
+    if (lastProfileGroupRef.current !== profileGroup) {
+      lastProfileGroupRef.current = profileGroup;
+      setViewGroup(profileGroup);
+    }
+  }, [profileGroup]);
+
+  useEffect(() => {
+    if (scheduleData) {
+      setWeekType(getWeekType(today));
+    }
+  }, [scheduleData, today]);
+
+  const currentWeekType = useMemo(
+    () => (scheduleData ? getWeekType(today) : null),
     [today, scheduleData],
   );
-  const weekType = manualWeekType ?? autoWeekType;
-
-  const currentWeekType = autoWeekType;
 
   const isCurrentWeek = weekType === currentWeekType;
   const isCurrentDay =
     isCurrentWeek && selectedDay === todayIndex && todayIndex < 6;
 
+  // 🎯 есть ли подгруппы у этой группы
+  const hasGroups = scheduleData?.hasGroups !== false;
+
+  // Если нет подгрупп — всегда viewGroup = "A"
+  const effectiveViewGroup = hasGroups ? viewGroup : "A";
+
   const { bells, lessons } = useMemo(
-    () => getScheduleForDay(scheduleData, weekType, selectedDay, viewGroup),
-    [scheduleData, weekType, selectedDay, viewGroup],
+    () =>
+      getScheduleForDay(
+        scheduleData,
+        weekType,
+        selectedDay,
+        effectiveViewGroup,
+      ),
+    [scheduleData, weekType, selectedDay, effectiveViewGroup],
   );
 
   if (loading || !weekType) {
@@ -49,6 +78,17 @@ const ScheduleCard = ({
           <h3>Расписание</h3>
         </div>
         <div className="schedule-empty">Загрузка...</div>
+      </div>
+    );
+  }
+
+  if (!scheduleData) {
+    return (
+      <div className="card schedule-card">
+        <div className="schedule-header">
+          <h3>Расписание</h3>
+        </div>
+        <div className="schedule-empty">Нет расписания</div>
       </div>
     );
   }
@@ -66,18 +106,23 @@ const ScheduleCard = ({
     };
   });
 
-  const isViewingOtherGroup = viewGroup !== profileGroup;
+  const isViewingOtherGroup = hasGroups && viewGroup !== profileGroup;
 
   return (
     <div className="card schedule-card">
       <div className="schedule-header">
-        <h3>Расписание</h3>
+        <h3>
+          Расписание{" "}
+          {scheduleGroup && (
+            <span className="schedule-header-group">{scheduleGroup}</span>
+          )}
+        </h3>
         <div className="schedule-week-switch">
           <button
             className={`week-toggle-btn ${
               weekType === "Числитель" ? "active" : ""
             } ${currentWeekType === "Числитель" ? "current" : ""}`}
-            onClick={() => setManualWeekType("Числитель")}
+            onClick={() => setWeekType("Числитель")}
           >
             Числитель
             {currentWeekType === "Числитель" && (
@@ -89,7 +134,7 @@ const ScheduleCard = ({
             className={`week-toggle-btn ${
               weekType === "Знаменатель" ? "active" : ""
             } ${currentWeekType === "Знаменатель" ? "current" : ""}`}
-            onClick={() => setManualWeekType("Знаменатель")}
+            onClick={() => setWeekType("Знаменатель")}
           >
             Знаменатель
             {currentWeekType === "Знаменатель" && (
@@ -101,33 +146,54 @@ const ScheduleCard = ({
 
       <DataWarning source={source} />
 
-      <div className="schedule-group-switch">
-        <button
-          className={`group-btn ${viewGroup === "A" ? "active" : ""}`}
-          onClick={() => onViewGroupChange("A")}
-          title="Только просмотр — не меняет вашу группу в профиле"
-        >
-          Группа A
-        </button>
-        <button
-          className={`group-btn ${viewGroup === "B" ? "active" : ""}`}
-          onClick={() => onViewGroupChange("B")}
-          title="Только просмотр — не меняет вашу группу в профиле"
-        >
-          Группа B
-        </button>
-      </div>
+      {/* 📚 Селектор учебной группы */}
+      {/* {availableGroups.length > 1 && (
+        <div className="schedule-schedule-group-switch">
+          <label className="schedule-schedule-group-label">Группа</label>
+          <select
+            className="schedule-schedule-group-select"
+            value={scheduleGroup || ""}
+            onChange={(e) => onScheduleGroupChange?.(e.target.value)}
+          >
+            {availableGroups.map((g) => (
+              <option key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+        </div>
+      )} */}
+
+      {/* 👀 A/B — только если есть подгруппы */}
+      {hasGroups && (
+        <div className="schedule-group-switch">
+          <button
+            className={`group-btn ${viewGroup === "A" ? "active" : ""}`}
+            onClick={() => setViewGroup("A")}
+            title="Только просмотр"
+          >
+            Группа A
+          </button>
+          <button
+            className={`group-btn ${viewGroup === "B" ? "active" : ""}`}
+            onClick={() => setViewGroup("B")}
+            title="Только просмотр"
+          >
+            Группа B
+          </button>
+        </div>
+      )}
 
       {isViewingOtherGroup && (
         <div className="schedule-view-note">
-          👀 Вы смотрите <strong>группу {viewGroup}</strong>. Ваша группа в
-          профиле — <strong>{profileGroup}</strong>.
+          👀 Вы смотрите <strong>подгруппу {viewGroup}</strong>. Ваша подгруппа
+          — <strong>{profileGroup}</strong>.
           <button
             type="button"
             className="schedule-view-reset"
-            onClick={() => onViewGroupChange(profileGroup)}
+            onClick={() => setViewGroup(profileGroup)}
           >
-            ← К моей группе
+            ← К моей
           </button>
         </div>
       )}

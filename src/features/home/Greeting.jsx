@@ -1,27 +1,30 @@
+import React from "react";
 import { useAuth } from "../../context/AuthContext";
-import { getInitials } from "../../lib/profileUtils";
 import NextLesson from "./NextLesson";
 
-const greetingByHour = (hour) => {
-  if (hour < 6) return "Доброй ночи";
-  if (hour < 12) return "Доброе утро";
-  if (hour < 18) return "Добрый день";
-  return "Добрый вечер";
-};
-
-const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
+const Greeting = ({
+  onLogin,
+  scheduleData,
+  weekType,
+  dayIndex,
+  scheduleGroup,
+}) => {
   const { profile, user } = useAuth();
 
-  const greeting = greetingByHour(new Date().getHours());
+  const hour = new Date().getHours();
+  let greeting = "Добрый день";
+  if (hour < 6) greeting = "Доброй ночи";
+  else if (hour < 12) greeting = "Доброе утро";
+  else if (hour < 18) greeting = "Добрый день";
+  else greeting = "Добрый вечер";
 
   if (!user || !profile) {
     return (
       <div className="greeting guest">
-        <div className="greeting-avatar guest-avatar"></div>
+        <div className="greeting-avatar guest-avatar">👋</div>
         <div className="greeting-text">
           <h1 className="greeting-title">
-            Добро пожаловать в{" "}
-            <span className="greeting-name">Lingua Latina</span>!
+            Добро пожаловать в <span className="greeting-name">Medsur</span>!
           </h1>
           <p className="greeting-username">
             Платформа для изучения латыни и подготовки к экзаменам
@@ -38,7 +41,12 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
   }
 
   const name = profile.display_name || profile.username;
-  const initials = getInitials(profile);
+  const initials = (profile.display_name || profile.username || "?")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const hasSchedule =
     scheduleData && weekType && dayIndex !== null && dayIndex !== undefined;
@@ -55,7 +63,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
 
       <div className="greeting-text">
         <h1 className="greeting-title">
-          {greeting}, <span className="greeting-name">{name}</span>!
+          {greeting}, <span className="greeting-name">{name}</span>! 👋
         </h1>
         <p className="greeting-username">@{profile.username}</p>
         <p className="greeting-subtitle">
@@ -68,7 +76,7 @@ const Greeting = ({ onLogin, scheduleData, weekType, dayIndex, viewGroup }) => {
           scheduleData={scheduleData}
           weekType={weekType}
           dayIndex={dayIndex}
-          viewGroup={viewGroup}
+          scheduleGroup={scheduleGroup}
         />
       )}
     </div>

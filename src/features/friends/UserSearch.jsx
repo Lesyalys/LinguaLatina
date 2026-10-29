@@ -13,8 +13,12 @@ const UserSearch = ({
 }) => {
   const onlineUsers = useOnlineUsers();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  const [search, setSearch] = useState({ query: "", results: [] });
+
+  // Результаты актуальны только для того же запроса, для которого пришли.
+  // searching выводится, а не ставится синхронно в эффекте.
+  const searching = query.length >= 2 && search.query !== query;
+  const results = search.query === query ? search.results : [];
 
   // Локальный оверрайд статуса — после действий пользователя
   // { [userId]: { type, friendshipId } }
@@ -22,16 +26,11 @@ const UserSearch = ({
 
   // Дебаунс поиска
   useEffect(() => {
-    if (query.length < 2) {
-      setResults([]);
-      return;
-    }
+    if (query.length < 2) return;
 
-    setSearching(true);
     const timer = setTimeout(async () => {
       const data = await searchUsers(query, currentUserId);
-      setResults(data);
-      setSearching(false);
+      setSearch({ query, results: data });
     }, 350);
 
     return () => clearTimeout(timer);

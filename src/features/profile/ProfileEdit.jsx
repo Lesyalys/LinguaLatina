@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 
@@ -21,6 +21,35 @@ const ProfileEdit = ({ profile, onCancel, onSaved }) => {
 
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
+
+  // Blob-URL превью нужно освобождать, иначе они текут до перезагрузки страницы.
+  const objectUrlsRef = useRef(new Set());
+
+  const makePreview = useCallback((blob) => {
+    const url = URL.createObjectURL(blob);
+    objectUrlsRef.current.add(url);
+    return url;
+  }, []);
+
+  const replacePreview = useCallback(
+    (blob, setter, current) => {
+      // Освобождаем только наш blob-URL — url из Supabase трогать нельзя.
+      if (current && objectUrlsRef.current.has(current)) {
+        URL.revokeObjectURL(current);
+        objectUrlsRef.current.delete(current);
+      }
+      setter(makePreview(blob));
+    },
+    [makePreview],
+  );
+
+  useEffect(() => {
+    const urls = objectUrlsRef.current;
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+      urls.clear();
+    };
+  }, []);
 
   // Проверка, изменилось ли что-то
   const isDirty =
@@ -84,10 +113,10 @@ const ProfileEdit = ({ profile, onCancel, onSaved }) => {
 
             if (type === "avatar") {
               setAvatarFile(croppedFile);
-              setAvatarPreview(URL.createObjectURL(blob));
+              replacePreview(blob, setAvatarPreview, avatarPreview);
             } else {
               setCoverFile(croppedFile);
-              setCoverPreview(URL.createObjectURL(blob));
+              replacePreview(blob, setCoverPreview, coverPreview);
             }
           },
           "image/jpeg",

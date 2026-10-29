@@ -1,19 +1,140 @@
+import { loadMaterialData } from "./materials";
 // ============================================================
-// Утилиты для работы с неделями и днями
+// Доступные группы (из массива)
 // ============================================================
+export const getScheduleGroups = (scheduleArray) => {
+  if (!Array.isArray(scheduleArray)) return [];
+  return scheduleArray.map((s) => s.group).filter(Boolean);
+};
+export const getScheduleByGroup = (scheduleArray, group) => {
+  if (!Array.isArray(scheduleArray) || !scheduleArray.length) return null;
+  return scheduleArray.find((s) => s.group === group) || scheduleArray[0];
+};
 
-// Понедельник календарной недели, содержащей дату
+// ============================================================
+// Обогащение группы (course, season, hasGroups)
+// ============================================================
+const detectHasGroups = (scheduleItem) => {
+  if (typeof scheduleItem.hasGroups === "boolean") {
+    return scheduleItem.hasGroups;
+  }
+  for (const week of scheduleItem.data || []) {
+    for (const day of week.days || []) {
+      for (const lesson of day.lessons || []) {
+        if (lesson.group_B?.subject) return true;
+      }
+    }
+  }
+  return false;
+};
+
+export const enrichScheduleItem = (item) => ({
+  ...item,
+  course: item.course ?? 1,
+  season: item.season ?? "Осень",
+  hasGroups: detectHasGroups(item),
+});
+
+export const getEnrichedScheduleArray = (scheduleArray) => {
+  if (!Array.isArray(scheduleArray)) return [];
+  return scheduleArray.map(enrichScheduleItem);
+};
+// ============================================================
+// Доступные сезоны
+// ============================================================
+export const getAvailableSeasons = (scheduleArray) => {
+  const enriched = getEnrichedScheduleArray(scheduleArray);
+  const set = new Set();
+  enriched.forEach((s) => {
+    if (s.season) set.add(s.season);
+  });
+  const order = ["Осень", "Зима", "Весна", "Лето"];
+  return Array.from(set).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+};
+
+// ============================================================
+// Загрузка расписания (S3 / schedule/schedule.json)
+// ============================================================
+const SCHEDULE_PATH = "schedule/schedule.json";
+
+export const loadScheduleData = async () => {
+  return loadMaterialData(SCHEDULE_PATH); // см. materials.js
+};
+
+// ============================================================
+// ISO-номер недели / Тип недели / День недели
+// ============================================================
 const getMonday = (date) => {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = d.getDay() || 7; // 1..7, вс = 7
-  d.setDate(d.getDate() - (day - 1));
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
   return d;
 };
 
-/**
- * Парсит строку вида "10:00-11:20" → { startMin, endMin }
- * (минуты от начала суток)
- */
+export const getWeekType = (date = new Date()) => {
+  const acYear =
+    date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
+
+  const sep1 = new Date(acYear, 8, 1);
+  const firstMonday = getMonday(sep1);
+  const curMonday = getMonday(date);
+
+  const weekIndex = Math.round((curMonday - firstMonday) / (7 * 86400000));
+  const weekNumber = weekIndex + 1;
+
+  return weekNumber % 2 === 1 ? "Числитель" : "Знаменатель";
+};
+
+export const getDayIndex = (date = new Date()) => {
+  const d = date.getDay();
+  return d === 0 ? 6 : d - 1;
+};
+
+export const WEEK_DAYS = [
+  "Понедельник",
+  "Вторник",
+  "Среда",
+  "Четверг",
+  "Пятница",
+  "Суббота",
+];
+
+export const WEEK_DAYS_SHORT = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+
+// ============================================================
+// Расписание на день
+// ============================================================
+export const getScheduleForDay = (
+  scheduleData,
+  weekType,
+  dayIndex,
+  group = "A",
+) => {
+  if (!scheduleData) return { bells: [], lessons: [] };
+
+  const week = scheduleData.data?.find((w) => w.week_type === weekType);
+  if (!week) return { bells: scheduleData.bells || [], lessons: [] };
+
+  const day = week.days[dayIndex];
+  if (!day) return { bells: scheduleData.bells || [], lessons: [] };
+
+  const groupKey = group === "A" ? "group_A" : "group_B";
+
+  return {
+    bells: scheduleData.bells || [],
+    lessons: day.lessons.map((l) => ({
+      bell: scheduleData.bells.find((b) => b.id === l.bell_id),
+      subject: l[groupKey]?.subject || "",
+      room: l[groupKey]?.room || null,
+    })),
+  };
+};
+
+// ============================================================
+// Следующая пара
+// ============================================================
 const parseTimeRange = (timeStr) => {
   if (!timeStr) return null;
   const [start, end] = timeStr.split("-").map((s) => s.trim());
@@ -24,22 +145,9 @@ const parseTimeRange = (timeStr) => {
 
   if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return null;
 
-  return {
-    startMin: sh * 60 + sm,
-    endMin: eh * 60 + em,
-  };
+  return { startMin: sh * 60 + sm, endMin: eh * 60 + em };
 };
 
-/**
- * Возвращает следующую пару на сегодня.
- *
- * @param {Object} scheduleData — данные расписания (JSON из S3)
- * @param {string} weekType — "Числитель" | "Знаменатель"
- * @param {number} dayIndex — 0..5 (0 = Пн)
- * @param {string} group — "A" | "B"
- * @param {Date} now — текущее время (по умолчанию new Date())
- * @returns {null | { bell, subject, room, time, status: "now" | "next", minutesLeft, minutesUntil }}
- */
 export const getNextLesson = (
   scheduleData,
   weekType,
@@ -48,7 +156,7 @@ export const getNextLesson = (
   now = new Date(),
 ) => {
   if (!scheduleData) return null;
-  if (dayIndex < 0 || dayIndex > 5) return null; // воскресенье
+  if (dayIndex < 0 || dayIndex > 5) return null;
 
   const week = scheduleData.data?.find((w) => w.week_type === weekType);
   if (!week) return null;
@@ -79,7 +187,6 @@ export const getNextLesson = (
     .filter(Boolean)
     .sort((a, b) => a.startMin - b.startMin);
 
-  // 1. Пара идёт сейчас
   const current = lessons.find(
     (l) => nowMin >= l.startMin && nowMin <= l.endMin,
   );
@@ -95,7 +202,6 @@ export const getNextLesson = (
     };
   }
 
-  // 2. Ближайшая будущая пара
   const next = lessons.find((l) => l.startMin > nowMin);
   if (next) {
     return {
@@ -109,70 +215,5 @@ export const getNextLesson = (
     };
   }
 
-  // 3. Пар больше нет
   return null;
-};
-
-export const getWeekType = (date = new Date()) => {
-  // учебный год начинается 1 сентября; в янв–авг — в прошлом году
-  const acYear =
-    date.getMonth() >= 8 ? date.getFullYear() : date.getFullYear() - 1;
-  const sep1 = new Date(acYear, 8, 1); // 1 сентября, локально
-
-  // понедельник недели, в которую попало 1 сентября
-  const firstMonday = getMonday(sep1);
-
-  // понедельник недели текущей даты
-  const curMonday = getMonday(date);
-
-  // номер учебной недели, начиная с 1 (неделя, содержащая 1 сентября)
-  const weekIndex = Math.round((curMonday - firstMonday) / (7 * 86400000));
-  const weekNumber = weekIndex + 1;
-
-  return weekNumber % 2 === 1 ? "Числитель" : "Знаменатель";
-};
-
-export const getDayIndex = (date = new Date()) => {
-  const d = date.getDay();
-  return d === 0 ? 6 : d - 1;
-};
-
-export const WEEK_DAYS = [
-  "Понедельник",
-  "Вторник",
-  "Среда",
-  "Четверг",
-  "Пятница",
-  "Суббота",
-];
-
-export const WEEK_DAYS_SHORT = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-
-// ============================================================
-// Извлечь расписание на день из данных
-// ============================================================
-export const getScheduleForDay = (
-  scheduleData,
-  weekType,
-  dayIndex,
-  group = "A",
-) => {
-  if (!scheduleData) return { bells: [], lessons: [] };
-
-  const week = scheduleData.data.find((w) => w.week_type === weekType);
-  if (!week) return { bells: scheduleData.bells || [], lessons: [] };
-
-  const day = week.days[dayIndex];
-  if (!day) return { bells: scheduleData.bells || [], lessons: [] };
-
-  const groupKey = group === "A" ? "group_A" : "group_B";
-
-  return {
-    bells: scheduleData.bells || [],
-    lessons: day.lessons.map((l) => ({
-      bell: scheduleData.bells.find((b) => b.id === l.bell_id),
-      subject: l[groupKey]?.subject || "",
-      room: l[groupKey]?.room || null,
-    })),
-  };
 };

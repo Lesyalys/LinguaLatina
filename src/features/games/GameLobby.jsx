@@ -12,34 +12,51 @@ const GameLobby = ({ subject, onBack, onOpenSetup }) => {
   const { user } = useAuth();
   const notice = useNotice();
   const onlineUsers = useOnlineUsers();
-  const [friends, setFriends] = useState([]);
-  const [incoming, setIncoming] = useState([]);
-  const [outgoing, setOutgoing] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    loadedFor: null,
+    friends: [],
+    incoming: [],
+    outgoing: [],
+  });
+  // loading выводится из loadedFor — без синхронного setState в эффекте.
+  const loading = !!user && data.loadedFor !== user.id;
+  const { friends, incoming, outgoing } = data;
 
-  const loadData = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
+  // Один источник данных для первой загрузки и для realtime-обновлений.
+  const fetchLobby = useCallback(async () => {
+    if (!user) return null;
 
-    const { friends: f } = await getFriendships(user.id);
-    setFriends(f);
+    const [{ friends: f }, { data: games }] = await Promise.all([
+      getFriendships(user.id),
+      supabase
+        .from("games")
+        .select("*")
+        .eq("status", "invited")
+        .or(`host_id.eq.${user.id},guest_id.eq.${user.id}`),
+    ]);
 
-    const { data: games } = await supabase
-      .from("games")
-      .select("*")
-      .eq("status", "invited")
-      .or(`host_id.eq.${user.id},guest_id.eq.${user.id}`);
-
-    if (games) {
-      setIncoming(games.filter((g) => g.guest_id === user.id));
-      setOutgoing(games.filter((g) => g.host_id === user.id));
-    }
-    setLoading(false);
+    return {
+      loadedFor: user.id,
+      friends: f,
+      incoming: (games || []).filter((g) => g.guest_id === user.id),
+      outgoing: (games || []).filter((g) => g.host_id === user.id),
+    };
   }, [user]);
 
+  const loadData = useCallback(async () => {
+    const next = await fetchLobby();
+    if (next) setData(next);
+  }, [fetchLobby]);
+
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    let cancelled = false;
+    fetchLobby().then((next) => {
+      if (!cancelled && next) setData(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchLobby]);
 
   useEffect(() => {
     if (!user) return;

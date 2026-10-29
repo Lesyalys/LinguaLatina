@@ -1,12 +1,11 @@
-import { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { getResolvedGroup } from "../../lib/group";
 import { getNextLesson } from "../../lib/schedule";
 
-const NextLesson = ({ scheduleData, weekType, dayIndex, viewGroup }) => {
+const NextLesson = ({ scheduleData, weekType, dayIndex, scheduleGroup }) => {
   const { user, profile } = useAuth();
-
-  // 🎯 Используем viewGroup (просмотр), а не profile.group
-  const group = viewGroup === "B" ? "B" : "A";
+  const group = getResolvedGroup(profile);
 
   const [now, setNow] = useState(() => new Date());
 
@@ -61,7 +60,10 @@ const NextLesson = ({ scheduleData, weekType, dayIndex, viewGroup }) => {
             {isNow ? "Сейчас идёт" : "Следующая пара"}
           </span>
           <span className="next-lesson__num">№{next.bell.id}</span>
-          <span className="next-lesson__group">гр. {group}</span>
+          <span className="next-lesson__group">
+            {scheduleGroup ? `${scheduleGroup} · ` : ""}
+            гр. {group}
+          </span>
         </div>
         <strong className="next-lesson__subject">{next.subject}</strong>
         <div className="next-lesson__meta">

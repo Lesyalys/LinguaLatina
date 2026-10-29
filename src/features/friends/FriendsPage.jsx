@@ -18,26 +18,34 @@ const FriendsPage = ({ onOpenProfile }) => {
   const notice = useNotice();
   const [tab, setTab] = useState("friends"); // 'friends' | 'search'
   const [friendships, setFriendships] = useState({
+    loadedFor: null,
     friends: [],
     incoming: [],
     outgoing: [],
   });
-  const [loading, setLoading] = useState(true);
+  // loading выводится из того, для какого user уже выполнены данные, —
+  // это убирает синхронный setState внутри эффекта.
+  const loading = !!user && friendships.loadedFor !== user.id;
 
   // ============================================================
   // Загрузка
   // ============================================================
   const loadFriendships = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
     const data = await getFriendships(user.id);
-    setFriendships(data);
-    setLoading(false);
+    setFriendships({ loadedFor: user.id, ...data });
   }, [user]);
 
   useEffect(() => {
-    loadFriendships();
-  }, [loadFriendships]);
+    if (!user) return;
+    let cancelled = false;
+    getFriendships(user.id).then((data) => {
+      if (!cancelled) setFriendships({ loadedFor: user.id, ...data });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useFriendshipsRealtime(user?.id, loadFriendships);
   // ============================================================

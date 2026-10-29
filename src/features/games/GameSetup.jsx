@@ -17,7 +17,7 @@ const SUBJECT_DATA_FILES = {
 const GameSetup = ({ subject, friendId, onBack, onGameCreated }) => {
   const { user } = useAuth();
 
-  const dataFile = SUBJECT_DATA_FILES[subject?.id] || null;
+  const dataFile = subject?.trainingDataFile;
 
   const [deselectedGroups, setDeselectedGroups] = useState([]);
   const [rounds, setRounds] = useState(10);
